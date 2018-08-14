@@ -31,16 +31,18 @@ public class ChunkLoad implements Listener{
 
 			boolean foundLand = false; //True when the block selected is an ideal place for a structure.
 			Block bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
-			
+			int trys = 0;
 			while (!foundLand){//While land was not found it keeps checking.
+				if(trys >= 20) return; //added anti crash.
 				if(bb.getType() != Material.AIR){
 					foundLand = true;
 				}
 				else{
 					bb = bb.getLocation().subtract(0, 1, 0).getBlock();
 				}
+				trys++;
 			}
-			if(bb.getType() == Material.WATER || bb.getType() == Material.STATIONARY_WATER || bb.getType() == Material.LAVA || bb.getType() == Material.STATIONARY_LAVA) 
+			if(bb.getType() == Material.WATER || bb.getType() == Material.LAVA) 
 				return; //If anything that is not a solid block is found then this gets triggered.
 			
 			/*

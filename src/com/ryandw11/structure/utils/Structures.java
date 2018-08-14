@@ -6,19 +6,13 @@ import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 //import org.bukkit.block.Chest;
 //import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.inventory.ItemStack;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
 import com.sk89q.worldedit.data.DataException;
-
-import net.minecraft.server.v1_12_R1.Item;
-import net.minecraft.server.v1_12_R1.MinecraftKey;
 /**
  * 
  * @author Ryandw11
@@ -56,7 +50,7 @@ public class Structures {
 			
 			
 			if(!plugin.getConfig().getString("Schematics." + s + ".Biome").equalsIgnoreCase("all")){//Checking biome
-				if(!bl.getBiome().toString().toLowerCase().equalsIgnoreCase(plugin.getConfig().getString("Schematics." + s + ".Biome")))
+				if(!getBiomes(plugin.getConfig().getString("Schematics." + s + ".Biome").toLowerCase()).contains(bl.getBiome().toString().toLowerCase()))
 					return;
 			}
 			if(plugin.getConfig().getInt("Schematics." + s + ".SpawnY") < -1){
@@ -125,18 +119,27 @@ public class Structures {
 //			
 //		}
 //	}
-	protected Material getMaterial(String it){
-		MinecraftKey mk = new MinecraftKey(it);
-		ItemStack item = CraftItemStack.asNewCraftStack(Item.REGISTRY.get(mk));
-		Material mat = item.getType();
-		return mat;
-	}
+//	protected Material getMaterial(String it){
+//		MinecraftKey mk = new MinecraftKey(it);
+//		ItemStack item = CraftItemStack.asNewCraftStack(Item.REGISTRY.get(mk));
+//		Material mat = item.getType();
+//		return mat;
+//	}
 	protected ArrayList<String> getMyLore(java.util.List<String> list){
 		ArrayList<String> ls = new ArrayList<String>();
 		for(String lore : list){
 			ls.add(ChatColor.translateAlternateColorCodes('&', lore));
 		}
 		return ls;
+	}
+	
+	protected ArrayList<String> getBiomes(String s){
+		String[] biomes = s.split(",");
+		ArrayList<String> output = new ArrayList<String>();
+		for(String b : biomes)
+			output.add(b);
+		return output;
+		
 	}
 	
 
