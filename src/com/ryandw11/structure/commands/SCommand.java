@@ -1,6 +1,5 @@
 package com.ryandw11.structure.commands;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
@@ -11,7 +10,6 @@ import org.bukkit.entity.Player;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
-import com.sk89q.worldedit.data.DataException;
 
 @SuppressWarnings("deprecation")
 public class SCommand implements CommandExecutor {
@@ -48,7 +46,7 @@ public class SCommand implements CommandExecutor {
 			SchematicHandeler sh = new SchematicHandeler();
 			try {
 				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"), plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"));
-			} catch (DataException | IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}else if(args.length == 1 && args[0].equalsIgnoreCase("list")){

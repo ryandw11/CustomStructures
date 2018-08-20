@@ -1,18 +1,16 @@
 package com.ryandw11.structure.utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
-//import org.bukkit.block.Chest;
-//import org.bukkit.configuration.file.FileConfiguration;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
-import com.sk89q.worldedit.data.DataException;
+import org.bukkit.configuration.file.FileConfiguration;
+
 /**
  * 
  * @author Ryandw11
@@ -38,32 +36,33 @@ public class Structures {
 	public void chooseBestStructure(Block bl, Chunk ch){
 		Random r = new Random();
 		int num;
+        FileConfiguration config=plugin.getConfig();
 		for(String s : st){
-			num = r.nextInt(plugin.getConfig().getInt("Schematics." + s + ".Chance.OutOf") - 1) + 1;
-			if(num <= plugin.getConfig().getInt("Schematics." + s + ".Chance.Number")){
-				if(!plugin.getConfig().getBoolean("Schematics." + s + ".AllWorlds")){ // Checking to see if the world is correct
+			num = r.nextInt(config.getInt("Schematics." + s + ".Chance.OutOf") - 1) + 1;
+			if(num <= config.getInt("Schematics." + s + ".Chance.Number")){
+				if(!config.getBoolean("Schematics." + s + ".AllWorlds")){ // Checking to see if the world is correct
 					@SuppressWarnings("unchecked")
-					ArrayList<String> worlds = (ArrayList<String>) plugin.getConfig().get("Schematics." + s + ".AllowedWorlds");
+					ArrayList<String> worlds = (ArrayList<String>) config.get("Schematics." + s + ".AllowedWorlds");
 					if(!worlds.contains(bl.getWorld().getName()))
 						return;
 				}
 			
 			
-			if(!plugin.getConfig().getString("Schematics." + s + ".Biome").equalsIgnoreCase("all")){//Checking biome
-				if(!getBiomes(plugin.getConfig().getString("Schematics." + s + ".Biome").toLowerCase()).contains(bl.getBiome().toString().toLowerCase()))
+			if(!config.getString("Schematics." + s + ".Biome").equalsIgnoreCase("all")){//Checking biome
+				if(!getBiomes(config.getString("Schematics." + s + ".Biome").toLowerCase()).contains(bl.getBiome().toString().toLowerCase()))
 					return;
 			}
-			if(plugin.getConfig().getInt("Schematics." + s + ".SpawnY") < -1){
-				bl = ch.getBlock(0, (bl.getY() + plugin.getConfig().getInt("Schematics." + s + ".SpawnY")) , 0);
+			if(config.getInt("Schematics." + s + ".SpawnY") < -1){
+				bl = ch.getBlock(0, (bl.getY() + config.getInt("Schematics." + s + ".SpawnY")) , 0);
 			}
-			else if(plugin.getConfig().contains("Schematics." + s + ".SpawnY") && plugin.getConfig().getInt("Schematics." + s + ".SpawnY") != -1){
-				bl = ch.getBlock(0, plugin.getConfig().getInt("Schematics." + s + ".SpawnY"), 0);
-			}
+			else if(config.contains("Schematics." + s + ".SpawnY") && config.getInt("Schematics." + s + ".SpawnY") != -1){
+				bl = ch.getBlock(0, config.getInt("Schematics." + s + ".SpawnY"), 0);
+			}if(config.contains("Schematics."+s+".SpawnYmin")&&config.contains("Schematics."+s+".SpawnYmin")&&(bl.getY()<config.getInt("Schematics."+s+".SpawnYmin")||bl.getY()>config.getInt("Schematics."+s+".SpawnYmax")))return;
 			//Now to finally paste the schematic
 			SchematicHandeler sh = new SchematicHandeler();
 			try {
-				sh.schemHandle(bl.getLocation(), plugin.getConfig().getString("Schematics." + s + ".Schematic"), plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"));
-			} catch (DataException | IOException e) {
+				sh.schemHandle(bl.getLocation(), config.getString("Schematics." + s + ".Schematic"), config.getBoolean("Schematics." + s + ".PlaceAir"));
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
