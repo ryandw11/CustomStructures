@@ -1,6 +1,6 @@
 package com.ryandw11.structure.commands;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
 
-@SuppressWarnings("deprecation")
 public class SCommand implements CommandExecutor {
 	private CustomStructures plugin;
 	public SCommand(){
@@ -22,8 +21,7 @@ public class SCommand implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")){
 			if(sender.hasPermission("customstructures.reload")){
-				@SuppressWarnings("unchecked")
-				ArrayList<String> stuff = (ArrayList<String>) plugin.getConfig().get("Schematics.List");
+				List<String> stuff = plugin.getConfig().getStringList("Schematics.List");
 				plugin.reloadConfig();
 				sender.sendMessage("The plugin has been reloaded!");
 				plugin.getLogger().info("Plugin reloaded with " + stuff.size() + " loaded schematics.");
@@ -50,8 +48,7 @@ public class SCommand implements CommandExecutor {
 				e.printStackTrace();
 			}
 		}else if(args.length == 1 && args[0].equalsIgnoreCase("list")){
-			@SuppressWarnings("unchecked")
-			ArrayList<String> stuff = (ArrayList<String>) plugin.getConfig().get("Schematics.List");
+			List<String> stuff = plugin.getConfig().getStringList("Schematics.List");
 			sender.sendMessage(ChatColor.GREEN + "Currently Active Schematics:");
 			for(String st : stuff){
 				sender.sendMessage(ChatColor.GREEN + " - " + ChatColor.BLUE + st);

@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 
 import com.google.common.io.Closer;
 import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
@@ -14,7 +13,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.regions.Region;
+//import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -48,17 +47,17 @@ public class SchematicHandeler {
         	Bukkit.getPluginManager().disablePlugin(plugin);
         	return;
         }
-        EditSession session=we.getWorldEdit().getEditSessionFactory().getEditSession(new BukkitWorld(loc.getWorld()),1000000);
-        ClipboardFormat format=ClipboardFormats.findByFile(schematic);
-        try(Closer closer=Closer.create()){
-            FileInputStream fis=closer.register(new FileInputStream(schematic));
-            BufferedInputStream bis=closer.register(new BufferedInputStream(fis));
-            ClipboardReader reader=closer.register(format.getReader(bis));
-            Clipboard clipboard=reader.read();
-            ClipboardHolder holder=new ClipboardHolder(clipboard);
-            Region region=clipboard.getRegion();
-            Vector to=new Vector(loc.getX(),loc.getY(),loc.getZ());
-            Operation operation=holder.createPaste(session).to(to).ignoreAirBlocks(!useAir).build();
+        EditSession session = we.getWorldEdit().getEditSessionFactory().getEditSession(new BukkitWorld(loc.getWorld()),1000000);
+        ClipboardFormat format = ClipboardFormats.findByFile(schematic);
+        try(Closer closer = Closer.create()){
+            FileInputStream fis = closer.register(new FileInputStream(schematic));
+            BufferedInputStream bis = closer.register(new BufferedInputStream(fis));
+            ClipboardReader reader = closer.register(format.getReader(bis));
+            Clipboard clipboard = reader.read();
+            ClipboardHolder holder = new ClipboardHolder(clipboard);
+            //Region region = clipboard.getRegion(); Unused temporarly
+            Vector to = new Vector(loc.getX(),loc.getY(),loc.getZ());
+            Operation operation = holder.createPaste(session).to(to).ignoreAirBlocks(!useAir).build();
             Operations.completeLegacy(operation);
         }catch(Exception Ex){
             Ex.printStackTrace();
