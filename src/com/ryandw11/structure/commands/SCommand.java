@@ -1,6 +1,6 @@
 package com.ryandw11.structure.commands;
 
-import java.util.List;
+import java.io.IOException;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
+import com.sk89q.worldedit.WorldEditException;
 
 public class SCommand implements CommandExecutor {
 	private CustomStructures plugin;
@@ -21,10 +22,9 @@ public class SCommand implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")){
 			if(sender.hasPermission("customstructures.reload")){
-				List<String> stuff = plugin.getConfig().getStringList("Schematics.List");
 				plugin.reloadConfig();
 				sender.sendMessage("The plugin has been reloaded!");
-				plugin.getLogger().info("Plugin reloaded with " + stuff.size() + " loaded schematics.");
+				plugin.getLogger().info("Plugin reloaded!");
 			}else{
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}
@@ -44,13 +44,12 @@ public class SCommand implements CommandExecutor {
 			SchematicHandeler sh = new SchematicHandeler();
 			try {
 				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"), plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"));
-			} catch (Exception e) {
+			} catch (IOException | WorldEditException e) {
 				e.printStackTrace();
 			}
 		}else if(args.length == 1 && args[0].equalsIgnoreCase("list")){
-			List<String> stuff = plugin.getConfig().getStringList("Schematics.List");
 			sender.sendMessage(ChatColor.GREEN + "Currently Active Schematics:");
-			for(String st : stuff){
+			for(String st : plugin.getConfig().getConfigurationSection("Schematics").getKeys(false)){
 				sender.sendMessage(ChatColor.GREEN + " - " + ChatColor.BLUE + st);
 			}
 		}
@@ -62,7 +61,8 @@ public class SCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Github wiki:&2 https://github.com/ryandw11/CustomStructures/wiki"));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs reload - &2Reload the plugin."));
-				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs test (name) - Paste the defined schematic."));
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs test (name) - &2Paste the defined structure."));
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs list - &2List the currently active structures."));
 			}else{
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}

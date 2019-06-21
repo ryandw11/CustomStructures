@@ -42,8 +42,6 @@ public class ChunkLoad implements Listener{
 				}
 				trys++;
 			}
-			if(bb.getType() == Material.WATER || bb.getType() == Material.LAVA) 
-				return; //If anything that is not a solid block is found then this gets triggered.
 			
 			/*
 			 * Schematic handeler

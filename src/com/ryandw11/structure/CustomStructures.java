@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -12,6 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.utils.CheckSchematics;
@@ -19,7 +19,7 @@ import com.ryandw11.structure.utils.CheckSchematics;
 /**
  * 
  * @author Ryandw11
- * @version 1.3.4-Pre2
+ * @version 1.3
  *
  */
 
@@ -38,12 +38,11 @@ public class CustomStructures extends JavaPlugin{
 		loadManager();
 		registerConfig();
 		
-		@SuppressWarnings("unchecked")
-		ArrayList<String> stuff = (ArrayList<String>) plugin.getConfig().get("Schematics.List");
+		CustomStructuresAPI capi = new CustomStructuresAPI(); 
 		
-		getLogger().info("The plugin has been enabled with " + stuff.size() + " schematics.");
+		getLogger().info("The plugin has been enabled with " + capi.getNumberOfStructures() + " structures.");
 		loadFile();
-		CheckSchematics cs = new CheckSchematics(stuff);
+		CheckSchematics cs = new CheckSchematics(this.getConfig().getConfigurationSection("Schematics").getKeys(false));
 		cs.runTaskTimer(plugin, 5L, 1L);
 	}
 	

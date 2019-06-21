@@ -3,12 +3,11 @@ configversion: 3
 #             Custom Structures    
 #========================================
 #Wiki: https://github.com/ryandw11/CustomStructures/wiki
-Schematics:
 
-#A list containing all of the schematics.
-#When you add a new schematic add it to this list.
-    List:
-        - demo
+#Allow Plugins to delete structures at will.
+allowDeletion: true
+
+Schematics:
     #Change the name bellow with what you want. (Note: change the name in the list too!)
     demo:
         #The schematic file. Make sure to include the .schem
@@ -23,13 +22,12 @@ Schematics:
             OutOf: 1000
         #If the structure can spawn in all worlds.
         AllWorlds: true
-        #The y cord the structure will spawn on. Use -1 if you want it to be on the surface. Do an array to spawn in a range.
-        # Example: [0-225]
+        #The y cord the structure will spawn on. Use -1 if you want it to be on the surface.
         SpawnY: -1
-        #The offset value.
-        OffSet: 0
         #If you want air to be placed. True is air will be placed. False is air won't be placed.
         PlaceAir: true
+        #If you want the structure to spawn in water or lava.
+        spawnInLiquid: false
         #If the above is false then the worlds it can spawn in:
         AllowedWorlds:
             - world
