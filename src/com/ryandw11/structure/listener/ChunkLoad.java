@@ -7,8 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 
-//import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.utils.Structures;
+import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.utils.StructurePicker;
 
 /**
  * Class for when a chunk loads.
@@ -45,9 +45,10 @@ public class ChunkLoad implements Listener{
 			
 			/*
 			 * Schematic handeler
+			 * Runs a BukkitRunnable to prevent the server from crashing.
 			 */
-			Structures s = new Structures();
-			s.chooseBestStructure(bb, e.getChunk());
+			StructurePicker s = new StructurePicker(bb, e.getChunk());
+			s.runTaskTimer(CustomStructures.plugin, 1, 10);
 		}
 	}
 }

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -29,6 +30,7 @@ public class CustomStructures extends JavaPlugin{
 	
 	public File exfile = new File(getDataFolder() + "/schematics/Put_Schematics_In_Here.yml");
 	public FileConfiguration ex = YamlConfiguration.loadConfiguration(exfile);
+	public ArrayList<String> structures;
 	
 	@Override
 	public void onEnable(){
@@ -44,6 +46,7 @@ public class CustomStructures extends JavaPlugin{
 		loadFile();
 		CheckSchematics cs = new CheckSchematics(this.getConfig().getConfigurationSection("Schematics").getKeys(false));
 		cs.runTaskTimer(plugin, 5L, 1L);
+		setStructures();
 	}
 	
 	@Override
@@ -54,6 +57,13 @@ public class CustomStructures extends JavaPlugin{
 	public void loadManager(){
 		Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
 		getCommand("customstructure").setExecutor(new SCommand());
+	}
+	
+	public void setStructures() {
+		structures = new ArrayList<String>();
+		for(String s : this.getConfig().getConfigurationSection("Schematics").getKeys(false)) {
+			structures.add(s);
+		}
 	}
 	
 	public void registerConfig(){

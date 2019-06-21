@@ -19,6 +19,7 @@ import com.sk89q.worldedit.WorldEditException;
  * 
  * @author Ryandw11
  * @version 1.3
+ * @deprecated Outdated. To be removed in future update.
  *
  */
 public class Structures {
