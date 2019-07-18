@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
 
 public class SCommand implements CommandExecutor {
@@ -43,7 +44,15 @@ public class SCommand implements CommandExecutor {
 			}
 			SchematicHandeler sh = new SchematicHandeler();
 			try {
-				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"), plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"));
+				RandomCollection<String> lootTables = new RandomCollection<>();
+				for (String name : plugin.getConfig().getConfigurationSection("Schematics."+ args[1] + ".LootTables").getKeys(true)) {
+					int weight = plugin.getConfig().getInt("Schematics."+ args[1] + ".LootTables." + name);
+					lootTables.add(weight, name);
+				}
+				
+				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"),
+						plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"),
+						lootTables);
 			} catch (IOException | WorldEditException e) {
 				e.printStackTrace();
 			}

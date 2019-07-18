@@ -82,7 +82,16 @@ public class StructurePicker extends BukkitRunnable {
 		//Now to finally paste the schematic
 		SchematicHandeler sh = new SchematicHandeler();
 		try {
-			sh.schemHandle(bl.getLocation(), plugin.getConfig().getString("Schematics." + currentSchem + ".Schematic"), plugin.getConfig().getBoolean("Schematics." + currentSchem + ".PlaceAir"));
+			RandomCollection<String> lootTables = new RandomCollection<>();
+
+			for (String name : cs.getConfigurationSection("LootTables").getKeys(true)) {
+				int weight = cs.getInt("LootTables." + name);
+				lootTables.add(weight, name);
+			}
+			
+			sh.schemHandle(bl.getLocation(), plugin.getConfig().getString("Schematics." + currentSchem + ".Schematic"), 
+					plugin.getConfig().getBoolean("Schematics." + currentSchem + ".PlaceAir"), 
+					lootTables);
 		} catch (IOException | WorldEditException e) {
 			e.printStackTrace();
 		}

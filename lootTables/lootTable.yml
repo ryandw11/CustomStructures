@@ -1,0 +1,32 @@
+#LootTable Example
+#You can create as many files as you want, each file represents a loot table
+
+#Must be ENTITY for loot on entity drops or CHEST for loot on treasure chest
+Type: 'CHEST'
+#Determines how many Items will be chosen from the Items list bellow
+Rolls:  3
+Items:
+  item0:
+    #Item custom Name, you can use color codes (https://minecraft.tools/en/color-code.php)
+    Name: '&1Test'
+    #Material Type https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+    Type: 'IRON_SWORD'
+    #Number of items per stack
+    Amount: 1
+    #Determines how often this entry will be chosen out of all the entries in the list.
+    Weight: 10
+    #List of Enchantments, one item can have multiple enchantments
+    Enchantments:
+      #Enchantment name and level (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html)
+      LOOT_BONUS_MOBS: 1
+      DAMAGE_ALL: 1
+  item1:
+    Name: '&2Test2'
+    Type: 'IRON_HELMET'
+    Amount: 1
+    Weight: 5
+  item2:
+    Name: '&3Test3'
+    Type: 'ROTTEN_FLESH'
+    Amount: 5
+    Weight: 20
