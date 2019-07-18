@@ -80,9 +80,13 @@ public class Structures {
 				try {
 					RandomCollection<String> lootTables = new RandomCollection<>();
 
-					for (String name : cs.getConfigurationSection("LootTables").getKeys(true)) {
-						int weight = cs.getInt("LootTables." + name);
-						lootTables.add(weight, name);
+					ConfigurationSection lootTablesCS = cs.getConfigurationSection("LootTables");
+
+					if (lootTablesCS != null) {
+						for (String name : lootTablesCS.getKeys(true)) {
+							int weight = cs.getInt("LootTables." + name);
+							lootTables.add(weight, name);
+						}
 					}
 
 					sh.schemHandle(bl.getLocation(), plugin.getConfig().getString("Schematics." + s + ".Schematic"),

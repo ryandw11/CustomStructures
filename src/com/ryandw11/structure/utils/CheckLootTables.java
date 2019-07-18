@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.ryandw11.structure.CustomStructures;
@@ -33,17 +34,19 @@ public class CheckLootTables extends BukkitRunnable {
 			return;
 		}
 		String s = schematics.get(num);
-		
-		for (String name : plugin.getConfig().getConfigurationSection(ex + s + ".LootTables").getKeys(true)) {
-			File schematic = new File(plugin.getDataFolder() + "/lootTables/" + name + ".yml");
-			if (!schematic.exists()) {
-				plugin.getLogger().severe("Error: The Loot Table file for " + name + " does not exist!");
-				plugin.getLogger().severe("For assistance please contact Ryandw11 on spigot.");
-				plugin.getLogger().severe("The plugin will now disable it self.");
-				this.cancel();
-				Bukkit.getPluginManager().disablePlugin(plugin);
+		ConfigurationSection lootTablesCS = plugin.getConfig().getConfigurationSection(ex + s + ".LootTables");
+		if (lootTablesCS != null) {
+			for (String name : lootTablesCS.getKeys(true)) {
+				File schematic = new File(plugin.getDataFolder() + "/lootTables/" + name + ".yml");
+				if (!schematic.exists()) {
+					plugin.getLogger().severe("Error: The Loot Table file for " + name + " does not exist!");
+					plugin.getLogger().severe("For assistance please contact Ryandw11 on spigot.");
+					plugin.getLogger().severe("The plugin will now disable it self.");
+					this.cancel();
+					Bukkit.getPluginManager().disablePlugin(plugin);
+				}
+				num += 1;
 			}
-			num += 1;
 		}
 
 	}
