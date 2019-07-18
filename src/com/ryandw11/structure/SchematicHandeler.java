@@ -10,10 +10,13 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
@@ -36,6 +39,9 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+
+import io.lumine.xikage.mythicmobs.MythicMobs;
+import io.lumine.xikage.mythicmobs.mobs.MobManager;
 
 public class SchematicHandeler {
 
@@ -91,16 +97,20 @@ public class SchematicHandeler {
 		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
 			@Override
 			public void run() {
-				List<Location> containersLocations = getContainersLocations(clipboard, loc);
-				for (Location location : containersLocations) {
-					replaceContainerContent(lootTables, location);
+				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(clipboard, loc);
+				for (Location location : containersAndSignsLocations) {
+					if (location.getBlock().getState() instanceof Container) {
+						replaceContainerContent(lootTables, location);
+					} else if (location.getBlock().getState() instanceof Sign) {
+						replaceSignWithMob(location);
+					}
 				}
 			}
 		});
 
 	}
 
-	private List<Location> getContainersLocations(Clipboard clipboard, Location pasteLocation) {
+	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation) {
 
 		BlockVector3 minimum = clipboard.getRegion().getMinimumPoint();
 		BlockVector3 origin = clipboard.getOrigin();
@@ -151,6 +161,8 @@ public class SchematicHandeler {
 						} else {
 							locations.add(location);
 						}
+					} else if (blockState instanceof Sign) {
+						locations.add(location);
 					}
 				}
 			}
@@ -185,6 +197,26 @@ public class SchematicHandeler {
 				this.replaceChestContent(lootTable, random, containerInventory);
 			}
 		}
+
+	}
+
+	private void replaceSignWithMob(Location location) {
+		Sign sign = (Sign) location.getBlock().getState();
+		String firstLine = sign.getLine(0);
+		String secondLine = sign.getLine(1);
+
+		if (firstLine.equalsIgnoreCase("[mob]")) {
+			try {
+				location.getWorld().spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
+			} catch (IllegalArgumentException e) {
+			}
+		}
+		if (firstLine.equalsIgnoreCase("[mythicmob]")) {
+			MobManager mobManager = MythicMobs.inst().getMobManager();
+			mobManager.spawnMob(secondLine, location);
+		}
+
+		location.getBlock().setType(Material.AIR);
 
 	}
 
@@ -228,8 +260,6 @@ public class SchematicHandeler {
 	}
 
 	private boolean isSameItem(ItemStack randomPosItem, ItemStack randomItem) {
-		// TODO comprobar más cosas que tipo de item (enchants, nombre, etc)
-
 		ItemMeta randomPosItemMeta = randomPosItem.getItemMeta();
 		ItemMeta randomItemMeta = randomItem.getItemMeta();
 
