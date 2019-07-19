@@ -31,3 +31,7 @@ Schematics:
         #If the above is false then the worlds it can spawn in:
         AllowedWorlds:
             - world
+        #List of lootTables for this Schematic, name and weight
+        #Weight determines how often it will be chosen out of all the entries in the list.
+        LootTables:
+            lootTable: 5
