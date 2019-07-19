@@ -6,7 +6,9 @@ public enum ConditionType {
 	INAIR("PlaceAir"),
 	INLIQUID("spawnInLiquid"),
 	SPAWNY("SpawnY"),
-	LOOTTABLES("LootTables");
+	LOOTTABLES("LootTables"),
+	RANDOMROTATION("randomRotation"),
+	WHITELIST("whitelistSpawnBlocks");
 	
 	private String configSel;
 	ConditionType(String configSel){

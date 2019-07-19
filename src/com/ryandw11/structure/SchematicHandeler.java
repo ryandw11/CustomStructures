@@ -16,6 +16,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Sign;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.FurnaceInventory;
@@ -38,6 +39,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 
 public class SchematicHandeler {
@@ -57,9 +59,10 @@ public class SchematicHandeler {
 	 * @param filename   - The file name. Ex: demo.schematic
 	 * @param useAir     - if air is to be used in the schematic
 	 * @param lootTables - The Loot Tables specified for this structure, if any.
+	 * @param cs         - The configurationsection for this structure.
 	 * @throws WorldEditException
 	 */
-	public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<String> lootTables)
+	public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<String> lootTables, ConfigurationSection cs)
 			throws IOException, WorldEditException {
 		File schematicFile = new File(plugin.getDataFolder() + "/schematics/" + filename);
 		// Check to see if the schematic is a thing.
@@ -82,11 +85,27 @@ public class SchematicHandeler {
 		try (ClipboardReader reader = format.getReader(new FileInputStream(schematicFile))) {
 			clipboard = reader.read();
 		}
+		
+		ClipboardHolder ch = new ClipboardHolder(clipboard);
+		AffineTransform transform = new AffineTransform();
+		
+		// If random rotation is enabled.
+		if(cs.contains("randomRotation") && cs.getBoolean("randomRotation")) {
+			Random r = new Random();
+			int val = r.nextInt(4);
+			int rotY = 0;
+			if(val == 0) rotY = 0;
+			if(val == 1) rotY = 90;
+			if(val == 2) rotY = 180;
+			if(val == 3) rotY = 270;
+			transform = transform.rotateY(rotY);
+			ch.setTransform(ch.getTransform().combine(transform));
+		}
 
 		// Paste the schematic
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
 				.getEditSession(BukkitAdapter.adapt(loc.getWorld()), -1)) {
-			Operation operation = new ClipboardHolder(clipboard).createPaste(editSession)
+			Operation operation = ch.createPaste(editSession)
 					.to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).ignoreAirBlocks(!useAir).build();
 			Operations.complete(operation);
 		}
@@ -94,7 +113,7 @@ public class SchematicHandeler {
 		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
 			@Override
 			public void run() {
-				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(clipboard, loc);
+				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc);
 				for (Location location : containersAndSignsLocations) {
 					if (location.getBlock().getState() instanceof Container) {
 						replaceContainerContent(lootTables, location);
@@ -209,7 +228,7 @@ public class SchematicHandeler {
 			} catch (IllegalArgumentException e) {
 			}
 		}
-		if (firstLine.equalsIgnoreCase("[mythicmob]")) {
+		if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
 			plugin.mmh.spawnMob(secondLine, location);
 			location.getBlock().setType(Material.AIR);
 		}

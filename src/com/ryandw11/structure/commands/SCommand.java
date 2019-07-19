@@ -11,6 +11,9 @@ import org.bukkit.entity.Player;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.loottables.LootTablesHandler;
+import com.ryandw11.structure.utils.CheckLootTables;
+import com.ryandw11.structure.utils.CheckSchematics;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
 
@@ -28,6 +31,15 @@ public class SCommand implements CommandExecutor {
 				plugin.reloadConfig();
 				sender.sendMessage("The plugin has been reloaded!");
 				plugin.getLogger().info("Plugin reloaded!");
+				
+				CheckSchematics cs = new CheckSchematics(plugin.getConfig().getConfigurationSection("Schematics").getKeys(false));
+				cs.runTaskTimer(plugin, 5L, 1L);
+				plugin.setStructures();
+
+				CheckLootTables cl = new CheckLootTables(plugin.getConfig().getConfigurationSection("Schematics").getKeys(false));
+				cl.runTaskTimer(plugin, 5L, 1L);
+
+				CustomStructures.lootTablesHandler = new LootTablesHandler();
 			} else {
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}
@@ -57,7 +69,9 @@ public class SCommand implements CommandExecutor {
 				}
 
 				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"),
-						plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"), lootTables);
+						plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"), lootTables, 
+						plugin.getConfig().getConfigurationSection(args[1]));
+				
 			} catch (IOException | WorldEditException e) {
 				e.printStackTrace();
 			}

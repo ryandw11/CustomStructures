@@ -47,7 +47,11 @@ public class Structure {
 		case INLIQUID:
 			return cs.getBoolean("spawnInLiquid");
 		case SPAWNY:
-			return cs.getInt("SpawnY");
+			return cs.getString("SpawnY");
+		case RANDOMROTATION:
+			return cs.getBoolean("randomRotation");
+		case WHITELIST:
+			return cs.getStringList("whitelistSpawnBlocks");
 		case LOOTTABLES:
 			RandomCollection<String> lootTables = new RandomCollection<>();
 
@@ -83,7 +87,7 @@ public class Structure {
 	public void spawnStructure(Location loc) throws IOException, WorldEditException {
 		SchematicHandeler sh = new SchematicHandeler();
 		sh.schemHandle(loc, name, (boolean) this.getCondition(ConditionType.INAIR),
-				(RandomCollection<String>) this.getCondition(ConditionType.LOOTTABLES));
+				(RandomCollection<String>) this.getCondition(ConditionType.LOOTTABLES), cs);
 	}
 	
 	/**

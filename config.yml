@@ -22,8 +22,8 @@ Schematics:
             OutOf: 1000
         #If the structure can spawn in all worlds.
         AllWorlds: true
-        #The y cord the structure will spawn on. Use -1 if you want it to be on the surface.
-        SpawnY: -1
+        #The y cord the structure will spawn on. Use top if you want it to be on the surface.
+        SpawnY: top
         #If you want air to be placed. True is air will be placed. False is air won't be placed.
         PlaceAir: true
         #If you want the structure to spawn in water or lava.
@@ -31,6 +31,14 @@ Schematics:
         #If the above is false then the worlds it can spawn in:
         AllowedWorlds:
             - world
+        #If the structure should be randomly rotated.
+        randomRotation: true
+        #Whitelisted blocks that the structure can spawn on. Remove this list if you do not want a whitelist.
+        whitelistSpawnBlocks:
+            - Grass_block
+            - Dirt
+            - Stone
+            - air
         #List of lootTables for this Schematic, name and weight
         #Weight determines how often it will be chosen out of all the entries in the list.
         LootTables:

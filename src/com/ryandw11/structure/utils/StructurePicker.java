@@ -2,8 +2,10 @@ package com.ryandw11.structure.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -62,27 +64,42 @@ public class StructurePicker extends BukkitRunnable {
 		if (num <= plugin.getConfig().getInt("Schematics." + currentSchem + ".Chance.Number")) {
 			if (!plugin.getConfig().getBoolean("Schematics." + currentSchem + ".AllWorlds")) { // Checking to see if the
 																								// world is correct
-				@SuppressWarnings("unchecked")
 				ArrayList<String> worlds = (ArrayList<String>) plugin.getConfig()
-						.get("Schematics." + currentSchem + ".AllowedWorlds");
+						.getStringList("Schematics." + currentSchem + ".AllowedWorlds");
 				if (!worlds.contains(bl.getWorld().getName()))
 					return;
 			}
 
 			ConfigurationSection cs = plugin.getConfig().getConfigurationSection("Schematics." + currentSchem);
-
+			
+			//If it can spawn in a boime.
 			if (!plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").equalsIgnoreCase("all")) {// Checking
 																													// biome
 				if (!getBiomes(plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").toLowerCase())
 						.contains(bl.getBiome().toString().toLowerCase()))
 					return;
 			}
-			if (cs.getInt("SpawnY") < -1) {
-				bl = ch.getBlock(0, (bl.getY() + plugin.getConfig().getInt("Schematics." + currentSchem + ".SpawnY")),
-						0);
-			} else if (cs.contains("SpawnY") && cs.getInt("SpawnY") != -1) {
-				bl = ch.getBlock(0, cs.getInt("SpawnY"), 0);
+			// calculate spawny
+			if(cs.contains("SpawnY")) {
+				bl = ch.getBlock(0, HandleY.calculateY(cs, bl.getY()), 0);
 			}
+			if(cs.contains("whitelistSpawnBlocks")) {
+				List<Material> materials = new ArrayList<>();
+				for(String s : cs.getStringList("whitelistSpawnBlocks")) {
+					try {
+						materials.add(Material.valueOf(s.toUpperCase()));
+					}
+					catch (Exception e) {
+						continue;
+					}
+				}
+				
+				// If the material is not whitelisted.
+				if(!materials.contains(bl.getType())) {
+					return;
+				}
+			}
+			// If it can spawn in a liquid
 			if (!cs.getBoolean("spawnInLiquid")) {
 				if (bl.getType() == Material.WATER || bl.getType() == Material.LAVA)
 					return;
@@ -98,9 +115,10 @@ public class StructurePicker extends BukkitRunnable {
 						lootTables.add(weight, name);
 					}
 				}
+				// Line to actualy paste the schematic.
 				sh.schemHandle(bl.getLocation(),
 						plugin.getConfig().getString("Schematics." + currentSchem + ".Schematic"),
-						plugin.getConfig().getBoolean("Schematics." + currentSchem + ".PlaceAir"), lootTables);
+						plugin.getConfig().getBoolean("Schematics." + currentSchem + ".PlaceAir"), lootTables, cs);
 			} catch (IOException | WorldEditException e) {
 				e.printStackTrace();
 			}
