@@ -8,6 +8,11 @@ import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+/**
+ * Represents an Item within a loot table.
+ * @author Chusca
+ *
+ */
 public class LootItem {
 
 	private int weight;

@@ -1,12 +1,15 @@
 package com.ryandw11.structure.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
 
@@ -81,5 +84,19 @@ public class Structure {
 		SchematicHandeler sh = new SchematicHandeler();
 		sh.schemHandle(loc, name, (boolean) this.getCondition(ConditionType.INAIR),
 				(RandomCollection<String>) this.getCondition(ConditionType.LOOTTABLES));
+	}
+	
+	/**
+	 * Get the loottables for a structure.
+	 * @return A list of loottables. (Can return null if LootTables does not exist)
+	 */
+	public List<LootTable> getLootTables() {
+		if(!cs.contains("LootTables")) return null;
+		
+		List<LootTable> output = new ArrayList<LootTable>();
+		for(String table : cs.getConfigurationSection("LootTables").getKeys(false)) {
+			output.add(new LootTable(table));
+		}
+		return output;
 	}
 }

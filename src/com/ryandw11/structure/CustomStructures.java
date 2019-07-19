@@ -16,13 +16,16 @@ import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.loottables.LootTablesHandler;
+import com.ryandw11.structure.mythicalmobs.MMDisabled;
+import com.ryandw11.structure.mythicalmobs.MMEnabled;
+import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 import com.ryandw11.structure.utils.CheckLootTables;
 import com.ryandw11.structure.utils.CheckSchematics;
 
 /**
  * 
  * @author Ryandw11
- * @version 1.3
+ * @version 1.4.2
  *
  */
 
@@ -38,6 +41,7 @@ public class CustomStructures extends JavaPlugin {
 	public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
 
 	public ArrayList<String> structures;
+	public MythicalMobHook mmh;
 
 	@Override
 	public void onEnable() {
@@ -45,6 +49,13 @@ public class CustomStructures extends JavaPlugin {
 		plugin = this;
 		loadManager();
 		registerConfig();
+		
+		if(getServer().getPluginManager().getPlugin("MythicalMobs") != null) {
+			mmh = new MMEnabled();
+			getLogger().info("MythicalMobs detected! Activating plugin hook!");
+		}else {
+			mmh = new MMDisabled();
+		}
 
 		CustomStructuresAPI capi = new CustomStructuresAPI();
 

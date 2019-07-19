@@ -3,7 +3,8 @@ version: 1.4.1
 main: com.ryandw11.structure.CustomStructures
 author: Ryandw11
 description: A plugin which allows you to spawn in custom structures!
-depends: [WorldEdit]
+depend: [WorldEdit]
+softdepend: [MythicalMobs]
 api-version: 1.13
 commands:
     customstructure:

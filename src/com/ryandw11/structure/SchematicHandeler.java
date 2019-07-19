@@ -40,9 +40,6 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.mobs.MobManager;
-
 public class SchematicHandeler {
 
 	private CustomStructures plugin;
@@ -202,21 +199,20 @@ public class SchematicHandeler {
 
 	private void replaceSignWithMob(Location location) {
 		Sign sign = (Sign) location.getBlock().getState();
-		String firstLine = sign.getLine(0);
-		String secondLine = sign.getLine(1);
+		String firstLine = sign.getLine(0).trim();
+		String secondLine = sign.getLine(1).trim();
 
 		if (firstLine.equalsIgnoreCase("[mob]")) {
 			try {
 				location.getWorld().spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
+				location.getBlock().setType(Material.AIR);
 			} catch (IllegalArgumentException e) {
 			}
 		}
 		if (firstLine.equalsIgnoreCase("[mythicmob]")) {
-			MobManager mobManager = MythicMobs.inst().getMobManager();
-			mobManager.spawnMob(secondLine, location);
+			plugin.mmh.spawnMob(secondLine, location);
+			location.getBlock().setType(Material.AIR);
 		}
-
-		location.getBlock().setType(Material.AIR);
 
 	}
 

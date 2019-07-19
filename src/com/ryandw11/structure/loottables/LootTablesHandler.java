@@ -2,7 +2,11 @@ package com.ryandw11.structure.loottables;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * 
+ * @author Chusca
+ *
+ */
 public class LootTablesHandler {
 
 	private Map<String, LootTable> lootTables;
