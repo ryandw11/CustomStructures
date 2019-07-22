@@ -5,7 +5,10 @@ public enum ConditionType {
 	WORLD("AllowedWorlds"),
 	INAIR("PlaceAir"),
 	INLIQUID("spawnInLiquid"),
-	SPAWNY("SpawnY");
+	SPAWNY("SpawnY"),
+	LOOTTABLES("LootTables"),
+	RANDOMROTATION("randomRotation"),
+	WHITELIST("whitelistSpawnBlocks");
 	
 	private String configSel;
 	ConditionType(String configSel){
