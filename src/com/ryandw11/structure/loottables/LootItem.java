@@ -23,9 +23,11 @@ public class LootItem {
 		this.item = new ItemStack(Material.valueOf(type));
 		this.item.setAmount(amount);
 		
-		ItemMeta meta = this.item.getItemMeta();
-		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', customName));
-		this.item.setItemMeta(meta);
+		if(customName != null) { //Catch for people who do not want different names
+			ItemMeta meta = this.item.getItemMeta();
+			meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', customName));
+			this.item.setItemMeta(meta);
+		}
 
 		for (String enchantName : enchants.keySet()) {
 			int level = enchants.get(enchantName);

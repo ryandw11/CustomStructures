@@ -70,7 +70,7 @@ public class SCommand implements CommandExecutor {
 
 				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"),
 						plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"), lootTables, 
-						plugin.getConfig().getConfigurationSection(args[1]));
+						plugin.getConfig().getConfigurationSection("Schematics." + args[1]));
 				
 			} catch (IOException | WorldEditException e) {
 				e.printStackTrace();
@@ -92,9 +92,9 @@ public class SCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs reload - &2Reload the plugin."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-						"&3/cs test (name) - &2Paste the defined structure."));
+						"&3/cstructure test (name) - &2Paste the defined structure."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-						"&3/cs list - &2List the currently active structures."));
+						"&3/cstructure list - &2List the currently active structures."));
 			} else {
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}

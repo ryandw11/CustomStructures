@@ -45,9 +45,9 @@ public class CheckLootTables extends BukkitRunnable {
 					this.cancel();
 					Bukkit.getPluginManager().disablePlugin(plugin);
 				}
-				num += 1;
 			}
 		}
+		num += 1;
 
 	}
 
