@@ -29,8 +29,13 @@ Schematics:
         SpawnY: top
         #If you want air to be placed. True is air will be placed. False is air won't be placed.
         PlaceAir: true
-        #If you want the structure to spawn in water or lava.
-        spawnInLiquid: false
+        #Ignore stuff like grass and leaves.
+        ignorePlants: true
+        Ocean_Properties:
+            #If you want the structure to spawn in water or lava.
+            spawnInLiquid: false
+            #If the structure picks a spot in the ocean or in a lake it will spawn at the floor of it.
+            useOceanFloor: true
         #If the structure should be randomly rotated.
         randomRotation: false
         #Whitelisted blocks that the structure can spawn on. Remove this list if you do not want a whitelist.

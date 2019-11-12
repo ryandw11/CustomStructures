@@ -55,6 +55,7 @@ public class SCommand implements CommandExecutor {
 			}
 			if (!plugin.getConfig().contains("Schematics." + args[1])) {
 				p.sendMessage(ChatColor.RED + "That schematic does not exist!");
+				return true;
 			}
 			SchematicHandeler sh = new SchematicHandeler();
 			try {
