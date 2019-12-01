@@ -24,10 +24,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.utils.RandomCollection;
+import com.ryandw11.structure.utils.RotEnum;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -89,18 +91,22 @@ public class SchematicHandeler {
 		ClipboardHolder ch = new ClipboardHolder(clipboard);
 		AffineTransform transform = new AffineTransform();
 		
+		RotEnum rotValue = RotEnum.D0;
+		
 		// If random rotation is enabled.
 		if(cs.contains("randomRotation") && cs.getBoolean("randomRotation")) {
 			Random r = new Random();
 			int val = r.nextInt(4);
-			int rotY = 0;
-			if(val == 0) rotY = 0;
-			if(val == 1) rotY = 90;
-			if(val == 2) rotY = 180;
-			if(val == 3) rotY = 270;
-			transform = transform.rotateY(rotY);
+			RotEnum rotY = RotEnum.D0;
+			if(val == 0) rotY = RotEnum.D0;
+			if(val == 1) rotY = RotEnum.D90;
+			if(val == 2) rotY = RotEnum.D180;
+			if(val == 3) rotY = RotEnum.D270;
+			transform = transform.rotateY(rotY.deg);
 			ch.setTransform(ch.getTransform().combine(transform));
+			rotValue = rotY;
 		}
+		final RotEnum finalRotationValue = rotValue;
 
 		// Paste the schematic
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
@@ -113,7 +119,80 @@ public class SchematicHandeler {
 		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
 			@Override
 			public void run() {
-				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc);
+				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotationValue);
+				for (Location location : containersAndSignsLocations) {
+					if (location.getBlock().getState() instanceof Container) {
+						replaceContainerContent(lootTables, location);
+					} else if (location.getBlock().getState() instanceof Sign) {
+						replaceSignWithMob(location);
+					}
+				}
+			}
+		});
+
+	}
+	
+	public BlockVector3 min;
+	public BlockVector3 origin;
+	
+	
+	public void schemHandle2(Location loc, String filename, boolean useAir, RandomCollection<String> lootTables, ConfigurationSection cs)
+			throws IOException, WorldEditException {
+		File schematicFile = new File(plugin.getDataFolder() + "/schematics/" + filename);
+		// Check to see if the schematic is a thing.
+		if (!schematicFile.exists()) {
+			Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+					"&3[&2CustomStructures&3] &cA fatal error has occured! Please check the console for errors."));
+			plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
+			plugin.getLogger().warning(
+					"If this is your first time using this plugin you need to put a schematic in the schematic folder.");
+			plugin.getLogger().warning("Then add it into the config.");
+			plugin.getLogger().warning(
+					"If you need help look at the wiki: https://github.com/ryandw11/CustomStructures/wiki or contact Ryandw11 on spigot!");
+			plugin.getLogger().warning("The plugin will now disable to prevent damage to the server.");
+			Bukkit.getPluginManager().disablePlugin(plugin);
+			return;
+		}
+		ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
+		Clipboard clipboard;
+
+		try (ClipboardReader reader = format.getReader(new FileInputStream(schematicFile))) {
+			clipboard = reader.read();
+		}
+		
+		ClipboardHolder ch = new ClipboardHolder(clipboard);
+		AffineTransform transform = new AffineTransform();
+		
+		this.min = ch.getClipboard().getOrigin();
+		this.origin = ch.getClipboard().getMinimumPoint();
+		
+		RotEnum rotValue = RotEnum.D0;
+		
+		// If random rotation is enabled.
+			Random r = new Random();
+			int val = r.nextInt(4);
+			RotEnum rotY = RotEnum.D0;
+			if(val == 0) rotY = RotEnum.D0;
+			if(val == 1) rotY = RotEnum.D90;
+			if(val == 2) rotY = RotEnum.D180;
+			if(val == 3) rotY = RotEnum.D270;
+			transform = transform.rotateY(rotY.deg);
+			ch.setTransform(ch.getTransform().combine(transform));
+			rotValue = rotY;
+		final RotEnum finalRotationValue = rotValue;
+
+		// Paste the schematic
+		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
+				.getEditSession(BukkitAdapter.adapt(loc.getWorld()), -1)) {
+			Operation operation = ch.createPaste(editSession)
+					.to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).ignoreAirBlocks(!useAir).build();
+			Operations.complete(operation);
+		}
+
+		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
+			@Override
+			public void run() {
+				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotationValue);
 				for (Location location : containersAndSignsLocations) {
 					if (location.getBlock().getState() instanceof Container) {
 						replaceContainerContent(lootTables, location);
@@ -126,16 +205,38 @@ public class SchematicHandeler {
 
 	}
 
-	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation) {
+	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, RotEnum rotation) {
 
-		BlockVector3 minimum = clipboard.getRegion().getMinimumPoint();
+		BlockVector3 minimum = clipboard.getRegion().getMinimumPoint(); //Rotate this point
+		Bukkit.broadcastMessage(minimum + "");
+//		minimum = this.rotatePointAround(new Location(pasteLocation.getWorld(), minimum.getX(), minimum.getY(), minimum.getZ()), 
+//				clipboard.getOrigin().getBlockX(), clipboard.getOrigin().getBlockZ(), rotation.rad);
+		Bukkit.broadcastMessage("" + this.rotatePointAround(new Location(pasteLocation.getWorld(), minimum.getX(), minimum.getY(), minimum.getZ()), clipboard.getOrigin().getBlockX(), clipboard.getOrigin().getBlockZ(), rotation.rad));
 		BlockVector3 origin = clipboard.getOrigin();
+		
+		minimum = this.min;
+		origin = this.origin;
+		
 		BlockVector3 offset = origin.subtract(minimum);
+		Bukkit.broadcastMessage("Origin " + origin + " Offset: "+ offset);
 
 		int width = clipboard.getRegion().getWidth();
-		int height = clipboard.getRegion().getHeight();
+		int height = clipboard.getRegion().getHeight(); //swap height and length when needed.
 		int length = clipboard.getRegion().getLength();
+		
+		if(rotation == RotEnum.D90 || rotation == RotEnum.D270) {
+			int tempWidth = width;
+			int tempLength = length;
+//			width = tempLength;
+//			length = tempWidth;
+//			minimum = clipboard.getRegion().getMaximumPoint();
+//			offset = origin.subtract(minimum);
+		}
+		
 		List<Location> locations = new ArrayList<>();
+		Bukkit.broadcastMessage(rotation.toString());
+		Bukkit.broadcastMessage(this.rotatePointAround2(new Location(Bukkit.getWorld("world"), -157, 0, -147), -160, -148, RotEnum.D180.rad) + "");
+		Bukkit.broadcastMessage(pasteLocation + "");
 
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
@@ -145,6 +246,11 @@ public class SchematicHandeler {
 							pasteLocation.getY(), pasteLocation.getZ());
 					location.subtract(offset.getX(), offset.getY(), offset.getZ());
 					location.add(x, y, z);
+//					Bukkit.broadcastMessage(location + "");
+					location = this.rotatePointAround2(location, pasteLocation.getBlockX(), pasteLocation.getBlockZ(), rotation.rad);
+//					Bukkit.broadcastMessage(location + " Material: " + location.getBlock().getType());
+//					Bukkit.broadcastMessage(location + "");
+					location.getBlock().setType(Material.ACACIA_LOG);
 
 					BlockState blockState = location.getBlock().getState();
 
@@ -307,5 +413,21 @@ public class SchematicHandeler {
 		} else if ((smelting == null) || smelting.equals(item)) {
 			containerInventory.setSmelting(item);
 		}
+	}
+	
+	private BlockVector3 rotatePointAround(Location point, int centerX, int centerZ, double angle) {
+
+	    double rotatedX = Math.cos(angle) * (point.getX() - centerX) - Math.sin(angle) * (point.getZ() - centerZ) + centerX;
+	    double rotatedZ = Math.sin(angle) * (point.getX() - centerX) + Math.cos(angle) * (point.getZ() - centerZ) + centerZ;
+
+	    return BlockVector3.at(rotatedX, point.getY(), rotatedZ);
+	}
+	
+	private Location rotatePointAround2(Location point, int centerX, int centerZ, double angle) {
+
+	    double rotatedX = Math.cos(angle) * (point.getX() - centerX) - Math.sin(angle) * (point.getZ() - centerZ) + centerX;
+	    double rotatedZ = Math.sin(angle) * (point.getX() - centerX) + Math.cos(angle) * (point.getZ() - centerZ) + centerZ;
+
+	    return new Location(point.getWorld(), rotatedX, point.getY(), rotatedZ);
 	}
 }

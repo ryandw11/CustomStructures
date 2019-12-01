@@ -69,7 +69,7 @@ public class SCommand implements CommandExecutor {
 					}
 				}
 
-				sh.schemHandle(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"),
+				sh.schemHandle2(p.getLocation(), plugin.getConfig().getString("Schematics." + args[1] + ".Schematic"),
 						plugin.getConfig().getBoolean("Schematics." + s + ".PlaceAir"), lootTables, 
 						plugin.getConfig().getConfigurationSection("Schematics." + args[1]));
 				
