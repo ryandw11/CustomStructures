@@ -1,6 +1,7 @@
 package com.ryandw11.structure.utils;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -63,10 +64,10 @@ public class HandleY {
 					int num1 = Integer.parseInt(out[0]);
 					int num2 = Integer.parseInt(out[1]);
 					
-					Random r = new Random();
-					
-					int a = r.nextInt(num2 + 1) + num1;
-					return a;
+					//Random r = new Random();
+					//return r.nextInt(num2 + 1) + num1;
+
+					return ThreadLocalRandom.current().nextInt(num1, num2 + 1);
 					
 				}catch(NumberFormatException | ArrayIndexOutOfBoundsException ex) {
 					return height;
