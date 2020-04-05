@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="CustomStructures">
+    <output-path>$USER_HOME$/Downloads</output-path>
+    <root id="archive" name="CustomStructures.jar">
+      <element id="module-output" name="CustomStructures" />
+      <element id="file-copy" path="$PROJECT_DIR$/config.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/plugin.yml" />
+      <element id="directory" name="schematics">
+        <element id="dir-copy" path="$PROJECT_DIR$/schematics" />
+      </element>
+      <element id="directory" name="lootTables">
+        <element id="dir-copy" path="$PROJECT_DIR$/lootTables" />
+      </element>
+    </root>
+  </artifact>
+</component>
