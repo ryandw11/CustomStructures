@@ -56,7 +56,7 @@ public class SchematicHandeler {
 	 * Handels the schematic.
 	 * 
 	 * @param loc        - The location
-	 * @param filename   - The file name. Ex: demo.schematic
+	 * @param filename   - The file name. Ex: demo.schem
 	 * @param useAir     - if air is to be used in the schematic
 	 * @param lootTables - The Loot Tables specified for this structure, if any.
 	 * @param cs         - The configurationsection for this structure.

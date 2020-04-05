@@ -37,6 +37,7 @@ public class CustomStructures extends JavaPlugin {
 
 	public File exfile = new File(getDataFolder() + "/schematics/Put_Schematics_In_Here.yml");
 	public File lootTablesfile = new File(getDataFolder() + "/lootTables/lootTable.yml");
+	public File demoSchematicFile = new File(getDataFolder() + "/schematics/demo.schem");
 	public FileConfiguration ex = YamlConfiguration.loadConfiguration(exfile);
 	public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
 
@@ -128,6 +129,18 @@ public class CustomStructures extends JavaPlugin {
 			}
 		} else {
 			saveResource("lootTables/lootTable.yml", false);
+		}
+
+		if (demoSchematicFile.exists()) {
+			try {
+				lootTablesFC.load(demoSchematicFile);
+
+			} catch (IOException | InvalidConfigurationException e) {
+
+				e.printStackTrace();
+			}
+		} else {
+			saveResource("schematics/demo.schem", false);
 		}
 	}
 
