@@ -4,6 +4,9 @@ configversion: 3
 #========================================
 #Wiki: https://github.com/ryandw11/CustomStructures/wiki
 
+#Log extra information in console when generating structures
+debug: false
+
 #Allow Plugins to delete structures at will.
 allowDeletion: true
 
