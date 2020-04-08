@@ -108,6 +108,10 @@ public class SchematicHandeler {
 			Operation operation = ch.createPaste(editSession)
 					.to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).ignoreAirBlocks(!useAir).build();
 			Operations.complete(operation);
+
+			if(plugin.getConfig().getBoolean("debug")){
+				plugin.getLogger().info("Created an instance of " + filename + " at " + loc.toString());
+			}
 		}
 
 		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
