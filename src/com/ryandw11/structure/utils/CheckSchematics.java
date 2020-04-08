@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.ryandw11.structure.CustomStructures;
@@ -36,10 +35,10 @@ public class CheckSchematics extends BukkitRunnable{
 		File schematic = new File(plugin.getDataFolder() + "/schematics/" + plugin.getConfig().getString(ex + s + ".Schematic"));
 		if(!schematic.exists()){
 			plugin.getLogger().severe("Error: The schematic file for " + s + " does not exist!");
+			plugin.getLogger().severe("Please put that file in the Schematics folder!");
 			plugin.getLogger().severe("For assistance please contact Ryandw11 on spigot.");
-			plugin.getLogger().severe("The plugin will now disable it self.");
 			this.cancel();
-			Bukkit.getPluginManager().disablePlugin(plugin);
+			CustomStructures.enabled = false;
 		}
 		num += 1;
 	}

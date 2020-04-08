@@ -76,7 +76,7 @@ public class StructurePicker extends BukkitRunnable {
 			// Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
 			if(cs.getBoolean("Ocean_Properties.useOceanFloor")) {
 				if(bl.getType() == Material.WATER) {
-					for(int i = bl.getY(); i <= 4; i--) {
+					for(int i = bl.getY(); i >= 4; i--) {
 						if(ch.getBlock(0, i, 0).getType() != Material.WATER) {
 							bl = ch.getBlock(0, i, 0);
 							break;
@@ -95,7 +95,7 @@ public class StructurePicker extends BukkitRunnable {
 				}
 			}
 			
-			//If it can spawn in a boime.
+			//If it can spawn in a biome.
 			if (!plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").equalsIgnoreCase("all")) {// Checking
 																													// biome
 				if (!getBiomes(plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").toLowerCase())

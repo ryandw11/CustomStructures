@@ -26,6 +26,12 @@ public class SCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
+		if(!CustomStructures.enabled) {
+			sender.sendMessage(ChatColor.RED + "One of your schematic or lootable files could not be found!");
+			sender.sendMessage(ChatColor.RED + "Please check to see if all of your files are in the proper folders!");
+			sender.sendMessage(ChatColor.RED + "To find out more, see the error in the console.");
+			return true;
+		}
 		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if (sender.hasPermission("customstructures.reload")) {
 				plugin.reloadConfig();
