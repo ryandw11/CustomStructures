@@ -68,10 +68,34 @@ public class StructurePicker extends BukkitRunnable {
 				if (!worlds.contains(bl.getWorld().getName()))
 					return;
 			}
+			
+			
 
 			ConfigurationSection cs = plugin.getConfig().getConfigurationSection("Schematics." + currentSchem);
 			
-			//If it can spawn in a boime.
+			// Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
+			if(cs.getBoolean("Ocean_Properties.useOceanFloor")) {
+				if(bl.getType() == Material.WATER) {
+					for(int i = bl.getY(); i >= 4; i--) {
+						if(ch.getBlock(0, i, 0).getType() != Material.WATER) {
+							bl = ch.getBlock(0, i, 0);
+							break;
+						}
+					}
+				}
+			}
+			
+			// Allows the structures to no longer spawn on plant life.
+			if(cs.getBoolean("ignorePlants") && CSConstants.leafBlocks.contains(bl.getType())) {
+				for(int i = bl.getY(); i <= 4; i--) {
+					if(!CSConstants.leafBlocks.contains(ch.getBlock(0, i, 0).getType())) {
+						bl = ch.getBlock(0, i, 0);
+						break;
+					}
+				}
+			}
+			
+			//If it can spawn in a biome.
 			if (!plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").equalsIgnoreCase("all")) {// Checking
 																													// biome
 				if (!getBiomes(plugin.getConfig().getString("Schematics." + currentSchem + ".Biome").toLowerCase())
@@ -99,7 +123,7 @@ public class StructurePicker extends BukkitRunnable {
 				}
 			}
 			// If it can spawn in a liquid
-			if (!cs.getBoolean("spawnInLiquid")) {
+			if (!cs.getBoolean("Ocean_Properties.spawnInLiquid")) {
 				if (bl.getType() == Material.WATER || bl.getType() == Material.LAVA)
 					return;
 			}

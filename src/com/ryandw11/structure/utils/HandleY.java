@@ -2,7 +2,6 @@ package com.ryandw11.structure.utils;
 
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class HandleY {

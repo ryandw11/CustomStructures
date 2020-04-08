@@ -40,10 +40,10 @@ public class CheckLootTables extends BukkitRunnable {
 				File schematic = new File(plugin.getDataFolder() + "/lootTables/" + name + ".yml");
 				if (!schematic.exists()) {
 					plugin.getLogger().severe("Error: The Loot Table file for " + name + " does not exist!");
+					plugin.getLogger().severe("Please put that file in the LootableFolder folder!");
 					plugin.getLogger().severe("For assistance please contact Ryandw11 on spigot.");
-					plugin.getLogger().severe("The plugin will now disable it self.");
 					this.cancel();
-					Bukkit.getPluginManager().disablePlugin(plugin);
+					CustomStructures.enabled = false;
 				}
 			}
 		}

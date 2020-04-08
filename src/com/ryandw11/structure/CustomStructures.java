@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.listener.ChunkLoad;
+import com.ryandw11.structure.listener.PlayerJoin;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.mythicalmobs.MMDisabled;
 import com.ryandw11.structure.mythicalmobs.MMEnabled;
@@ -42,9 +43,12 @@ public class CustomStructures extends JavaPlugin {
 
 	public ArrayList<String> structures;
 	public MythicalMobHook mmh;
+	
+	public static boolean enabled;
 
 	@Override
 	public void onEnable() {
+		enabled = true;
 
 		plugin = this;
 		loadManager();
@@ -78,6 +82,7 @@ public class CustomStructures extends JavaPlugin {
 
 	public void loadManager() {
 		Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
+		Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
 		getCommand("customstructure").setExecutor(new SCommand());
 	}
 

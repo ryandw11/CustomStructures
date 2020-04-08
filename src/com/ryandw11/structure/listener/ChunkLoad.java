@@ -25,6 +25,8 @@ public class ChunkLoad implements Listener{
 	
 	@EventHandler
 	public void loadevent(ChunkLoadEvent e){
+		if(!CustomStructures.enabled) return;
+		
 		if(e.isNewChunk()){ //Checks to see if the chunk is new or an old one.
 			World w = e.getChunk().getWorld(); //Grabs the world
 			Block b = e.getChunk().getBlock(0, 5, 0); //Grabs the block 0, 5, 0 in that chunk.
