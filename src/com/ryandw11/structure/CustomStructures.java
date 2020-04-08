@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ryandw11.structure.api.CustomStructuresAPI;
+import com.ryandw11.structure.bstats.Metrics;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.listener.PlayerJoin;
@@ -73,6 +74,14 @@ public class CustomStructures extends JavaPlugin {
 		cl.runTaskTimer(plugin, 5L, 1L);
 
 		lootTablesHandler = new LootTablesHandler();
+		
+		if(getConfig().getBoolean("bstats")){
+			@SuppressWarnings("unused")
+			Metrics metrics = new Metrics(this, 7056);
+			getLogger().info("Bstat metrics for this plugin is enabled. Disable it in the config if you do not want it on.");
+		}else{
+			getLogger().info("Bstat metrics is disabled for this plugin.");
+		}
 	}
 
 	@Override
