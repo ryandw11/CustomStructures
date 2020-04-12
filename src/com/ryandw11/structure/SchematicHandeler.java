@@ -7,27 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.ryandw11.structure.utils.GetBlocksInArea;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.BrewerInventory;
-import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.utils.RandomCollection;
+import com.ryandw11.structure.utils.RotatePointAround;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -53,7 +47,7 @@ public class SchematicHandeler {
 	}
 
 	/**
-	 * Handels the schematic.
+	 * Handles the schematic.
 	 * 
 	 * @param loc        - The location
 	 * @param filename   - The file name. Ex: demo.schematic
@@ -68,7 +62,7 @@ public class SchematicHandeler {
 		// Check to see if the schematic is a thing.
 		if (!schematicFile.exists()) {
 			Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-					"&3[&2CustomStructures&3] &cA fatal error has occured! Please check the console for errors."));
+					"&3[&2CustomStructures&3] &cA fatal error has occurred! Please check the console for errors."));
 			plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
 			plugin.getLogger().warning(
 					"If this is your first time using this plugin you need to put a schematic in the schematic folder.");
@@ -88,16 +82,11 @@ public class SchematicHandeler {
 		
 		ClipboardHolder ch = new ClipboardHolder(clipboard);
 		AffineTransform transform = new AffineTransform();
-		
-		// If random rotation is enabled.
+		int rotY = 0;
+
+		// If random rotation is enabled, rotate the clipboard
 		if(cs.contains("randomRotation") && cs.getBoolean("randomRotation")) {
-			Random r = new Random();
-			int val = r.nextInt(4);
-			int rotY = 0;
-			if(val == 0) rotY = 0;
-			if(val == 1) rotY = 90;
-			if(val == 2) rotY = 180;
-			if(val == 3) rotY = 270;
+			rotY = new Random().nextInt(4)*90;
 			transform = transform.rotateY(rotY);
 			ch.setTransform(ch.getTransform().combine(transform));
 		}
@@ -110,94 +99,93 @@ public class SchematicHandeler {
 			Operations.complete(operation);
 
 			if(plugin.getConfig().getBoolean("debug")){
-				plugin.getLogger().info("Created an instance of " + filename + " at " + loc.toString());
+				plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s, %s, %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
 			}
 		}
 
-		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
-			@Override
-			public void run() {
-				List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc);
-				for (Location location : containersAndSignsLocations) {
-					if (location.getBlock().getState() instanceof Container) {
-						replaceContainerContent(lootTables, location);
-					} else if (location.getBlock().getState() instanceof Sign) {
-						replaceSignWithMob(location);
-					}
+		//Schedule the signs & containers replacement task
+		int finalRotY = rotY;
+		this.plugin.getServer().getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+			List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY);
+			for (Location location : containersAndSignsLocations) {
+				if (location.getBlock().getState() instanceof Container) {
+					replaceContainerContent(lootTables, location);
+				} else if (location.getBlock().getState() instanceof Sign) {
+					replaceSignWithMob(location);
 				}
 			}
 		});
 
 	}
 
-	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation) {
+	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation) {
 
-		BlockVector3 minimum = clipboard.getRegion().getMinimumPoint();
-		BlockVector3 origin = clipboard.getOrigin();
-		BlockVector3 offset = origin.subtract(minimum);
+		BlockVector3 originalOrigin = clipboard.getOrigin();
+		BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
+		BlockVector3 originalMaximumPoint = clipboard.getRegion().getMaximumPoint();
 
-		int width = clipboard.getRegion().getWidth();
-		int height = clipboard.getRegion().getHeight();
-		int length = clipboard.getRegion().getLength();
+		BlockVector3 originalMinimumOffset = originalOrigin.subtract(originalMinimumPoint);
+		BlockVector3 originalMaximumOffset = originalOrigin.subtract(originalMaximumPoint);
+
+		BlockVector3 newOrigin = BukkitAdapter.asBlockVector(pasteLocation);
+		BlockVector3 newMinimumPoint = newOrigin.subtract(originalMinimumOffset);
+		BlockVector3 newMaximumPoint = newOrigin.subtract(originalMaximumOffset);
+
+		BlockVector3 newRotatedMinimumPoint = RotatePointAround.calculate(newMinimumPoint, newOrigin, rotation);
+		BlockVector3 newRotatedMaximumPoint = RotatePointAround.calculate(newMaximumPoint, newOrigin, rotation);
+
+		Location minLoc = new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
+		Location maxLoc = new Location(pasteLocation.getWorld(), newRotatedMaximumPoint.getX(), newRotatedMaximumPoint.getY(), newRotatedMaximumPoint.getZ());
+
 		List<Location> locations = new ArrayList<>();
+		for (Location location : GetBlocksInArea.getLocationListBetween(minLoc, maxLoc)) {
 
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				for (int z = 0; z < length; ++z) {
+			BlockState blockState = location.getBlock().getState();
 
-					Location location = new Location(pasteLocation.getWorld(), pasteLocation.getX(),
-							pasteLocation.getY(), pasteLocation.getZ());
-					location.subtract(offset.getX(), offset.getY(), offset.getZ());
-					location.add(x, y, z);
+			if (blockState instanceof Container) {
+				if (blockState instanceof Chest) {
+					InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
+					if (holder instanceof DoubleChest) {
+						DoubleChest doubleChest = ((DoubleChest) holder);
+						Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
+						Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
 
-					BlockState blockState = location.getBlock().getState();
+						Location roundedLocation = new Location(location.getWorld(),
+								Math.floor(location.getX()), Math.floor(location.getY()),
+								Math.floor(location.getZ()));
 
-					if (blockState instanceof Container) {
-						if (blockState instanceof Chest) {
-							InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
-							if (holder instanceof DoubleChest) {
-								DoubleChest doubleChest = ((DoubleChest) holder);
-								Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
-								Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
-
-								Location roundedLocation = new Location(location.getWorld(),
-										Math.floor(location.getX()), Math.floor(location.getY()),
-										Math.floor(location.getZ()));
-
-								// Checks if this (or the other) side is alredy in the list
-								if (leftSideLocation.distance(roundedLocation) < 1) {
-									if (!this.isAlreadyIn(locations, rightSideLocation)) {
-										locations.add(roundedLocation);
-									}
-								} else if (rightSideLocation.distance(roundedLocation) < 1) {
-									if (!this.isAlreadyIn(locations, leftSideLocation)) {
-										locations.add(roundedLocation);
-									}
-								}
-
-							} else if (holder instanceof Chest) {
-								locations.add(location);
+						// Check to see if this (or the other) side of the chest is already in the list
+						if (leftSideLocation.distance(roundedLocation) < 1) {
+							if (this.isNotAlreadyIn(locations, rightSideLocation)) {
+								locations.add(roundedLocation);
 							}
-						} else {
-							locations.add(location);
+
+						} else if (rightSideLocation.distance(roundedLocation) < 1) {
+							if (this.isNotAlreadyIn(locations, leftSideLocation)) {
+								locations.add(roundedLocation);
+							}
 						}
-					} else if (blockState instanceof Sign) {
+
+					} else if (holder instanceof Chest) {
 						locations.add(location);
 					}
+				} else {
+					locations.add(location);
 				}
+			} else if (blockState instanceof Sign) {
+				locations.add(location);
 			}
 		}
-
 		return locations;
 	}
 
-	private boolean isAlreadyIn(List<Location> locations, Location location) {
+	private boolean isNotAlreadyIn(List<Location> locations, Location location) {
 		for (Location auxLocation : locations) {
 			if (location.distance(auxLocation) < 1) {
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	private void replaceContainerContent(RandomCollection<String> lootTables, Location location) {
