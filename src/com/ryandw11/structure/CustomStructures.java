@@ -55,9 +55,9 @@ public class CustomStructures extends JavaPlugin {
 		loadManager();
 		registerConfig();
 		
-		if(getServer().getPluginManager().getPlugin("MythicalMobs") != null) {
+		if(getServer().getPluginManager().getPlugin("MythicMobs") != null) {
 			mmh = new MMEnabled();
-			getLogger().info("MythicalMobs detected! Activating plugin hook!");
+			getLogger().info("MythicMobs detected! Activating plugin hook!");
 		}else {
 			mmh = new MMDisabled();
 		}
