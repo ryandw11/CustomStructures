@@ -12,16 +12,23 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.*;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Container;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.utils.RandomCollection;
-import com.ryandw11.structure.utils.RotatePointAround;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -118,6 +125,13 @@ public class SchematicHandeler {
 
 	}
 
+	/**
+	 * Get the location of containers and signs.
+	 * @param clipboard The worldedit clipboard
+	 * @param pasteLocation The location of the paste
+	 * @param rotation The rotate value (in degrees).
+	 * @return The list of locations
+	 */
 	private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation) {
 
 		BlockVector3 originalOrigin = clipboard.getOrigin();
@@ -131,12 +145,12 @@ public class SchematicHandeler {
 		BlockVector3 newMinimumPoint = newOrigin.subtract(originalMinimumOffset);
 		BlockVector3 newMaximumPoint = newOrigin.subtract(originalMaximumOffset);
 
-		BlockVector3 newRotatedMinimumPoint = RotatePointAround.calculate(newMinimumPoint, newOrigin, rotation);
-		BlockVector3 newRotatedMaximumPoint = RotatePointAround.calculate(newMaximumPoint, newOrigin, rotation);
+		BlockVector3 newRotatedMinimumPoint = rotateAround(newMinimumPoint, newOrigin, rotation);
+		BlockVector3 newRotatedMaximumPoint = rotateAround(newMaximumPoint, newOrigin, rotation);
 
 		Location minLoc = new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
 		Location maxLoc = new Location(pasteLocation.getWorld(), newRotatedMaximumPoint.getX(), newRotatedMaximumPoint.getY(), newRotatedMaximumPoint.getZ());
-
+        
 		List<Location> locations = new ArrayList<>();
 		for (Location location : GetBlocksInArea.getLocationListBetween(minLoc, maxLoc)) {
 
@@ -175,10 +189,16 @@ public class SchematicHandeler {
 			} else if (blockState instanceof Sign) {
 				locations.add(location);
 			}
-		}
+		}//
 		return locations;
 	}
 
+	/**
+	 * Checks to see if a location is not already inside of a list of locations.
+	 * @param locations
+	 * @param location
+	 * @return
+	 */
 	private boolean isNotAlreadyIn(List<Location> locations, Location location) {
 		for (Location auxLocation : locations) {
 			if (location.distance(auxLocation) < 1) {
@@ -188,6 +208,11 @@ public class SchematicHandeler {
 		return true;
 	}
 
+	/**
+	 * Replace the contents of a container with the loottable.
+	 * @param lootTables 
+	 * @param location
+	 */
 	private void replaceContainerContent(RandomCollection<String> lootTables, Location location) {
 		String lootTableName = lootTables.next();
 		Random random = new Random();
@@ -208,6 +233,10 @@ public class SchematicHandeler {
 
 	}
 
+	/**
+	 * Spawn a mob with the signs.
+	 * @param location
+	 */
 	private void replaceSignWithMob(Location location) {
 		Sign sign = (Sign) location.getBlock().getState();
 		String firstLine = sign.getLine(0).trim();
@@ -300,4 +329,19 @@ public class SchematicHandeler {
 			containerInventory.setSmelting(item);
 		}
 	}
+	
+	/**
+	 * Rotate the point around the center.
+	 * @param point The point
+	 * @param center The center
+	 * @param angle The angle to rotate by.
+	 * @return The final position.
+	 */
+	private BlockVector3 rotateAround(BlockVector3 point, BlockVector3 center, double angle){
+        angle = Math.toRadians(angle * -1);
+        double rotatedX = Math.cos(angle) * (point.getX() - center.getX()) - Math.sin(angle) * (point.getZ() - center.getZ()) + center.getX();
+        double rotatedZ = Math.sin(angle) * (point.getX() - center.getX()) + Math.cos(angle) * (point.getZ() - center.getZ()) + center.getZ();
+
+        return BlockVector3.at(rotatedX, point.getY(), rotatedZ);
+    }
 }
