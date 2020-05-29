@@ -28,20 +28,20 @@ public class CustomStructuresAPI {
 	 * @param schematic The name of the schematic file.
 	 * @return The structure that was created.
 	 */
-	public Structure createStructure(String name, String schematic) {
-		ConfigurationSection cs = this.getMainInstance().getConfig().getConfigurationSection("Schematics." + name);
-		cs.set("Schematic", schematic);
-		cs.set("Biome", "all");
-		cs.set("Chance.Number", 1);
-		cs.set("Chance.OutOf", 1000);
-		cs.set("AllWorlds", true);
-		cs.set("SpawnY", -1);
-		cs.set("PlaceAir", true);
-		cs.set("spawnInLiquid", false);
-		cs.set("AllowedWorlds", Arrays.asList("world"));
-		
-		return new Structure(name);
-	}
+//	public Structure createStructure(String name, String schematic) {
+//		ConfigurationSection cs = this.getMainInstance().getConfig().getConfigurationSection("Schematics." + name);
+//		cs.set("Schematic", schematic);
+//		cs.set("Biome", "all");
+//		cs.set("Chance.Number", 1);
+//		cs.set("Chance.OutOf", 1000);
+//		cs.set("AllWorlds", true);
+//		cs.set("SpawnY", -1);
+//		cs.set("PlaceAir", true);
+//		cs.set("spawnInLiquid", false);
+//		cs.set("AllowedWorlds", Arrays.asList("world"));
+//
+//		return new Structure(name);
+//	}
 	
 	/**
 	 * Delete a Structure.

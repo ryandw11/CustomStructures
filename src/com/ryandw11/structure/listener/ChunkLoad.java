@@ -32,6 +32,7 @@ public class ChunkLoad implements Listener{
 			Block b = e.getChunk().getBlock(0, 5, 0); //Grabs the block 0, 5, 0 in that chunk.
 
 			boolean foundLand = false; //True when the block selected is an ideal place for a structure.
+			if(w.getHighestBlockYAt(b.getX(), b.getZ()) == -1) return;
 			Block bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
 			int trys = 0;
 			while (!foundLand){//While land was not found it keeps checking.
@@ -49,7 +50,7 @@ public class ChunkLoad implements Listener{
 			 * Schematic handeler
 			 * Runs a BukkitRunnable to prevent the server from crashing.
 			 */
-			StructurePicker s = new StructurePicker(bb, e.getChunk());
+			StructurePicker s = new StructurePicker(bb, e.getChunk(), CustomStructures.getInstance());
 			s.runTaskTimer(CustomStructures.plugin, 1, 10);
 		}
 	}
