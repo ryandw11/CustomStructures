@@ -31,6 +31,8 @@ public class ChunkLoad implements Listener{
 			World w = e.getChunk().getWorld(); //Grabs the world
 			Block b = e.getChunk().getBlock(0, 5, 0); //Grabs the block 0, 5, 0 in that chunk.
 
+			if(w.getHighestBlockYAt(b.getX(), b.getZ()) == -1) return;
+
 			boolean foundLand = false; //True when the block selected is an ideal place for a structure.
 			Block bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
 			int trys = 0;
