@@ -40,6 +40,12 @@ public class StructureLocation {
         this.biomes = biomes;
     }
 
+    public StructureLocation(){
+        this.worlds = new ArrayList<>();
+        this.spawnY = new StructureYSpawning("top");
+        this.biomes = new ArrayList<>();
+    }
+
     public List<String> getWorlds(){
         return worlds;
     }
@@ -50,6 +56,18 @@ public class StructureLocation {
 
     public List<String> getBiomes(){
         return biomes;
+    }
+
+    public void setWorlds(List<String> worlds){
+        this.worlds = worlds;
+    }
+
+    public void setSpawnSettings(StructureYSpawning spawnY){
+        this.spawnY = spawnY;
+    }
+
+    public void setBiomes(List<String> biomes){
+        this.biomes = biomes;
     }
 
     public boolean hasBiome(Biome b){

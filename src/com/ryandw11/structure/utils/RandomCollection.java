@@ -1,5 +1,6 @@
 package com.ryandw11.structure.utils;
 
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
@@ -32,5 +33,9 @@ public class RandomCollection<E> {
 
 	public boolean isEmpty(){
 		return map.isEmpty();
+	}
+
+	public Map<Double, E> getMap(){
+		return map;
 	}
 }

@@ -11,6 +11,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class StructureBuilder {
 
@@ -26,6 +29,12 @@ public class StructureBuilder {
     protected RandomCollection<LootTable> lootTables;
 
     private boolean invalid;
+
+    public StructureBuilder(String name, String schematic){
+        this.name = name;
+        this.schematic = schematic;
+        lootTables = new RandomCollection<>();
+    }
 
 
     public StructureBuilder(String name, File file){
@@ -81,6 +90,36 @@ public class StructureBuilder {
         return true;
     }
 
+    public void setChance(int number, int outOf){
+        this.chanceNumber = number;
+        this.chanceOutOf = outOf;
+    }
+
+    public void setStructureLimitations(StructureLimitations limitations){
+        this.structureLimitations = limitations;
+    }
+
+    public void setStructureProperties(StructureProperties properties){
+        this.structureProperties = properties;
+    }
+
+    public void setStructureLocation(StructureLocation location){
+        this.structureLocation = location;
+    }
+
+    public void setLootTables(ConfigurationSection lootableConfig){
+        lootTables = new RandomCollection<>();
+        assert lootableConfig != null;
+        for (String lootTable : lootableConfig.getKeys(false)) {
+            int weight = lootableConfig.getInt(lootTable);
+            lootTables.add(weight, CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTable));
+        }
+    }
+
+    public void setLootTables(RandomCollection<LootTable> lootTables){
+        this.lootTables = lootTables;
+    }
+
     public void setInvalid(){
         invalid = true;
     }
@@ -93,6 +132,31 @@ public class StructureBuilder {
         if(invalid)
             return null;
         return new Structure(this);
+    }
+
+    public void save(File file) throws IOException {
+        file.createNewFile();
+        config = YamlConfiguration.loadConfiguration(file);
+        config.set("schematic", schematic);
+        config.set("Chance.Number", chanceNumber);
+        config.set("Chance.OutOf", chanceOutOf);
+
+        config.set("StructureLocation.Worlds", structureLocation.getWorlds());
+        config.set("StructureLocation.SpawnY", structureLocation.getSpawnSettings().getValue());
+        config.set("StructureLocation.Biome", structureLocation.getBiomes());
+
+        config.set("StructureProperties.PlaceAir", structureProperties.canPlaceAir());
+        config.set("StructureProperties.randomRotation", structureProperties.isRandomRotation());
+        config.set("StructureProperties.ignorePlants", structureProperties.isIgnoringPlants());
+        config.set("StructureProperties.spawnInWater", structureProperties.canSpawnInWater());
+        config.set("StructureProperties.spawnInLavaLakes", structureProperties.canSpawnInLavaLakes());
+
+        config.set("StructureLimitations.whitelistSpawnBlocks", structureLimitations.getWhitelistBlocks());
+
+        for(Map.Entry<Double, LootTable> entry : lootTables.getMap().entrySet()){
+            config.set("LootTables." + entry.getValue().getName(), entry.getKey());
+        }
+        config.save(file);
     }
 
 }

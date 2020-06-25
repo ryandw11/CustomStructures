@@ -21,6 +21,18 @@ public class StructureYSpawning {
             top = true;
     }
 
+    public StructureYSpawning(String value){
+        this.value = value;
+        if(value.equalsIgnoreCase("ocean_floor"))
+            oceanFloor = true;
+        else if(value.equalsIgnoreCase("top"))
+            top = true;
+    }
+
+    public String getValue(){
+        return value;
+    }
+
     public boolean isTop() {
         return top;
     }

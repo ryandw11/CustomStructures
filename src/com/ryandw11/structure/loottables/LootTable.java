@@ -26,11 +26,13 @@ public class LootTable {
 	private LootTableType type;
 	private int rolls;
 	private RandomCollection<LootItem> randomCollection;
+	private String name;
 
 	public FileConfiguration lootTablesFC;
 
 	public LootTable(String name) {
 		this.LoadFile(name);
+		this.name = name;
 
 		this.type = LootTableType.valueOf(this.lootTablesFC.getString("Type"));
 		this.rolls = this.lootTablesFC.getInt("Rolls");
@@ -93,6 +95,14 @@ public class LootTable {
 	 */
 	public void setType(LootTableType type) {
 		this.type = type;
+	}
+
+	/**
+	 * Get the name of the loottable.
+	 * @return The name of the loottable.
+	 */
+	public String getName(){
+		return name;
 	}
 
 	/**

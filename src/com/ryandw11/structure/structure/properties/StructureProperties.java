@@ -40,22 +40,39 @@ public class StructureProperties {
     public boolean canPlaceAir(){
         return placeAir;
     }
+    public void setPlaceAir(boolean placeAir){
+        this.placeAir = placeAir;
+    }
 
     public boolean isRandomRotation(){
         return randomRotation;
+    }
+
+    public void setRandomRotation(boolean randomRotation){
+        this.randomRotation = randomRotation;
     }
 
     public boolean isIgnoringPlants(){
         return ignorePlants;
     }
 
+    public void setIgnorePlants(boolean ignorePlants){
+        this.ignorePlants = ignorePlants;
+    }
+
     public boolean canSpawnInWater(){
         return spawnInWater;
+    }
+
+    public void setSpawnInWater(boolean spawnInWater){
+        this.spawnInWater = spawnInWater;
     }
 
     public boolean canSpawnInLavaLakes(){
         return spawnInLavaLakes;
     }
 
-    // TODO add in getters and setters.
+    public void setSpawnInLavaLakes(boolean spawnInLavaLakes){
+        this.spawnInLavaLakes = spawnInLavaLakes;
+    }
 }

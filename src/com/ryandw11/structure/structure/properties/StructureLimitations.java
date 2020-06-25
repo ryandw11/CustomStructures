@@ -17,6 +17,14 @@ public class StructureLimitations {
             whitelistSpawnBlocks = configuration.getStringList("StructureLimitations.whitelistSpawnBlocks");
     }
 
+    public StructureLimitations(List<String> whitelistSpawnBlocks){
+        this.whitelistSpawnBlocks = whitelistSpawnBlocks;
+    }
+
+    public List<String> getWhitelistBlocks(){
+        return whitelistSpawnBlocks;
+    }
+
     public boolean hasBlock(Block b){
         if(whitelistSpawnBlocks.isEmpty()) return true;
         for(String block : whitelistSpawnBlocks){
