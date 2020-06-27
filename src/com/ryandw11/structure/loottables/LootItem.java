@@ -51,7 +51,7 @@ public class LootItem {
 	 */
 	public LootItem(ItemStack itemStack, int amount, int weight){
 		this.weight = weight;
-		this.item = itemStack;
+		this.item = itemStack.clone();
 		this.item.setAmount(amount);
 	}
 
