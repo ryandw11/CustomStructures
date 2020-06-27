@@ -18,6 +18,14 @@ public class LootItem {
 	private int weight;
 	private ItemStack item;
 
+	/**
+	 * This is for normal loottable items.
+	 * @param customName The custom name.
+	 * @param type The type.
+	 * @param amount The amount.
+	 * @param weight The weight.
+	 * @param enchants The enchants.
+	 */
 	public LootItem(String customName, String type, int amount, int weight, Map<String, Integer> enchants) {
 		this.weight = weight;
 		this.item = new ItemStack(Material.valueOf(type));
@@ -33,6 +41,18 @@ public class LootItem {
 			int level = enchants.get(enchantName);
 			this.item.addUnsafeEnchantment(EnchantmentWrapper.getByName(enchantName), level);
 		}
+	}
+
+	/**
+	 * This is for use with custom items.
+	 * @param itemStack The item stack to use.
+	 * @param amount The amount to use.
+	 * @param weight The weight to use.
+	 */
+	public LootItem(ItemStack itemStack, int amount, int weight){
+		this.weight = weight;
+		this.item = itemStack;
+		this.item.setAmount(amount);
 	}
 
 	public int getWeight() {

@@ -30,3 +30,8 @@ Items:
     Type: 'ROTTEN_FLESH'
     Amount: 5
     Weight: 20
+  item3:
+    Type: 'CUSTOM'
+    Key: 'test'
+    Amount: 5
+    Weight: 20

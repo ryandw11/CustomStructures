@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.StructureHandler;
@@ -54,6 +55,8 @@ public class CustomStructures extends JavaPlugin {
 
 	private StructureHandler structureHandler;
 	private LootTablesHandler lootTablesHandler;
+	private CustomItemManager customItemManager;
+	private boolean debugMode;
 	
 	public static boolean enabled;
 
@@ -71,7 +74,7 @@ public class CustomStructures extends JavaPlugin {
 		}else
 			mmh = new MMDisabled();
 		loadFile();
-
+		debugMode = getConfig().getBoolean("debug");
 		if(getConfig().getInt("configversion") < 5){
 			lootTablesHandler = new LootTablesHandler();
 			updateConfig();
@@ -87,6 +90,8 @@ public class CustomStructures extends JavaPlugin {
 			getLogger().info("Loading the plugin for the first time.");
 			getLogger().info("A demo structure was added! Please make sure to test out this plugin in a test world!");
 		}
+
+		this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
 		lootTablesHandler = new LootTablesHandler();
 		this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
@@ -191,12 +196,11 @@ public class CustomStructures extends JavaPlugin {
 	/**
 	 * Updates the config to the latest version.
 	 * (Config version 4 to version 5)
+	 * This will be removed in future versions.
 	 */
 	private void updateConfig(){
 		getLogger().info("An older version of the plugin has been detected!");
 		getLogger().info("Automatically converting old format into the new one.");
-
-		boolean debugMode = getConfig().getBoolean("debug");
 
 		List<String> structures = new ArrayList<>();
 		File config = new File(getDataFolder(), "config.yml");
@@ -289,4 +293,15 @@ public class CustomStructures extends JavaPlugin {
 		getLogger().info("Successfully converted " + structures.size() + " structures to the new format!");
 	}
 
+	public boolean isDebug(){
+		return debugMode;
+	}
+
+	/**
+	 * Get the custom item manager.
+	 * @return The custom item manager.
+	 */
+	public CustomItemManager getCustomItemManager() {
+		return customItemManager;
+	}
 }
