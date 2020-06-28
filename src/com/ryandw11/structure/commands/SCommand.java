@@ -2,6 +2,12 @@ package com.ryandw11.structure.commands;;
 
 import com.ryandw11.structure.SchematicHandeler;
 import com.ryandw11.structure.structure.Structure;
+import com.ryandw11.structure.structure.StructureBuilder;
+import com.ryandw11.structure.structure.properties.BlockLevelLimit;
+import com.ryandw11.structure.structure.properties.StructureLimitations;
+import com.ryandw11.structure.structure.properties.StructureLocation;
+import com.ryandw11.structure.structure.properties.StructureProperties;
+import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -11,6 +17,13 @@ import org.bukkit.entity.Player;
 
 import com.ryandw11.structure.CustomStructures;
 import org.bukkit.inventory.ItemStack;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class SCommand implements CommandExecutor {
 	private CustomStructures plugin;
@@ -103,7 +116,7 @@ public class SCommand implements CommandExecutor {
 				p.sendMessage(ChatColor.RED + "You must be holding an item to use this command!");
 				return true;
 			}
-			for(String items : plugin.getCustomItemManager().getConfig().getConfigurationSection("").getKeys(false)){
+			for(String items : Objects.requireNonNull(plugin.getCustomItemManager().getConfig().getConfigurationSection("")).getKeys(false)){
 				if(item.isSimilar(plugin.getCustomItemManager().getItem(items))){
 					p.sendMessage(ChatColor.GREEN + "The item you are holding has a key of: " + ChatColor.GOLD + items);
 					return true;
@@ -160,6 +173,61 @@ public class SCommand implements CommandExecutor {
 				p.sendMessage(ChatColor.RED + "The world edit region seems to be incomplete! Try making a selection first!");
 			}
 		}
+		else if( args.length != 0 && args.length < 3 && args[0].equalsIgnoreCase("create")){
+			if(!sender.hasPermission("customstructures.create")){
+				sender.sendMessage(ChatColor.RED + "You do not have permission for this command!");
+				return true;
+			}
+			sender.sendMessage(ChatColor.RED + "You must specify the name and schematic of a structure!");
+		}
+		else if(args.length == 3 && args[0].equalsIgnoreCase("create")){
+			if(!sender.hasPermission("customstructures.create")){
+				sender.sendMessage(ChatColor.RED + "You do not have permission for this command!");
+				return true;
+			}
+			String name = args[1];
+			String schematic = args[2].replace(".schem", "");
+			if(schematic.equals("")){
+				sender.sendMessage(ChatColor.RED + "Invalid schematic!");
+				return true;
+			}
+			if(plugin.getStructureHandler().getStructure(name) != null){
+				sender.sendMessage(ChatColor.RED + "A structure with that name already exists!");
+				return true;
+			}
+			File f = new File(plugin.getDataFolder() + File.separator + "structures" + File.separator + name + ".yml");
+			try{
+				if(!f.exists())
+					f.createNewFile();
+			}catch(IOException ex){
+				sender.sendMessage(ChatColor.RED + "An error occurred while creating a structure file!");
+				plugin.getLogger().severe("Could not create structure file!");
+				if(plugin.isDebug())
+					ex.printStackTrace();
+				return true;
+			}
+			StructureBuilder builder = new StructureBuilder(name, schematic + ".schem");
+			builder.setChance(1, 1000);
+			builder.setLootTables(new RandomCollection<>());
+			builder.setStructureProperties(new StructureProperties());
+			builder.setStructureLocation(new StructureLocation());
+			builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
+			try {
+				builder.save(f);
+			} catch (IOException e) {
+				sender.sendMessage(ChatColor.RED + "An error occurred while saving the structure file!");
+				plugin.getLogger().severe("Could not save structure file!");
+				if(plugin.isDebug())
+					e.printStackTrace();
+				return true;
+			}
+			List<String> structs = plugin.getConfig().getStringList("Structures");
+			structs.add(name);
+			plugin.getConfig().set("Structures", structs);
+			plugin.saveConfig();
+			sender.sendMessage(ChatColor.GREEN + "Successfully created the structure " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
+			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aRun the &6/cstructure reload &ato load in the new structure and changes."));
+		}
 		else {
 			if (sender.hasPermission("customstructures.info")) {
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
@@ -183,6 +251,8 @@ public class SCommand implements CommandExecutor {
 						"&3/cstructure getItem {key} - &2Get the item of the key specified."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3/cstructure createschem {name} - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+						"&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
 			} else {
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}

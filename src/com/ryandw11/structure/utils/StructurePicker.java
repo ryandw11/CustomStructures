@@ -72,9 +72,9 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // Allows the structures to no longer spawn on plant life.
-            if (structure.getStructureProperties().isIgnoringPlants() && CSConstants.leafBlocks.contains(bl.getType())) {
+            if (structure.getStructureProperties().isIgnoringPlants() && CSConstants.plantBlocks.contains(bl.getType())) {
                 for (int i = bl.getY(); i <= 4; i--) {
-                    if (!CSConstants.leafBlocks.contains(ch.getBlock(0, i, 0).getType())) {
+                    if (!CSConstants.plantBlocks.contains(ch.getBlock(0, i, 0).getType())) {
                         bl = ch.getBlock(0, i, 0);
                         break;
                     }

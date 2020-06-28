@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.StructureHandler;
@@ -139,6 +140,7 @@ public class CustomStructures extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
 		getCommand("customstructure").setExecutor(new SCommand(this));
+		getCommand("customstructure").setTabCompleter(new SCommandTab());
 	}
 
 	private void registerConfig() {

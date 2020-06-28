@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import com.ryandw11.structure.structure.Structure;
@@ -20,7 +21,9 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import org.bukkit.*;
 import org.bukkit.block.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.FurnaceInventory;
@@ -289,9 +292,14 @@ public class SchematicHandeler {
 
         if (firstLine.equalsIgnoreCase("[mob]")) {
             try {
-                location.getWorld().spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
+                Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
+                if(ent instanceof LivingEntity){
+                    LivingEntity livingEntity = (LivingEntity) ent;
+                    livingEntity.setRemoveWhenFarAway(false);
+                }
                 location.getBlock().setType(Material.AIR);
             } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid mob type on structure sign.");
             }
         }
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
