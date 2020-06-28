@@ -2,21 +2,12 @@ package com.ryandw11.structure;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
-import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.StructureHandler;
-import com.ryandw11.structure.structure.properties.StructureLimitations;
-import com.ryandw11.structure.structure.properties.StructureLocation;
-import com.ryandw11.structure.structure.properties.StructureProperties;
-import com.ryandw11.structure.structure.properties.StructureYSpawning;
+import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -228,9 +219,9 @@ public class CustomStructures extends JavaPlugin {
 			builder.setChance(section.getInt("Chance.Number"), section.getInt("Chance.OutOf"));
 
 			if(section.contains("whitelistSpawnBlocks"))
-				builder.setStructureLimitations(new StructureLimitations(section.getStringList("whitelistSpawnBlocks")));
+				builder.setStructureLimitations(new StructureLimitations(section.getStringList("whitelistSpawnBlocks"), new BlockLevelLimit(), new HashMap<>()));
 			else
-				builder.setStructureLimitations(new StructureLimitations(new ArrayList<>()));
+				builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
 
 			StructureLocation structLocation = new StructureLocation();
 			if(section.contains("AllowedWorlds") && section.contains("AllWorlds")){

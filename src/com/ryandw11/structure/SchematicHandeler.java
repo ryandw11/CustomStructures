@@ -2,6 +2,7 @@ package com.ryandw11.structure;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +10,18 @@ import java.util.Random;
 
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.utils.GetBlocksInArea;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Sign;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.io.*;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.internal.annotation.Selection;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Region;
+import org.bukkit.*;
+import org.bukkit.block.*;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
@@ -33,9 +36,6 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -109,7 +109,7 @@ public class SchematicHandeler {
 
         //Schedule the signs & containers replacement task
         int finalRotY = rotY;
-        List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY);
+        List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
         for (Location location : containersAndSignsLocations) {
             if (location.getBlock().getState() instanceof Container) {
                 replaceContainerContent(lootTables, location);
@@ -117,7 +117,44 @@ public class SchematicHandeler {
                 replaceSignWithMob(location);
             }
         }
+    }
 
+    /**
+     * Create a schematic and save it to the schematics folder in the CustomStructures plugin.
+     * @param name The name of the schematic.
+     * @param player The player.
+     * @param w The world
+     * @return If the operation was successful.
+     */
+    public boolean createSchematic(String name, Player player, World w)  {
+        try{
+            WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+            assert worldEditPlugin != null;
+            Region selection = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(w));
+            CuboidRegion region = new CuboidRegion(selection.getWorld(), selection.getMinimumPoint(), selection.getMaximumPoint());
+            BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+
+            try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(selection.getWorld(), -1)) {
+                ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
+                        editSession, region, clipboard, region.getMinimumPoint()
+                );
+                // configure here
+                Operations.complete(forwardExtentCopy);
+            } catch (WorldEditException e) {
+                e.printStackTrace();
+            }
+
+            File file = new File(plugin.getDataFolder() + File.separator + "schematics" + File.separator + name + ".schem");
+
+            try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
+                writer.write(clipboard);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        } catch (IncompleteRegionException ex){
+            return false;
+        }
     }
 
     /**
@@ -128,7 +165,7 @@ public class SchematicHandeler {
      * @param rotation      The rotate value (in degrees).
      * @return The list of locations
      */
-    private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation) {
+    private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation, Structure structure) {
 
         BlockVector3 originalOrigin = clipboard.getOrigin();
         BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
@@ -150,6 +187,7 @@ public class SchematicHandeler {
         List<Location> locations = new ArrayList<>();
         for (Location location : GetBlocksInArea.getLocationListBetween(minLoc, maxLoc)) {
 
+            Block block = location.getBlock();
             BlockState blockState = location.getBlock().getState();
 
             if (blockState instanceof Container) {
@@ -184,6 +222,14 @@ public class SchematicHandeler {
                 }
             } else if (blockState instanceof Sign) {
                 locations.add(location);
+            }else{
+                // For the block replacement system.
+                if(!structure.getStructureLimitations().getBlockReplacement().isEmpty()){
+                    if(structure.getStructureLimitations().getBlockReplacement().containsKey(block.getType())){
+                        block.setType(structure.getStructureLimitations().getBlockReplacement().get(block.getType()));
+                        block.getState().update();
+                    }
+                }
             }
         }//
         return locations;
@@ -192,9 +238,9 @@ public class SchematicHandeler {
     /**
      * Checks to see if a location is not already inside of a list of locations.
      *
-     * @param locations
-     * @param location
-     * @return
+     * @param locations The list of locations.
+     * @param location The location to check
+     * @return If it is not already in.
      */
     private boolean isNotAlreadyIn(List<Location> locations, Location location) {
         for (Location auxLocation : locations) {
@@ -208,8 +254,8 @@ public class SchematicHandeler {
     /**
      * Replace the contents of a container with the loottable.
      *
-     * @param lootTables
-     * @param location
+     * @param lootTables The loot table
+     * @param location The location of the container.
      */
     private void replaceContainerContent(RandomCollection<LootTable> lootTables, Location location) {
         if(lootTables.isEmpty()) return;
@@ -234,7 +280,7 @@ public class SchematicHandeler {
     /**
      * Spawn a mob with the signs.
      *
-     * @param location
+     * @param location The location of the sign.
      */
     private void replaceSignWithMob(Location location) {
         Sign sign = (Sign) location.getBlock().getState();

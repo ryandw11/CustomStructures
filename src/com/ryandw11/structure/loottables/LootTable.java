@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,7 +49,6 @@ public class LootTable {
 			if(lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("CUSTOM")){
 				int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
 				int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-				Bukkit.getLogger().info(itemID);
 				ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
 				if(item == null){
 					CustomStructures.getInstance().getLogger().warning("Cannot find a custom item with the id of " + itemID +

@@ -1,5 +1,6 @@
 package com.ryandw11.structure.commands;;
 
+import com.ryandw11.structure.SchematicHandeler;
 import com.ryandw11.structure.structure.Structure;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -133,6 +134,31 @@ public class SCommand implements CommandExecutor {
 			}
 			p.getInventory().addItem(item);
 			p.sendMessage(ChatColor.GREEN + "Successfully retrieved that item!");
+		}else if(args.length == 1 && args[0].equalsIgnoreCase("createschem")){
+			if(!sender.hasPermission("customstructures.createschematic")){
+				sender.sendMessage(ChatColor.RED + "You do not have permission for this command!");
+				return true;
+			}
+			sender.sendMessage(ChatColor.RED + "You must specify the name in order to create a schematic.");
+		}
+		else if(args.length == 2 && args[0].equalsIgnoreCase("createschem")){
+			if(!sender.hasPermission("customstructures.createschematic")){
+				sender.sendMessage(ChatColor.RED + "You do not have permission for this command!");
+				return true;
+			}
+			if(!(sender instanceof Player)){
+				sender.sendMessage(ChatColor.RED + "This command is for players only!");
+				return true;
+			}
+			Player p = (Player) sender;
+			String name = args[1];
+			SchematicHandeler handeler = new SchematicHandeler();
+			if(handeler.createSchematic(name, p, p.getWorld())){
+				p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
+				p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" + ChatColor.GREEN + " in a structure.");
+			}else{
+				p.sendMessage(ChatColor.RED + "The world edit region seems to be incomplete! Try making a selection first!");
+			}
 		}
 		else {
 			if (sender.hasPermission("customstructures.info")) {
@@ -144,7 +170,7 @@ public class SCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3Github wiki:&2 https://github.com/ryandw11/CustomStructures/wiki"));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
-				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cs reload - &2Reload the plugin."));
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cstructure reload - &2Reload the plugin."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3/cstructure test (name) - &2Paste the defined structure."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
@@ -155,6 +181,8 @@ public class SCommand implements CommandExecutor {
 						"&3/cstructure checkKey - &2Get the key of an item you are holding in your hand."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3/cstructure getItem {key} - &2Get the item of the key specified."));
+				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+						"&3/cstructure createschem {name} - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
 			} else {
 				sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
 			}
