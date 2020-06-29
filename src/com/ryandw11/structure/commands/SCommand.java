@@ -164,7 +164,7 @@ public class SCommand implements CommandExecutor {
 				return true;
 			}
 			Player p = (Player) sender;
-			String name = args[1];
+			String name = args[1].replace(".schem", "");
 			SchematicHandeler handeler = new SchematicHandeler();
 			if(handeler.createSchematic(name, p, p.getWorld())){
 				p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
