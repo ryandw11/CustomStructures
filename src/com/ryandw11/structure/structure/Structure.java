@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * The main class when it comes to structures.
+ */
 public class Structure {
     private final String name;
     private final String schematic;
