@@ -13,7 +13,7 @@ import org.bukkit.Material;
  *
  */
 public class CSConstants {
-	public static List<Material> leafBlocks = new ArrayList<>(Arrays.asList(Material.GRASS, Material.ACACIA_LEAVES, Material.BIRCH_LEAVES,
+	public static List<Material> plantBlocks = new ArrayList<>(Arrays.asList(Material.GRASS, Material.ACACIA_LEAVES, Material.BIRCH_LEAVES,
 			Material.DARK_OAK_LEAVES, Material.JUNGLE_LEAVES, Material.OAK_LEAVES, Material.SPRUCE_LEAVES, Material.VINE, Material.ACACIA_LOG,
-			Material.BIRCH_LOG, Material.DARK_OAK_LOG, Material.JUNGLE_LOG, Material.OAK_LOG, Material.SPRUCE_LOG, Material.TALL_GRASS));
+			Material.BIRCH_LOG, Material.DARK_OAK_LOG, Material.JUNGLE_LOG, Material.OAK_LOG, Material.SPRUCE_LOG));
 }

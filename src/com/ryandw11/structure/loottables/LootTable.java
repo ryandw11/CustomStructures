@@ -26,11 +26,13 @@ public class LootTable {
 	private LootTableType type;
 	private int rolls;
 	private RandomCollection<LootItem> randomCollection;
+	private String name;
 
 	public FileConfiguration lootTablesFC;
 
 	public LootTable(String name) {
 		this.LoadFile(name);
+		this.name = name;
 
 		this.type = LootTableType.valueOf(this.lootTablesFC.getString("Type"));
 		this.rolls = this.lootTablesFC.getInt("Rolls");
@@ -41,27 +43,38 @@ public class LootTable {
 
 	private void loadItems() {
 
-		this.randomCollection = new RandomCollection<LootItem>();
+		this.randomCollection = new RandomCollection<>();
 		
 		for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
-
-			String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-			String type = this.lootTablesFC.getString("Items." + itemID + ".Type");
-			int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
-			int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-			Map<String, Integer> enchants = new HashMap<>();
-
-			ConfigurationSection enchantMents = this.lootTablesFC
-					.getConfigurationSection("Items." + itemID + ".Enchantments");
-
-			if (enchantMents != null) {
-				for (String enchantName : enchantMents.getKeys(false)) {
-					int level = this.lootTablesFC.getInt("Items." + itemID + ".Enchantments." + enchantName);
-					enchants.put(enchantName, level);
+			if(lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("CUSTOM")){
+				int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+				int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
+				ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
+				if(item == null){
+					CustomStructures.getInstance().getLogger().warning("Cannot find a custom item with the id of " + itemID +
+							" in the " + name + " loot table!");
+					continue;
 				}
-			}
+				this.randomCollection.add(weight, new LootItem(item, amount, weight));
+			}else{
+				String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
+				String type = this.lootTablesFC.getString("Items." + itemID + ".Type");
+				int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+				int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
+				Map<String, Integer> enchants = new HashMap<>();
 
-			this.randomCollection.add(weight, new LootItem(customName, type, amount, weight, enchants));
+				ConfigurationSection enchantMents = this.lootTablesFC
+						.getConfigurationSection("Items." + itemID + ".Enchantments");
+
+				if (enchantMents != null) {
+					for (String enchantName : enchantMents.getKeys(false)) {
+						int level = this.lootTablesFC.getInt("Items." + itemID + ".Enchantments." + enchantName);
+						enchants.put(enchantName, level);
+					}
+				}
+
+				this.randomCollection.add(weight, new LootItem(customName, type, amount, weight, enchants));
+			}
 		}
 
 	}
@@ -93,6 +106,14 @@ public class LootTable {
 	 */
 	public void setType(LootTableType type) {
 		this.type = type;
+	}
+
+	/**
+	 * Get the name of the loottable.
+	 * @return The name of the loottable.
+	 */
+	public String getName(){
+		return name;
 	}
 
 	/**

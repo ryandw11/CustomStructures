@@ -1,11 +1,12 @@
 package com.ryandw11.structure.utils;
 
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
 
 public class RandomCollection<E> {
-	private final NavigableMap<Double, E> map = new TreeMap<Double, E>();
+	private final NavigableMap<Double, E> map = new TreeMap<>();
 	private final Random random;
 	private double total = 0;
 
@@ -28,5 +29,13 @@ public class RandomCollection<E> {
 	public E next() {
 		double value = random.nextDouble() * total;
 		return map.higherEntry(value).getValue();
+	}
+
+	public boolean isEmpty(){
+		return map.isEmpty();
+	}
+
+	public Map<Double, E> getMap(){
+		return map;
 	}
 }

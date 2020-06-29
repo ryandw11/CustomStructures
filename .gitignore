@@ -10,9 +10,14 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-#Eclipse personal files
+# Eclipse personal files
 .classpath
 .project
+
+# Intellij files
+*.iml
+/.idea/
+/out/
 
 # Package Files #
 *.jar
