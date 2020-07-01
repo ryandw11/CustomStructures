@@ -100,7 +100,8 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // If the structure can follows block level limit.
-            if(structure.getStructureLimitations().getBlockLevelLimit().isEnabled()){
+            // This only triggers if it spawns on the top.
+            if(structure.getStructureLimitations().getBlockLevelLimit().isEnabled() && structure.getStructureLocation().getSpawnSettings().isTop()){
                 BlockLevelLimit limit = structure.getStructureLimitations().getBlockLevelLimit();
                 for(int x = limit.getX1(); x <= limit.getX2(); x++){
                     for(int z = limit.getZ1(); z <= limit.getZ2(); z++){

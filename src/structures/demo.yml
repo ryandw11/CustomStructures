@@ -28,11 +28,11 @@ StructureLimitations:
   BlockLevelLimit:
     mode: flat
     cornerOne:
-      x: 5
-      z: 5
-    cornerTwo:
       x: -5
       z: -5
+    cornerTwo:
+      x: 5
+      z: 5
 
   # This could cause issues with lag depending on how many blocks you have
   # to replace.
