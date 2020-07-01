@@ -37,10 +37,7 @@ import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 public class CustomStructures extends JavaPlugin {
 
 	public static CustomStructures plugin;
-
-	public File exfile = new File(getDataFolder() + "/schematics/Put_Schematics_In_Here.yml");
 	public File lootTablesfile = new File(getDataFolder() + "/lootTables/lootTable.yml");
-	public FileConfiguration ex = YamlConfiguration.loadConfiguration(exfile);
 	public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
 
 	public MythicalMobHook mmh;
@@ -100,7 +97,7 @@ public class CustomStructures extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		saveFile();
+
 	}
 
 	/**
@@ -147,31 +144,7 @@ public class CustomStructures extends JavaPlugin {
 		saveDefaultConfig();
 	}
 
-	public void saveFile() {
-		try {
-			ex.save(exfile);
-		} catch (IOException e) {
-			e.printStackTrace();
-
-		}
-	}
-
 	public void loadFile() {
-		if (exfile.exists()) {
-			try {
-				ex.load(exfile);
-
-			} catch (IOException | InvalidConfigurationException e) {
-
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				ex.save(exfile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 
 		if (lootTablesfile.exists()) {
 			try {

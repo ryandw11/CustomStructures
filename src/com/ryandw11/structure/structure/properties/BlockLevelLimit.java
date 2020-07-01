@@ -33,7 +33,7 @@ public class BlockLevelLimit {
     }
 
     public boolean isEnabled(){
-        return mode.equalsIgnoreCase("none");
+        return !mode.equalsIgnoreCase("none");
     }
 
     public String getMode(){

@@ -85,13 +85,11 @@ public class Structure {
         }
 
         // Check to see if the structure has the chance to spawn
-        if( ThreadLocalRandom.current().nextInt(getChanceNumber(), getChanceOutOf()) != getChanceNumber())
+        if( ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
             return false;
 
         // Check to see if the structure can spawn in the current biome.
         return getStructureLocation().hasBiome(block.getBiome());
-
-        // TODO add in support for block conditions
     }
 
     /**
