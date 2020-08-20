@@ -8,7 +8,7 @@ StructureLocation:
   Worlds:
     - world
   SpawnY: top
-  Biome: 'all'
+  Biome: []
 
 StructureProperties:
   PlaceAir: true

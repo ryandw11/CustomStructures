@@ -28,8 +28,8 @@ public class StructureLocation {
         else
             this.worlds = new ArrayList<>();
         this.spawnY = new StructureYSpawning(configuration);
-        if(cs.contains("Biomes"))
-            this.biomes = configuration.getStringList("Biomes");
+        if(cs.contains("Biome"))
+            this.biomes = cs.getStringList("Biome");
         else
             this.biomes = new ArrayList<>();
     }
