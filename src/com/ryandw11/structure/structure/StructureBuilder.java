@@ -5,6 +5,7 @@ import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.structure.properties.StructureLimitations;
 import com.ryandw11.structure.structure.properties.StructureLocation;
 import com.ryandw11.structure.structure.properties.StructureProperties;
+import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,6 +27,7 @@ public class StructureBuilder {
     protected StructureLocation structureLocation;
     protected StructureProperties structureProperties;
     protected StructureLimitations structureLimitations;
+    protected SubSchematics subSchematics;
     protected RandomCollection<LootTable> lootTables;
 
     private boolean invalid;
@@ -56,6 +58,7 @@ public class StructureBuilder {
         structureLocation = new StructureLocation(this, config);
         structureProperties = new StructureProperties(config);
         structureLimitations = new StructureLimitations(config);
+        subSchematics = new SubSchematics(config, CustomStructures.getInstance());
         lootTables = new RandomCollection<>();
         if(config.contains("LootTables")){
             ConfigurationSection lootableConfig = config.getConfigurationSection("LootTables");

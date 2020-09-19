@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.ryandw11.structure.structure.Structure;
+import com.ryandw11.structure.structure.properties.SubSchematics;
+import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
 import com.ryandw11.structure.utils.GetBlocksInArea;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -61,13 +64,21 @@ public class SchematicHandeler {
      * @param useAir     - if air is to be used in the schematic
      * @param lootTables - The Loot Tables specified for this structure, if any.
      * @param structure  - The structure that is getting spawned.
+     * @param iteration  - The number of iterations in a structure.
      * @throws WorldEditException If world edit has a problem pasting the schematic.
      */
-    public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure)
+    public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure, int iteration)
             throws IOException, WorldEditException {
+
+        if(iteration > 2){
+            plugin.getLogger().severe("Critical Error: StackOverflow detected. Automatically terminating the spawning of the structure.");
+            plugin.getLogger().severe("The structure '" + structure.getName() + "' has spawned too many sub structure via recursion.");
+            return;
+        }
+
         File schematicFile = new File(plugin.getDataFolder() + "/schematics/" + filename);
         // Check to see if the schematic is a thing.
-        if (!schematicFile.exists()) {
+        if (!schematicFile.exists() && iteration == 0) {
             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
                     "&3[&2CustomStructures&3] &cA fatal error has occurred! Please check the console for errors."));
             plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
@@ -80,6 +91,11 @@ public class SchematicHandeler {
             Bukkit.getPluginManager().disablePlugin(plugin);
             return;
         }
+        else if(!schematicFile.exists()){
+            plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
+            throw new RuntimeException("Cannot find schematic file!");
+        }
+
         ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
         Clipboard clipboard;
 
@@ -112,14 +128,37 @@ public class SchematicHandeler {
 
         //Schedule the signs & containers replacement task
         int finalRotY = rotY;
-        List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
-        for (Location location : containersAndSignsLocations) {
-            if (location.getBlock().getState() instanceof Container) {
-                replaceContainerContent(lootTables, location);
-            } else if (location.getBlock().getState() instanceof Sign) {
-                replaceSignWithMob(location);
+        // Run a task later. This is done so async plugins have time to paste as needed.
+        Bukkit.getScheduler().runTaskLater(plugin, ()->{
+            List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
+            for (Location location : containersAndSignsLocations) {
+                if (location.getBlock().getState() instanceof Container) {
+                    replaceContainerContent(lootTables, location);
+                }
+                if (location.getBlock().getState() instanceof Sign) {
+                    replaceSignWithMob(location);
+                }
+                // This is separate so that if the block doesn't exist anymore than it will not error out.
+                if(location.getBlock().getState() instanceof Sign){
+                    replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
+                }
             }
-        }
+        }, Math.round(structure.getStructureLimitations().getReplacementBlocksDelay() * 1000));
+    }
+
+    /**
+     * Handles the schematic.
+     * <p>This method is to be called on the main Server thread.</p>
+     * @param loc        - The location
+     * @param filename   - The file name. Ex: demo.schematic
+     * @param useAir     - if air is to be used in the schematic
+     * @param lootTables - The Loot Tables specified for this structure, if any.
+     * @param structure  - The structure that is getting spawned.
+     * @throws WorldEditException If world edit has a problem pasting the schematic.
+     */
+    public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure)
+            throws IOException, WorldEditException {
+        schemHandle(loc, filename, useAir, lootTables, structure, 0);
     }
 
     /**
@@ -269,11 +308,12 @@ public class SchematicHandeler {
             BlockState blockState = location.getBlock().getState();
             Container container = (Container) blockState;
             Inventory containerInventory = container.getInventory();
-            if (containerInventory instanceof FurnaceInventory) {
+            Block block = location.getBlock();
+            if (block.getType() == lootTable.getType().getMaterial() && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
-            } else if (containerInventory instanceof BrewerInventory) {
+            } else if (block.getType() == lootTable.getType().getMaterial() && containerInventory instanceof BrewerInventory) {
                 this.replaceBrewerContent(lootTable, random, (BrewerInventory) containerInventory);
-            } else {
+            } else if(block.getType() == lootTable.getType().getMaterial()) {
                 this.replaceChestContent(lootTable, random, containerInventory);
             }
         }
@@ -307,6 +347,50 @@ public class SchematicHandeler {
             location.getBlock().setType(Material.AIR);
         }
 
+    }
+
+    private void replaceSignWithSchematic(Location location, SubSchematics subSchematics, Structure parentStructure, int iteration) {
+        Sign sign = (Sign) location.getBlock().getState();
+        String firstLine = sign.getLine(0).trim();
+        String secondLine = sign.getLine(1).trim();
+
+        if (firstLine.equalsIgnoreCase("[schematic]") || firstLine.equalsIgnoreCase("[schem]")) {
+            int number = -1;
+            if(secondLine.startsWith("[")){
+                String v = secondLine.replace("[", "").replace("]", "");
+                String[] out = v.split("-");
+                try {
+                    int num1 = Integer.parseInt(out[0]);
+                    int num2 = Integer.parseInt(out[1]);
+                    number = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
+
+                }catch(NumberFormatException | ArrayIndexOutOfBoundsException ex) {
+                    plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse random numbers.");
+                    return;
+                }
+            }else{
+                try{
+                    number = Integer.parseInt(secondLine);
+                }catch(NumberFormatException ex){
+                    plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse number.");
+                    return;
+                }
+            }
+            if(number < -1 || number >= subSchematics.getSchematics().size()){
+                plugin.getLogger().warning("Invalid schematic sign on structure. Schematic number is not within the valid bounds.");
+                return;
+            }
+
+            SubSchematic subSchem = subSchematics.getSchematics().get(number);
+            try{
+                schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure.getLootTables(), parentStructure, iteration + 1);
+            }catch (Exception ex){
+                plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
+                if(plugin.isDebug()){
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     private void replaceChestContent(LootTable lootTable, Random random, Inventory containerInventory) {

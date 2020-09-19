@@ -11,6 +11,7 @@ public class StructureLimitations {
     private List<String> whitelistSpawnBlocks;
     private BlockLevelLimit blockLevelLimit;
     private Map<Material, Material> blockReplacement;
+    private double replacementBlocksDelay;
 
     public StructureLimitations(FileConfiguration configuration){
         if(!configuration.contains("StructureLimitations.whitelistSpawnBlocks"))
@@ -19,6 +20,9 @@ public class StructureLimitations {
             whitelistSpawnBlocks = configuration.getStringList("StructureLimitations.whitelistSpawnBlocks");
 
         this.blockLevelLimit = new BlockLevelLimit(configuration);
+
+        replacementBlocksDelay = !configuration.contains("StructureLimitations.replacement_blocks_delay") ? 0
+                : configuration.getDouble("StructureLimitations.replacement_blocks_delay");
 
         blockReplacement = new HashMap<>();
         if(configuration.contains("StructureLimitations.replacement_blocks")){
@@ -55,5 +59,13 @@ public class StructureLimitations {
 
     public Map<Material, Material> getBlockReplacement(){
         return blockReplacement;
+    }
+
+    public double getReplacementBlocksDelay(){
+        return replacementBlocksDelay;
+    }
+
+    public void setReplacementBlocksDelay(double value){
+        replacementBlocksDelay = value;
     }
 }

@@ -17,6 +17,13 @@ StructureProperties:
   spawnInWater: true
   spawnInLavaLakes: true
 
+SubSchematics:
+  Enabled: false
+  Schematics:
+    demo2:
+      file: 'demo2.schem'
+      PlaceAir: false
+
 StructureLimitations:
   whitelistSpawnBlocks:
     - GRASS_BLOCK
@@ -38,6 +45,9 @@ StructureLimitations:
   # to replace.
   replacement_blocks:
     'STONE': 'AIR'
+
+  # Delay the replacement of blocks by x seconds.
+  replacement_blocks_delay: 0
 
 #List of lootTables for this Schematic, name and weight
 #Weight determines how often it will be chosen out of all the entries in the list.

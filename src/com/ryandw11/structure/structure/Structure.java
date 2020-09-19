@@ -5,6 +5,7 @@ import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.structure.properties.StructureLimitations;
 import com.ryandw11.structure.structure.properties.StructureLocation;
 import com.ryandw11.structure.structure.properties.StructureProperties;
+import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
@@ -27,6 +28,7 @@ public class Structure {
     private final StructureLocation structureLocation;
     private final StructureProperties structureProperties;
     private final StructureLimitations structureLimitations;
+    private final SubSchematics subSchematics;
     private final RandomCollection<LootTable> lootTables;
 
     protected Structure( StructureBuilder builder){
@@ -37,6 +39,7 @@ public class Structure {
         this.structureLocation = builder.structureLocation;
         this.structureProperties = builder.structureProperties;
         this.structureLimitations = builder.structureLimitations;
+        this.subSchematics = builder.subSchematics;
         this.lootTables = builder.lootTables;
     }
 
@@ -66,6 +69,10 @@ public class Structure {
 
     public StructureLimitations getStructureLimitations() {
         return structureLimitations;
+    }
+
+    public SubSchematics getSubSchematics(){
+        return subSchematics;
     }
 
     public RandomCollection<LootTable> getLootTables(){
