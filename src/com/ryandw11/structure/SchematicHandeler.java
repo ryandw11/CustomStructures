@@ -143,7 +143,8 @@ public class SchematicHandeler {
                     replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
                 }
             }
-        }, Math.round(structure.getStructureLimitations().getReplacementBlocksDelay() * 1000));
+
+        }, Math.round(structure.getStructureLimitations().getReplacementBlocksDelay() * 20));
     }
 
     /**
