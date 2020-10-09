@@ -2,10 +2,7 @@ package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.loottables.LootTable;
-import com.ryandw11.structure.structure.properties.StructureLimitations;
-import com.ryandw11.structure.structure.properties.StructureLocation;
-import com.ryandw11.structure.structure.properties.StructureProperties;
-import com.ryandw11.structure.structure.properties.SubSchematics;
+import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,7 +10,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class StructureBuilder {
@@ -27,6 +23,7 @@ public class StructureBuilder {
     protected StructureLocation structureLocation;
     protected StructureProperties structureProperties;
     protected StructureLimitations structureLimitations;
+    protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
     protected RandomCollection<LootTable> lootTables;
 
@@ -58,6 +55,7 @@ public class StructureBuilder {
         structureLocation = new StructureLocation(this, config);
         structureProperties = new StructureProperties(config);
         structureLimitations = new StructureLimitations(config);
+        maskProperty = new MaskProperty(config);
         subSchematics = new SubSchematics(config, CustomStructures.getInstance());
         lootTables = new RandomCollection<>();
         if(config.contains("LootTables")){
@@ -110,6 +108,10 @@ public class StructureBuilder {
         this.structureLocation = location;
     }
 
+    public void setMaskProperty(MaskProperty mask){
+        this.maskProperty = mask;
+    }
+
     public void setLootTables(ConfigurationSection lootableConfig){
         lootTables = new RandomCollection<>();
         assert lootableConfig != null;
@@ -137,6 +139,11 @@ public class StructureBuilder {
         return new Structure(this);
     }
 
+    /**
+     * Save a file.
+     * @param file The file to save.
+     * @throws IOException If an IO Exception occurs.
+     */
     public void save(File file) throws IOException {
         file.createNewFile();
         config = YamlConfiguration.loadConfiguration(file);

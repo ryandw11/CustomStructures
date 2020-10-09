@@ -49,6 +49,17 @@ StructureLimitations:
   # Delay the replacement of blocks by x seconds.
   replacement_blocks_delay: 0
 
+Masks:
+  enabled: false
+  union_type: 'AND'
+
+  BlockTypeMask:
+    - WHITE_WOOL
+
+  NegatedBlockMask:
+    - WHITE_WOOL
+
+
 #List of lootTables for this Schematic, name and weight
 #Weight determines how often it will be chosen out of all the entries in the list.
 LootTables:

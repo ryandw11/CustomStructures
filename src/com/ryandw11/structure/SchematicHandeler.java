@@ -11,17 +11,23 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.ryandw11.structure.structure.Structure;
+import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
 import com.ryandw11.structure.utils.GetBlocksInArea;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
+import com.sk89q.worldedit.function.mask.*;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.internal.annotation.Selection;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldedit.world.block.BlockType;
+import com.sk89q.worldedit.world.block.BlockTypes;
 import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.Entity;
@@ -117,8 +123,20 @@ public class SchematicHandeler {
         // Paste the schematic
         try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
                 .getEditSession(BukkitAdapter.adapt(loc.getWorld()), -1)) {
+             /*
+                Handle the masks of the structure.
+             */
+             Mask mi = null;
+            if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.AND){
+                mi = new MaskIntersection(structure.getMaskProperties().getMasks(editSession));
+            }
+            else if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.OR){
+                mi = new MaskUnion(structure.getMaskProperties().getMasks(editSession));
+            }
             Operation operation = ch.createPaste(editSession)
-                    .to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).ignoreAirBlocks(!useAir).build();
+                    .to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).maskSource(mi).ignoreAirBlocks(!useAir).build();
+
+//            editSession.setMask(new BlockTypeMask(editSession, BlockTypes.OAK_LOG));
             Operations.complete(operation);
 
             if (plugin.getConfig().getBoolean("debug")) {
