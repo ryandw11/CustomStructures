@@ -10,12 +10,12 @@ import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
+import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ryandw11.structure.bstats.Metrics;

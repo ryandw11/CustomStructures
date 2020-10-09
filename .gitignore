@@ -36,3 +36,6 @@ hs_err_pid*
 /bin/
 
 \.settings/
+
+dependency-reduced-pom.xml
+target/
