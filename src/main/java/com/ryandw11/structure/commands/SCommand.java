@@ -166,11 +166,46 @@ public class SCommand implements CommandExecutor {
 			Player p = (Player) sender;
 			String name = args[1].replace(".schem", "");
 			SchematicHandeler handeler = new SchematicHandeler();
-			if(handeler.createSchematic(name, p, p.getWorld())){
+			if(handeler.createSchematic(name, p, p.getWorld(), false)){
 				p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
 				p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" + ChatColor.GREEN + " in a structure.");
 			}else{
 				p.sendMessage(ChatColor.RED + "The world edit region seems to be incomplete! Try making a selection first!");
+			}
+		}
+		else if(args.length == 3 && args[0].equalsIgnoreCase("createschem")){
+			if(!sender.hasPermission("customstructures.createschematic.options")){
+				sender.sendMessage(ChatColor.RED + "You do not have permission for this command!");
+				return true;
+			}
+			if(!(sender instanceof Player)){
+				sender.sendMessage(ChatColor.RED + "This command is for players only!");
+				return true;
+			}
+
+			if(args[2].equalsIgnoreCase("-c") || args[2].equalsIgnoreCase("-compile")){
+				Player p = (Player) sender;
+				String name = args[1].replace(".schem", "");
+				SchematicHandeler handeler = new SchematicHandeler();
+				if(handeler.createSchematic(name, p, p.getWorld(), true)){
+					p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
+					p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic!");
+					p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" +
+							ChatColor.GREEN + " and " + ChatColor.GOLD + name + ".cschem" + ChatColor.GREEN + " in a structure.");
+				}else{
+					p.sendMessage(ChatColor.RED + "The world edit region seems to be incomplete! Try making a selection first!");
+				}
+			}
+			if(args[2].equalsIgnoreCase("-cOnly") || args[2].equalsIgnoreCase("-compileOnly")){
+				Player p = (Player) sender;
+				String name = args[1].replace(".schem", "").replace(".cschem", "");
+				SchematicHandeler handeler = new SchematicHandeler();
+				if(handeler.compileOnly(name, p, p.getWorld())){
+					p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
+					p.sendMessage(ChatColor.RED + "The option is for advanced users only. Please be sure the selection is valid.");
+				}else{
+					p.sendMessage(ChatColor.RED + "The world edit region seems to be incomplete! Try making a selection first!");
+				}
 			}
 		}
 		else if( args.length != 0 && args.length < 3 && args[0].equalsIgnoreCase("create")){
@@ -209,6 +244,9 @@ public class SCommand implements CommandExecutor {
 			StructureBuilder builder = new StructureBuilder(name, schematic + ".schem");
 			builder.setChance(1, 1000);
 			builder.setLootTables(new RandomCollection<>());
+			if(new File(plugin.getDataFolder() + "/schematics/" + schematic + ".cschem").exists()){
+				builder.setCompiledSchematic(schematic + ".cschem");
+			}
 			builder.setStructureProperties(new StructureProperties());
 			builder.setStructureLocation(new StructureLocation());
 			builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
@@ -250,7 +288,7 @@ public class SCommand implements CommandExecutor {
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3/cstructure getItem {key} - &2Get the item of the key specified."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-						"&3/cstructure createschem {name} - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
+						"&3/cstructure createschem {name} [-options] - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
 				sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
 			} else {

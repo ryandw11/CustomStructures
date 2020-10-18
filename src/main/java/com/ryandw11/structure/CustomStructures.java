@@ -30,7 +30,7 @@ import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 /**
  * 
  * @author Ryandw11
- * @version 1.5
+ * @version 1.5.4
  *
  */
 
@@ -48,6 +48,8 @@ public class CustomStructures extends JavaPlugin {
 	private boolean debugMode;
 	
 	public static boolean enabled;
+
+	public static final int COMPILED_STRUCT_VER = 1;
 
 	@Override
 	public void onEnable() {

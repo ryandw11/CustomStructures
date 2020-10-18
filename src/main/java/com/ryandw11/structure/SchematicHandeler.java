@@ -4,12 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.ryandw11.structure.io.BlockTag;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
@@ -23,6 +21,10 @@ import com.sk89q.worldedit.function.mask.*;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import me.ryandw11.ods.ObjectDataStructure;
+import me.ryandw11.ods.tags.IntTag;
+import me.ryandw11.ods.tags.ListTag;
+import me.ryandw11.ods.tags.ObjectTag;
 import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.Entity;
@@ -142,7 +144,24 @@ public class SchematicHandeler {
         int finalRotY = rotY;
         // Run a task later. This is done so async plugins have time to paste as needed.
         Bukkit.getScheduler().runTaskLater(plugin, ()->{
-            List<Location> containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
+            List<Location> containersAndSignsLocations = new ArrayList<>();
+            // If the structure is compiled, then grab the data from the cschem file.
+            if(structure.isCompiled()){
+                ObjectDataStructure ods = new ObjectDataStructure(new File(plugin.getDataFolder() + "/schematics/" + structure.getCompiledSchematic()));
+                ListTag<ObjectTag> containers = ods.get("containers");
+                ListTag<ObjectTag> signs = ods.get("signs");
+                Location minimumPoint = getMinimumLocation(clipboard, loc, finalRotY);
+                for(ObjectTag con : containers.getValue()){
+                        containersAndSignsLocations.add(new BlockTag(con).getLocation(loc.getWorld()).add(minimumPoint));
+                }
+                for(ObjectTag sign : signs.getValue()){
+                    containersAndSignsLocations.add(new BlockTag(sign).getLocation(loc.getWorld()).add(minimumPoint));
+                }
+            }else{
+                // else find the data from the paste.
+                containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
+            }
+
             for (Location location : containersAndSignsLocations) {
                 if (location.getBlock().getState() instanceof Container) {
                     replaceContainerContent(lootTables, location);
@@ -179,9 +198,10 @@ public class SchematicHandeler {
      * @param name The name of the schematic.
      * @param player The player.
      * @param w The world
+     * @param compile If the schematic should be compiled.
      * @return If the operation was successful.
      */
-    public boolean createSchematic(String name, Player player, World w)  {
+    public boolean createSchematic(String name, Player player, World w, boolean compile)  {
         try{
             WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
             assert worldEditPlugin != null;
@@ -206,10 +226,119 @@ public class SchematicHandeler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            if(compile)
+                compileSchem(player.getLocation(), selection, name);
             return true;
         } catch (IncompleteRegionException ex){
             return false;
         }
+    }
+
+    /**
+     * Only compile a selection into a compiled schematic.
+     * @param name The name of the schematic.
+     * @param player The player.
+     * @param w The world
+     *
+     * @return If the operation was successful.
+     */
+    public boolean compileOnly(String name, Player player, World w){
+        try{
+            WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+            assert worldEditPlugin != null;
+            Region selection = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(w));
+
+            compileSchem(player.getLocation(), selection, name);
+            return true;
+        } catch (IncompleteRegionException ex){
+            return false;
+        }
+    }
+
+    /**
+     * Compiles a schematic
+     * @param loc The location of the player.
+     * @param reg The region of the schematic.
+     * @param name The name of the schematic.
+     */
+    private void compileSchem(Location loc, Region reg, String name) {
+        IntTag intTag = new IntTag("ver", CustomStructures.COMPILED_STRUCT_VER);
+        ListTag<BlockTag> containers = new ListTag<>("containers", new ArrayList<>());
+        ListTag<BlockTag> signs = new ListTag<>("signs", new ArrayList<>());
+
+        List<Location> locations = new ArrayList<>();
+
+        Location minLoc = new Location(loc.getWorld(), reg.getMinimumPoint().getX(), reg.getMinimumPoint().getY(), reg.getMinimumPoint().getZ());
+
+        for (int x = reg.getMinimumPoint().getX(); x <= reg.getMaximumPoint().getX(); x++) {
+            for (int y = reg.getMinimumPoint().getY(); y <= reg.getMaximumPoint().getY(); y++) {
+                for (int z = reg.getMinimumPoint().getZ(); z <= reg.getMaximumPoint().getZ(); z++) {
+                    Location location = new Location(loc.getWorld(), x, y, z);
+                    Block block = location.getBlock();
+                    BlockState blockState = location.getBlock().getState();
+
+                    if (blockState instanceof Container) {
+                        if (blockState instanceof Chest) {
+                            InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
+                            if (holder instanceof DoubleChest) {
+                                DoubleChest doubleChest = ((DoubleChest) holder);
+                                Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
+                                Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
+
+                                Location roundedLocation = new Location(location.getWorld(),
+                                        Math.floor(location.getX()), Math.floor(location.getY()),
+                                        Math.floor(location.getZ()));
+
+                                // Check to see if this (or the other) side of the chest is already in the list
+                                if (leftSideLocation.distance(roundedLocation) < 1) {
+                                    if (this.isNotAlreadyIn(locations, rightSideLocation)) {
+                                        locations.add(roundedLocation);
+                                        containers.addTag(new BlockTag(Material.CHEST, location.subtract(minLoc)));
+                                    }
+
+                                } else if (rightSideLocation.distance(roundedLocation) < 1) {
+                                    if (this.isNotAlreadyIn(locations, leftSideLocation)) {
+                                        locations.add(roundedLocation);
+                                        containers.addTag(new BlockTag(Material.CHEST, location.subtract(minLoc)));
+                                    }
+                                }
+
+                            } else if (holder instanceof Chest) {
+                                locations.add(location);
+                                containers.addTag(new BlockTag(Material.CHEST, location.subtract(minLoc)));
+                            }
+                        } else {
+                            locations.add(location);
+                            containers.addTag(new BlockTag(block.getType(), location.subtract(minLoc)));
+                        }
+                    } else if (blockState instanceof Sign) {
+                        locations.add(location);
+                        signs.addTag(new BlockTag(block.getType(), location.subtract(minLoc)));
+                    }
+                }
+            }
+        }
+        ObjectDataStructure ods = new ObjectDataStructure(new File(plugin.getDataFolder() + File.separator + "schematics" + File.separator + name + ".cschem"));
+        ods.save(Arrays.asList(intTag, containers, signs));
+        if(plugin.isDebug()){
+            plugin.getLogger().info("Successfully compiled the schematic: " + name);
+        }
+    }
+
+    private Location getMinimumLocation(Clipboard clipboard, Location pasteLocation, int rotation){
+        BlockVector3 originalOrigin = clipboard.getOrigin();
+        BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
+
+        BlockVector3 originalMinimumOffset = originalOrigin.subtract(originalMinimumPoint);
+
+        BlockVector3 newOrigin = BukkitAdapter.asBlockVector(pasteLocation);
+        BlockVector3 newMinimumPoint = newOrigin.subtract(originalMinimumOffset);
+
+        BlockVector3 newRotatedMinimumPoint = rotateAround(newMinimumPoint, newOrigin, rotation);
+
+        Location minLoc = new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
+        return minLoc;
     }
 
     /**

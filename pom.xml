@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
 
-        <groupId>com.ryandw11</groupId>
+    <groupId>com.ryandw11</groupId>
     <artifactId>CustomStructures</artifactId>
-        <version>1.5.4</version>
+    <version>1.5.4-SNAPSHOT</version>
 
     <build>
         <sourceDirectory>/src/main/java</sourceDirectory>
@@ -66,7 +66,7 @@
         </repository>
         <repository>
             <id>EngineHub</id>
-            <url> https://maven.enginehub.org/repo/</url>
+            <url>https://maven.enginehub.org/repo/</url>
         </repository>
         <repository>
             <id>Ryandw11</id>
@@ -78,7 +78,8 @@
         <dependency>
             <groupId>me.ryandw11</groupId>
             <artifactId>ods</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
