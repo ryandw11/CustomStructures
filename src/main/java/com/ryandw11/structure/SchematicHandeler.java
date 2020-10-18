@@ -125,11 +125,12 @@ public class SchematicHandeler {
              */
              Mask mi = null;
             if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.AND){
-                mi = new MaskIntersection(structure.getMaskProperties().getMasks(editSession));
+                mi = new MaskIntersection(structure.getMaskProperties().getMasks(clipboard));
             }
             else if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.OR){
-                mi = new MaskUnion(structure.getMaskProperties().getMasks(editSession));
+                mi = new MaskUnion(structure.getMaskProperties().getMasks(clipboard));
             }
+
             Operation operation = ch.createPaste(editSession)
                     .to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).maskSource(mi).ignoreAirBlocks(!useAir).build();
 
