@@ -20,6 +20,11 @@ public class MaskProperty {
     private List<Mask> masks;
     private MaskUnion unionType;
 
+    /**
+     * Create the MaskPropety from a configuration file.
+     *
+     * @param configuration The configuration file.
+     */
     public MaskProperty(FileConfiguration configuration) {
         masks = new ArrayList<>();
 

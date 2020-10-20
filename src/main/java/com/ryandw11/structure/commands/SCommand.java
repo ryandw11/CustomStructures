@@ -1,6 +1,6 @@
 package com.ryandw11.structure.commands;;
 
-import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.properties.BlockLevelLimit;
@@ -165,7 +165,7 @@ public class SCommand implements CommandExecutor {
 			}
 			Player p = (Player) sender;
 			String name = args[1].replace(".schem", "");
-			SchematicHandeler handeler = new SchematicHandeler();
+			SchematicHandler handeler = new SchematicHandler();
 			if(handeler.createSchematic(name, p, p.getWorld(), false)){
 				p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
 				p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" + ChatColor.GREEN + " in a structure.");
@@ -186,7 +186,7 @@ public class SCommand implements CommandExecutor {
 			if(args[2].equalsIgnoreCase("-c") || args[2].equalsIgnoreCase("-compile")){
 				Player p = (Player) sender;
 				String name = args[1].replace(".schem", "");
-				SchematicHandeler handeler = new SchematicHandeler();
+				SchematicHandler handeler = new SchematicHandler();
 				if(handeler.createSchematic(name, p, p.getWorld(), true)){
 					p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
 					p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic!");
@@ -199,7 +199,7 @@ public class SCommand implements CommandExecutor {
 			if(args[2].equalsIgnoreCase("-cOnly") || args[2].equalsIgnoreCase("-compileOnly")){
 				Player p = (Player) sender;
 				String name = args[1].replace(".schem", "").replace(".cschem", "");
-				SchematicHandeler handeler = new SchematicHandeler();
+				SchematicHandler handeler = new SchematicHandler();
 				if(handeler.compileOnly(name, p, p.getWorld())){
 					p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
 					p.sendMessage(ChatColor.RED + "The option is for advanced users only. Please be sure the selection is valid.");

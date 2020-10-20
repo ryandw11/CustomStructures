@@ -1,6 +1,6 @@
 package com.ryandw11.structure.structure;
 
-import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
@@ -178,6 +178,12 @@ public class Structure {
                 return false;
         }
 
+        // Check to see if the structure is far enough away from spawn.
+        if(Math.abs(block.getX()) < getStructureLocation().getXLimitation())
+            return false;
+        if(Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
+            return false;
+
         // Check to see if the structure has the chance to spawn
         if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
             return false;
@@ -192,7 +198,7 @@ public class Structure {
      * @param location The location to spawn it at.
      */
     public void spawn(Location location) {
-        SchematicHandeler handler = new SchematicHandeler();
+        SchematicHandler handler = new SchematicHandler();
         try {
             handler.schemHandle(location, getSchematic(), getStructureProperties().canPlaceAir(), getLootTables(), this);
         } catch (IOException | WorldEditException ex) {

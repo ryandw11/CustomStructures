@@ -14,6 +14,8 @@ public class StructureLocation {
     private List<String> worlds;
     private StructureYSpawning spawnY;
     private List<String> biomes;
+    private int xLimitation ;
+    private int zLimitation;
 
     public StructureLocation(StructureBuilder sb, FileConfiguration configuration){
         ConfigurationSection cs = configuration.getConfigurationSection("StructureLocation");
@@ -32,18 +34,29 @@ public class StructureLocation {
             this.biomes = cs.getStringList("Biome");
         else
             this.biomes = new ArrayList<>();
+
+        xLimitation = 0;
+        zLimitation = 0;
+        if(cs.contains("spawn_distance")){
+            if(cs.contains("spawn_distance.x")){
+                xLimitation = cs.getInt("spawn_distance.x");
+            }
+            if(cs.contains("spawn_distance.z")){
+                zLimitation = cs.getInt("spawn_distance.z");
+            }
+        }
     }
 
     public StructureLocation(List<String> worlds, StructureYSpawning spawnSettings, List<String> biomes){
         this.worlds = worlds;
         this.spawnY = spawnSettings;
         this.biomes = biomes;
+        this.xLimitation = 0;
+        this.zLimitation = 0;
     }
 
     public StructureLocation(){
-        this.worlds = new ArrayList<>();
-        this.spawnY = new StructureYSpawning("top");
-        this.biomes = new ArrayList<>();
+        this(new ArrayList<>(), new StructureYSpawning("top"), new ArrayList<>());
     }
 
     public List<String> getWorlds(){
@@ -78,5 +91,21 @@ public class StructureLocation {
                 return true;
         }
         return false;
+    }
+
+    public void setXLimitation(int x){
+        this.xLimitation = x;
+    }
+
+    public int getXLimitation(){
+        return this.xLimitation;
+    }
+
+    public void setZLimitation(int z){
+        this.zLimitation = z;
+    }
+
+    public int getZLimitation(){
+        return this.zLimitation;
     }
 }

@@ -13,7 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.SchematicHandeler;
+import com.ryandw11.structure.SchematicHandler;
 import com.sk89q.worldedit.WorldEditException;
 
 /**
@@ -112,7 +112,7 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // Now to finally paste the schematic
-            SchematicHandeler sh = new SchematicHandeler();
+            SchematicHandler sh = new SchematicHandler();
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 try {
                     sh.schemHandle(bl.getLocation(),

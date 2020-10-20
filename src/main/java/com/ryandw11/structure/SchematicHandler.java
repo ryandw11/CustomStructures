@@ -1,26 +1,32 @@
 package com.ryandw11.structure;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.ryandw11.structure.io.BlockTag;
+import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
-import com.ryandw11.structure.utils.GetBlocksInArea;
+import com.ryandw11.structure.utils.RandomCollection;
+import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
-import com.sk89q.worldedit.function.mask.*;
+import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.mask.MaskIntersection;
+import com.sk89q.worldedit.function.mask.MaskUnion;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import me.ryandw11.ods.ObjectDataStructure;
 import me.ryandw11.ods.tags.IntTag;
 import me.ryandw11.ods.tags.ListTag;
@@ -31,37 +37,28 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.BrewerInventory;
-import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.ryandw11.structure.loottables.LootTable;
-import com.ryandw11.structure.utils.RandomCollection;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.math.transform.AffineTransform;
-import com.sk89q.worldedit.session.ClipboardHolder;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class SchematicHandeler {
+public class SchematicHandler {
 
     private CustomStructures plugin;
 
-    public SchematicHandeler() {
+    public SchematicHandler() {
         this.plugin = CustomStructures.plugin;
     }
 
     /**
-     * Handles the schematic.
+     * Handles the actual pasting of the structure.
      * <p>This method is to be called on the main Server thread.</p>
+     *
      * @param loc        - The location
      * @param filename   - The file name. Ex: demo.schematic
      * @param useAir     - if air is to be used in the schematic
@@ -73,7 +70,7 @@ public class SchematicHandeler {
     public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure, int iteration)
             throws IOException, WorldEditException {
 
-        if(iteration > 2){
+        if (iteration > 2) {
             plugin.getLogger().severe("Critical Error: StackOverflow detected. Automatically terminating the spawning of the structure.");
             plugin.getLogger().severe("The structure '" + structure.getName() + "' has spawned too many sub structure via recursion.");
             return;
@@ -93,14 +90,19 @@ public class SchematicHandeler {
             plugin.getLogger().warning("The plugin will now disable to prevent damage to the server.");
             Bukkit.getPluginManager().disablePlugin(plugin);
             return;
-        }
-        else if(!schematicFile.exists()){
+        } else if (!schematicFile.exists()) {
             plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
             throw new RuntimeException("Cannot find schematic file!");
         }
 
         ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
         Clipboard clipboard;
+
+        if(format == null){
+            plugin.getLogger().warning("Invalid schematic format for schematic " + filename + "!");
+            plugin.getLogger().warning("Please create a valid schematic using the in-game commands!");
+            return;
+        }
 
         try (ClipboardReader reader = format.getReader(new FileInputStream(schematicFile))) {
             clipboard = reader.read();
@@ -119,15 +121,14 @@ public class SchematicHandeler {
 
         // Paste the schematic
         try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
-                .getEditSession(BukkitAdapter.adapt(loc.getWorld()), -1)) {
+                .getEditSession(BukkitAdapter.adapt(Objects.requireNonNull(loc.getWorld())), -1)) {
              /*
                 Handle the masks of the structure.
              */
-             Mask mi = null;
-            if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.AND){
+            Mask mi = null;
+            if (structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.AND) {
                 mi = new MaskIntersection(structure.getMaskProperties().getMasks(clipboard));
-            }
-            else if(structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.OR){
+            } else if (structure.getMaskProperties().getUnionType() == MaskProperty.MaskUnion.OR) {
                 mi = new MaskUnion(structure.getMaskProperties().getMasks(clipboard));
             }
 
@@ -144,21 +145,23 @@ public class SchematicHandeler {
         //Schedule the signs & containers replacement task
         int finalRotY = rotY;
         // Run a task later. This is done so async plugins have time to paste as needed.
-        Bukkit.getScheduler().runTaskLater(plugin, ()->{
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
             List<Location> containersAndSignsLocations = new ArrayList<>();
             // If the structure is compiled, then grab the data from the cschem file.
-            if(structure.isCompiled()){
+            if (structure.isCompiled()) {
                 ObjectDataStructure ods = new ObjectDataStructure(new File(plugin.getDataFolder() + "/schematics/" + structure.getCompiledSchematic()));
                 ListTag<ObjectTag> containers = ods.get("containers");
                 ListTag<ObjectTag> signs = ods.get("signs");
                 Location minimumPoint = getMinimumLocation(clipboard, loc, finalRotY);
-                for(ObjectTag con : containers.getValue()){
-                        containersAndSignsLocations.add(new BlockTag(con).getLocation(loc.getWorld()).add(minimumPoint));
+                for (ObjectTag con : containers.getValue()) {
+                    containersAndSignsLocations.add(new BlockTag(con).getLocation(loc.getWorld()).add(minimumPoint));
                 }
-                for(ObjectTag sign : signs.getValue()){
+                for (ObjectTag sign : signs.getValue()) {
                     containersAndSignsLocations.add(new BlockTag(sign).getLocation(loc.getWorld()).add(minimumPoint));
                 }
-            }else{
+                // Replace the blocks of the structure (if enabled).
+                replaceBlocks(clipboard, loc, finalRotY, structure);
+            } else {
                 // else find the data from the paste.
                 containersAndSignsLocations = getContainersAndSignsLocations(ch.getClipboard(), loc, finalRotY, structure);
             }
@@ -171,7 +174,7 @@ public class SchematicHandeler {
                     replaceSignWithMob(location);
                 }
                 // This is separate so that if the block doesn't exist anymore than it will not error out.
-                if(location.getBlock().getState() instanceof Sign){
+                if (location.getBlock().getState() instanceof Sign) {
                     replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
                 }
             }
@@ -182,6 +185,7 @@ public class SchematicHandeler {
     /**
      * Handles the schematic.
      * <p>This method is to be called on the main Server thread.</p>
+     *
      * @param loc        - The location
      * @param filename   - The file name. Ex: demo.schematic
      * @param useAir     - if air is to be used in the schematic
@@ -196,14 +200,15 @@ public class SchematicHandeler {
 
     /**
      * Create a schematic and save it to the schematics folder in the CustomStructures plugin.
-     * @param name The name of the schematic.
-     * @param player The player.
-     * @param w The world
+     *
+     * @param name    The name of the schematic.
+     * @param player  The player.
+     * @param w       The world
      * @param compile If the schematic should be compiled.
      * @return If the operation was successful.
      */
-    public boolean createSchematic(String name, Player player, World w, boolean compile)  {
-        try{
+    public boolean createSchematic(String name, Player player, World w, boolean compile) {
+        try {
             WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
             assert worldEditPlugin != null;
             Region selection = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(w));
@@ -228,39 +233,40 @@ public class SchematicHandeler {
                 e.printStackTrace();
             }
 
-            if(compile)
+            if (compile)
                 compileSchem(player.getLocation(), selection, name);
             return true;
-        } catch (IncompleteRegionException ex){
+        } catch (IncompleteRegionException ex) {
             return false;
         }
     }
 
     /**
      * Only compile a selection into a compiled schematic.
-     * @param name The name of the schematic.
-     * @param player The player.
-     * @param w The world
      *
+     * @param name   The name of the schematic.
+     * @param player The player.
+     * @param w      The world
      * @return If the operation was successful.
      */
-    public boolean compileOnly(String name, Player player, World w){
-        try{
+    public boolean compileOnly(String name, Player player, World w) {
+        try {
             WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
             assert worldEditPlugin != null;
             Region selection = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(w));
 
             compileSchem(player.getLocation(), selection, name);
             return true;
-        } catch (IncompleteRegionException ex){
+        } catch (IncompleteRegionException ex) {
             return false;
         }
     }
 
     /**
      * Compiles a schematic
-     * @param loc The location of the player.
-     * @param reg The region of the schematic.
+     *
+     * @param loc  The location of the player.
+     * @param reg  The region of the schematic.
      * @param name The name of the schematic.
      */
     private void compileSchem(Location loc, Region reg, String name) {
@@ -322,12 +328,20 @@ public class SchematicHandeler {
         }
         ObjectDataStructure ods = new ObjectDataStructure(new File(plugin.getDataFolder() + File.separator + "schematics" + File.separator + name + ".cschem"));
         ods.save(Arrays.asList(intTag, containers, signs));
-        if(plugin.isDebug()){
+        if (plugin.isDebug()) {
             plugin.getLogger().info("Successfully compiled the schematic: " + name);
         }
     }
 
-    private Location getMinimumLocation(Clipboard clipboard, Location pasteLocation, int rotation){
+    /**
+     * Get the minimum location of a structure.
+     *
+     * @param clipboard     The clipboard of the paste.
+     * @param pasteLocation The paste location.
+     * @param rotation      The rotation of the structure.
+     * @return The minimum location.
+     */
+    private Location getMinimumLocation(Clipboard clipboard, Location pasteLocation, int rotation) {
         BlockVector3 originalOrigin = clipboard.getOrigin();
         BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
 
@@ -338,12 +352,63 @@ public class SchematicHandeler {
 
         BlockVector3 newRotatedMinimumPoint = rotateAround(newMinimumPoint, newOrigin, rotation);
 
-        Location minLoc = new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
-        return minLoc;
+        return new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
+    }
+
+    /**
+     * Get the maximum location of a structure.
+     *
+     * @param clipboard     The clipboard of the paste.
+     * @param pasteLocation The paste location.
+     * @param rotation      The rotation of the structure.
+     * @return The maximum location.
+     */
+    private Location getMaximumLocation(Clipboard clipboard, Location pasteLocation, int rotation) {
+        BlockVector3 originalOrigin = clipboard.getOrigin();
+        BlockVector3 originalMaximumPoint = clipboard.getRegion().getMaximumPoint();
+
+        BlockVector3 originalMaximumOffset = originalOrigin.subtract(originalMaximumPoint);
+
+        BlockVector3 newOrigin = BukkitAdapter.asBlockVector(pasteLocation);
+        BlockVector3 newMaximumPoint = newOrigin.subtract(originalMaximumOffset);
+
+        BlockVector3 newRotatedMaximumPoint = rotateAround(newMaximumPoint, newOrigin, rotation);
+
+        return new Location(pasteLocation.getWorld(), newRotatedMaximumPoint.getX(), newRotatedMaximumPoint.getY(), newRotatedMaximumPoint.getZ());
+    }
+
+    /**
+     * Replace the blocks according to the 'replacement_blocks' section.
+     * <p>Note: This is to be used by compiled schematics. Non compiled schematics are replaced in
+     * the {@link #getContainersAndSignsLocations(Clipboard, Location, int, Structure)} method to save time.</p>
+     *
+     * @param clipboard     The clipboard of the paste.
+     * @param pasteLocation The paste location.
+     * @param rotation      The rotation of the structure.
+     * @param structure     The structure itself.
+     */
+    private void replaceBlocks(Clipboard clipboard, Location pasteLocation, int rotation, Structure structure) {
+        if (structure.getStructureLimitations().getBlockReplacement().isEmpty()) return;
+
+        Location minLoc = getMinimumLocation(clipboard, pasteLocation, rotation);
+        Location maxLoc = getMaximumLocation(clipboard, pasteLocation, rotation);
+
+        for (int x = minLoc.getBlockX(); x <= maxLoc.getBlockX(); x++) {
+            for (int y = minLoc.getBlockY(); y <= maxLoc.getBlockY(); y++) {
+                for (int z = minLoc.getBlockZ(); z <= maxLoc.getBlockZ(); z++) {
+                    Block block = Objects.requireNonNull(pasteLocation.getWorld()).getBlockAt(x, y, z);
+                    if (structure.getStructureLimitations().getBlockReplacement().containsKey(block.getType())) {
+                        block.setType(structure.getStructureLimitations().getBlockReplacement().get(block.getType()));
+                        block.getState().update();
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Get the location of containers and signs.
+     * <p>This will also replace blocks from the replacement_blocks section.</p>
      *
      * @param clipboard     The worldedit clipboard
      * @param pasteLocation The location of the paste
@@ -351,72 +416,61 @@ public class SchematicHandeler {
      * @return The list of locations
      */
     private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation, Structure structure) {
-
-        BlockVector3 originalOrigin = clipboard.getOrigin();
-        BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
-        BlockVector3 originalMaximumPoint = clipboard.getRegion().getMaximumPoint();
-
-        BlockVector3 originalMinimumOffset = originalOrigin.subtract(originalMinimumPoint);
-        BlockVector3 originalMaximumOffset = originalOrigin.subtract(originalMaximumPoint);
-
-        BlockVector3 newOrigin = BukkitAdapter.asBlockVector(pasteLocation);
-        BlockVector3 newMinimumPoint = newOrigin.subtract(originalMinimumOffset);
-        BlockVector3 newMaximumPoint = newOrigin.subtract(originalMaximumOffset);
-
-        BlockVector3 newRotatedMinimumPoint = rotateAround(newMinimumPoint, newOrigin, rotation);
-        BlockVector3 newRotatedMaximumPoint = rotateAround(newMaximumPoint, newOrigin, rotation);
-
-        Location minLoc = new Location(pasteLocation.getWorld(), newRotatedMinimumPoint.getX(), newRotatedMinimumPoint.getY(), newRotatedMinimumPoint.getZ());
-        Location maxLoc = new Location(pasteLocation.getWorld(), newRotatedMaximumPoint.getX(), newRotatedMaximumPoint.getY(), newRotatedMaximumPoint.getZ());
-
+        Location minLoc = getMinimumLocation(clipboard, pasteLocation, rotation);
+        Location maxLoc = getMaximumLocation(clipboard, pasteLocation, rotation);
         List<Location> locations = new ArrayList<>();
-        for (Location location : GetBlocksInArea.getLocationListBetween(minLoc, maxLoc)) {
 
-            Block block = location.getBlock();
-            BlockState blockState = location.getBlock().getState();
+        for (int x = minLoc.getBlockX(); x <= maxLoc.getBlockX(); x++) {
+            for (int y = minLoc.getBlockY(); y <= maxLoc.getBlockY(); y++) {
+                for (int z = minLoc.getBlockZ(); z <= maxLoc.getBlockZ(); z++) {
+                    Location location = new Location(pasteLocation.getWorld(), x, y, z);
+                    Block block = location.getBlock();
+                    BlockState blockState = location.getBlock().getState();
 
-            if (blockState instanceof Container) {
-                if (blockState instanceof Chest) {
-                    InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
-                    if (holder instanceof DoubleChest) {
-                        DoubleChest doubleChest = ((DoubleChest) holder);
-                        Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
-                        Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
+                    if (blockState instanceof Container) {
+                        if (blockState instanceof Chest) {
+                            InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
+                            if (holder instanceof DoubleChest) {
+                                DoubleChest doubleChest = ((DoubleChest) holder);
+                                Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
+                                Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
 
-                        Location roundedLocation = new Location(location.getWorld(),
-                                Math.floor(location.getX()), Math.floor(location.getY()),
-                                Math.floor(location.getZ()));
+                                Location roundedLocation = new Location(location.getWorld(),
+                                        Math.floor(location.getX()), Math.floor(location.getY()),
+                                        Math.floor(location.getZ()));
 
-                        // Check to see if this (or the other) side of the chest is already in the list
-                        if (leftSideLocation.distance(roundedLocation) < 1) {
-                            if (this.isNotAlreadyIn(locations, rightSideLocation)) {
-                                locations.add(roundedLocation);
+                                // Check to see if this (or the other) side of the chest is already in the list
+                                if (leftSideLocation.distance(roundedLocation) < 1) {
+                                    if (this.isNotAlreadyIn(locations, rightSideLocation)) {
+                                        locations.add(roundedLocation);
+                                    }
+
+                                } else if (rightSideLocation.distance(roundedLocation) < 1) {
+                                    if (this.isNotAlreadyIn(locations, leftSideLocation)) {
+                                        locations.add(roundedLocation);
+                                    }
+                                }
+
+                            } else if (holder instanceof Chest) {
+                                locations.add(location);
                             }
-
-                        } else if (rightSideLocation.distance(roundedLocation) < 1) {
-                            if (this.isNotAlreadyIn(locations, leftSideLocation)) {
-                                locations.add(roundedLocation);
+                        } else {
+                            locations.add(location);
+                        }
+                    } else if (blockState instanceof Sign) {
+                        locations.add(location);
+                    } else {
+                        // For the block replacement system.
+                        if (!structure.getStructureLimitations().getBlockReplacement().isEmpty()) {
+                            if (structure.getStructureLimitations().getBlockReplacement().containsKey(block.getType())) {
+                                block.setType(structure.getStructureLimitations().getBlockReplacement().get(block.getType()));
+                                block.getState().update();
                             }
                         }
-
-                    } else if (holder instanceof Chest) {
-                        locations.add(location);
-                    }
-                } else {
-                    locations.add(location);
-                }
-            } else if (blockState instanceof Sign) {
-                locations.add(location);
-            }else{
-                // For the block replacement system.
-                if(!structure.getStructureLimitations().getBlockReplacement().isEmpty()){
-                    if(structure.getStructureLimitations().getBlockReplacement().containsKey(block.getType())){
-                        block.setType(structure.getStructureLimitations().getBlockReplacement().get(block.getType()));
-                        block.getState().update();
                     }
                 }
             }
-        }//
+        }
         return locations;
     }
 
@@ -424,7 +478,7 @@ public class SchematicHandeler {
      * Checks to see if a location is not already inside of a list of locations.
      *
      * @param locations The list of locations.
-     * @param location The location to check
+     * @param location  The location to check
      * @return If it is not already in.
      */
     private boolean isNotAlreadyIn(List<Location> locations, Location location) {
@@ -440,10 +494,10 @@ public class SchematicHandeler {
      * Replace the contents of a container with the loottable.
      *
      * @param lootTables The loot table
-     * @param location The location of the container.
+     * @param location   The location of the container.
      */
     private void replaceContainerContent(RandomCollection<LootTable> lootTables, Location location) {
-        if(lootTables.isEmpty()) return;
+        if (lootTables.isEmpty()) return;
         LootTable lootTable = lootTables.next();
         Random random = new Random();
 
@@ -456,7 +510,7 @@ public class SchematicHandeler {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
             } else if (block.getType() == lootTable.getType().getMaterial() && containerInventory instanceof BrewerInventory) {
                 this.replaceBrewerContent(lootTable, random, (BrewerInventory) containerInventory);
-            } else if(block.getType() == lootTable.getType().getMaterial()) {
+            } else if (block.getType() == lootTable.getType().getMaterial()) {
                 this.replaceChestContent(lootTable, random, containerInventory);
             }
         }
@@ -476,7 +530,7 @@ public class SchematicHandeler {
         if (firstLine.equalsIgnoreCase("[mob]")) {
             try {
                 Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
-                if(ent instanceof LivingEntity){
+                if (ent instanceof LivingEntity) {
                     LivingEntity livingEntity = (LivingEntity) ent;
                     livingEntity.setRemoveWhenFarAway(false);
                 }
@@ -499,7 +553,7 @@ public class SchematicHandeler {
 
         if (firstLine.equalsIgnoreCase("[schematic]") || firstLine.equalsIgnoreCase("[schem]")) {
             int number = -1;
-            if(secondLine.startsWith("[")){
+            if (secondLine.startsWith("[")) {
                 String v = secondLine.replace("[", "").replace("]", "");
                 String[] out = v.split("-");
                 try {
@@ -507,29 +561,29 @@ public class SchematicHandeler {
                     int num2 = Integer.parseInt(out[1]);
                     number = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
 
-                }catch(NumberFormatException | ArrayIndexOutOfBoundsException ex) {
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                     plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse random numbers.");
                     return;
                 }
-            }else{
-                try{
+            } else {
+                try {
                     number = Integer.parseInt(secondLine);
-                }catch(NumberFormatException ex){
+                } catch (NumberFormatException ex) {
                     plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse number.");
                     return;
                 }
             }
-            if(number < -1 || number >= subSchematics.getSchematics().size()){
+            if (number < -1 || number >= subSchematics.getSchematics().size()) {
                 plugin.getLogger().warning("Invalid schematic sign on structure. Schematic number is not within the valid bounds.");
                 return;
             }
 
             SubSchematic subSchem = subSchematics.getSchematics().get(number);
-            try{
+            try {
                 schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure.getLootTables(), parentStructure, iteration + 1);
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
-                if(plugin.isDebug()){
+                if (plugin.isDebug()) {
                     ex.printStackTrace();
                 }
             }
