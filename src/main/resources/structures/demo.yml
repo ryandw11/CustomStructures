@@ -1,0 +1,70 @@
+schematic: 'demo.schem'
+
+Chance:
+  Number: 1
+  OutOf: 500
+
+StructureLocation:
+  Worlds:
+    - world
+  SpawnY: top
+  Biome: []
+  # Set a custom spawn distance for the structures.
+  spawn_distance:
+    x: 10
+    z: 10
+
+StructureProperties:
+  PlaceAir: true
+  randomRotation: false
+  ignorePlants: true
+  spawnInWater: true
+  spawnInLavaLakes: true
+
+SubSchematics:
+  Enabled: false
+  Schematics:
+    demo2:
+      file: 'demo2.schem'
+      PlaceAir: false
+
+StructureLimitations:
+  whitelistSpawnBlocks:
+    - GRASS_BLOCK
+    - Dirt
+    - Stone
+    - air
+
+  # This could cause issue with lag depending on how large the search area is.
+  BlockLevelLimit:
+    mode: flat
+    cornerOne:
+      x: -5
+      z: -5
+    cornerTwo:
+      x: 5
+      z: 5
+
+  # This could cause issues with lag depending on how many blocks you have
+  # to replace.
+  replacement_blocks:
+    'STONE': 'AIR'
+
+  # Delay the replacement of blocks by x seconds.
+  replacement_blocks_delay: 0
+
+Masks:
+  enabled: false
+  union_type: 'AND'
+
+  BlockTypeMask:
+    - WHITE_WOOL
+
+  NegatedBlockMask:
+    - WHITE_WOOL
+
+
+#List of lootTables for this Schematic, name and weight
+#Weight determines how often it will be chosen out of all the entries in the list.
+LootTables:
+  lootTable: 5
