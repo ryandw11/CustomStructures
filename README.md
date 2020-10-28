@@ -1,4 +1,4 @@
-![Maven Version](https://www.ryandw11.com/api/repo-badge/Spigot-Plugins/com.ryandw11/CustomStructures)
+![Maven Version](https://www.ryandw11.com/api/repo-badge/maven-releases/com.ryandw11/CustomStructures)
 # Custom Structures
 Custom Structures is a Minecraft server plugin that generates unique structures automatically in the world.
 
