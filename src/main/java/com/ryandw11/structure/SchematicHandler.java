@@ -152,12 +152,21 @@ public class SchematicHandler {
                 ObjectDataStructure ods = new ObjectDataStructure(new File(plugin.getDataFolder() + "/schematics/" + structure.getCompiledSchematic()));
                 ListTag<ObjectTag> containers = ods.get("containers");
                 ListTag<ObjectTag> signs = ods.get("signs");
-                Location minimumPoint = getMinimumLocation(clipboard, loc, finalRotY);
+                // Get both the max and minimum points.
+                Location minimumPoint = getMinimumLocation(clipboard, loc, 0);
+                Location maximumPoint = getMaximumLocation(clipboard, loc, 0);
+
+                // Find the minimum of all three axises.
+                int minX = Math.min(minimumPoint.getBlockX(), maximumPoint.getBlockX());
+                int minY = Math.min(minimumPoint.getBlockY(), maximumPoint.getBlockY());
+                int minZ = Math.min(minimumPoint.getBlockZ(), maximumPoint.getBlockZ());
+
                 for (ObjectTag con : containers.getValue()) {
-                    containersAndSignsLocations.add(new BlockTag(con).getLocation(loc.getWorld()).add(minimumPoint));
+                    // Rotate con around the point and add the rotated min values.
+                    containersAndSignsLocations.add(rotateAround(new BlockTag(con).getLocation(loc.getWorld()).add(minX, minY, minZ), loc, finalRotY));
                 }
                 for (ObjectTag sign : signs.getValue()) {
-                    containersAndSignsLocations.add(new BlockTag(sign).getLocation(loc.getWorld()).add(minimumPoint));
+                    containersAndSignsLocations.add(rotateAround(new BlockTag(sign).getLocation(loc.getWorld()).add(minX, minY, minZ), loc, finalRotY));
                 }
                 // Replace the blocks of the structure (if enabled).
                 replaceBlocks(clipboard, loc, finalRotY, structure);
@@ -393,10 +402,14 @@ public class SchematicHandler {
         Location minLoc = getMinimumLocation(clipboard, pasteLocation, rotation);
         Location maxLoc = getMaximumLocation(clipboard, pasteLocation, rotation);
 
-        for (int x = minLoc.getBlockX(); x <= maxLoc.getBlockX(); x++) {
-            for (int y = minLoc.getBlockY(); y <= maxLoc.getBlockY(); y++) {
-                for (int z = minLoc.getBlockZ(); z <= maxLoc.getBlockZ(); z++) {
-                    Block block = Objects.requireNonNull(pasteLocation.getWorld()).getBlockAt(x, y, z);
+        int lowX = Math.min(minLoc.getBlockX(), maxLoc.getBlockX());
+        int lowY = Math.min(minLoc.getBlockY(), maxLoc.getBlockY());
+        int lowZ = Math.min(minLoc.getBlockZ(), maxLoc.getBlockZ());
+
+        for (int x = 0; x <= Math.abs(minLoc.getBlockX() - maxLoc.getBlockX()); x++) {
+            for (int y = 0; y <= Math.abs(minLoc.getBlockY() - maxLoc.getBlockY()); y++) {
+                for (int z = 0; z <= Math.abs(minLoc.getBlockZ() - maxLoc.getBlockZ()); z++) {
+                    Block block = Objects.requireNonNull(pasteLocation.getWorld()).getBlockAt(lowX + x, lowY + y, lowZ + z);
                     if (structure.getStructureLimitations().getBlockReplacement().containsKey(block.getType())) {
                         block.setType(structure.getStructureLimitations().getBlockReplacement().get(block.getType()));
                         block.getState().update();
@@ -420,10 +433,14 @@ public class SchematicHandler {
         Location maxLoc = getMaximumLocation(clipboard, pasteLocation, rotation);
         List<Location> locations = new ArrayList<>();
 
-        for (int x = minLoc.getBlockX(); x <= maxLoc.getBlockX(); x++) {
-            for (int y = minLoc.getBlockY(); y <= maxLoc.getBlockY(); y++) {
-                for (int z = minLoc.getBlockZ(); z <= maxLoc.getBlockZ(); z++) {
-                    Location location = new Location(pasteLocation.getWorld(), x, y, z);
+        int lowX = Math.min(minLoc.getBlockX(), maxLoc.getBlockX());
+        int lowY = Math.min(minLoc.getBlockY(), maxLoc.getBlockY());
+        int lowZ = Math.min(minLoc.getBlockZ(), maxLoc.getBlockZ());
+
+        for (int x = 0; x <= Math.abs(minLoc.getBlockX() - maxLoc.getBlockX()); x++) {
+            for (int y = 0; y <= Math.abs(minLoc.getBlockY() - maxLoc.getBlockY()); y++) {
+                for (int z = 0; z <= Math.abs(minLoc.getBlockZ() - maxLoc.getBlockZ()); z++) {
+                    Location location = new Location(pasteLocation.getWorld(), lowX + x, lowY + y, lowZ + z);
                     Block block = location.getBlock();
                     BlockState blockState = location.getBlock().getState();
 
@@ -678,5 +695,21 @@ public class SchematicHandler {
         double rotatedZ = Math.sin(angle) * (point.getX() - center.getX()) + Math.cos(angle) * (point.getZ() - center.getZ()) + center.getZ();
 
         return BlockVector3.at(rotatedX, point.getY(), rotatedZ);
+    }
+
+    /**
+     * Rotate the point around a center.
+     *
+     * @param point The point
+     * @param center The center
+     * @param angle The angle to rotate by.
+     * @return The final position (in Location form).
+     */
+    private Location rotateAround(Location point, Location center, double angle) {
+        angle = Math.toRadians(angle * -1);
+        double rotatedX = Math.cos(angle) * (point.getBlockX() - center.getBlockX()) - Math.sin(angle) * (point.getBlockZ() - center.getBlockZ()) + center.getBlockX();
+        double rotatedZ = Math.sin(angle) * (point.getBlockX() - center.getBlockX()) + Math.cos(angle) * (point.getBlockZ() - center.getBlockZ()) + center.getBlockZ();
+
+        return new Location(point.getWorld(), Math.floor(rotatedX), point.getY(), Math.floor(rotatedZ));
     }
 }
