@@ -17,9 +17,9 @@ Items:
     Weight: 10
     #List of Enchantments, one item can have multiple enchantments
     Enchantments:
-      #Enchantment name and level (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html)
-      LOOT_BONUS_MOBS: 1
-      DAMAGE_ALL: 1
+      #Enchantment name and level (As of 1.5.4.2, it is using the Minecraft Names with '_' instead of spaces.)
+      LOOTING: 1
+      SHARPNESS: 1
   item1:
     Name: '&2Test2'
     Type: 'IRON_HELMET'

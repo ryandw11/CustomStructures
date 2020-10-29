@@ -39,6 +39,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,7 +99,7 @@ public class SchematicHandler {
         ClipboardFormat format = ClipboardFormats.findByFile(schematicFile);
         Clipboard clipboard;
 
-        if(format == null){
+        if (format == null) {
             plugin.getLogger().warning("Invalid schematic format for schematic " + filename + "!");
             plugin.getLogger().warning("Please create a valid schematic using the in-game commands!");
             return;
@@ -110,11 +111,15 @@ public class SchematicHandler {
 
         ClipboardHolder ch = new ClipboardHolder(clipboard);
         AffineTransform transform = new AffineTransform();
-        int rotY = 0;
+        double rotY = 0;
 
         // If random rotation is enabled, rotate the clipboard
-        if (structure.getStructureProperties().isRandomRotation()) {
+        if (structure.getStructureProperties().isRandomRotation() && iteration == 0) {
             rotY = new Random().nextInt(4) * 90;
+            transform = transform.rotateY(rotY);
+            ch.setTransform(ch.getTransform().combine(transform));
+        } else if (iteration != 0) {
+            rotY = Math.toDegrees(structure.getSubSchemRotation());
             transform = transform.rotateY(rotY);
             ch.setTransform(ch.getTransform().combine(transform));
         }
@@ -143,7 +148,7 @@ public class SchematicHandler {
         }
 
         //Schedule the signs & containers replacement task
-        int finalRotY = rotY;
+        double finalRotY = rotY;
         // Run a task later. This is done so async plugins have time to paste as needed.
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             List<Location> containersAndSignsLocations = new ArrayList<>();
@@ -350,7 +355,7 @@ public class SchematicHandler {
      * @param rotation      The rotation of the structure.
      * @return The minimum location.
      */
-    private Location getMinimumLocation(Clipboard clipboard, Location pasteLocation, int rotation) {
+    private Location getMinimumLocation(Clipboard clipboard, Location pasteLocation, double rotation) {
         BlockVector3 originalOrigin = clipboard.getOrigin();
         BlockVector3 originalMinimumPoint = clipboard.getRegion().getMinimumPoint();
 
@@ -372,7 +377,7 @@ public class SchematicHandler {
      * @param rotation      The rotation of the structure.
      * @return The maximum location.
      */
-    private Location getMaximumLocation(Clipboard clipboard, Location pasteLocation, int rotation) {
+    private Location getMaximumLocation(Clipboard clipboard, Location pasteLocation, double rotation) {
         BlockVector3 originalOrigin = clipboard.getOrigin();
         BlockVector3 originalMaximumPoint = clipboard.getRegion().getMaximumPoint();
 
@@ -389,14 +394,14 @@ public class SchematicHandler {
     /**
      * Replace the blocks according to the 'replacement_blocks' section.
      * <p>Note: This is to be used by compiled schematics. Non compiled schematics are replaced in
-     * the {@link #getContainersAndSignsLocations(Clipboard, Location, int, Structure)} method to save time.</p>
+     * the {@link #getContainersAndSignsLocations(Clipboard, Location, double, Structure)} method to save time.</p>
      *
      * @param clipboard     The clipboard of the paste.
      * @param pasteLocation The paste location.
      * @param rotation      The rotation of the structure.
      * @param structure     The structure itself.
      */
-    private void replaceBlocks(Clipboard clipboard, Location pasteLocation, int rotation, Structure structure) {
+    private void replaceBlocks(Clipboard clipboard, Location pasteLocation, double rotation, Structure structure) {
         if (structure.getStructureLimitations().getBlockReplacement().isEmpty()) return;
 
         Location minLoc = getMinimumLocation(clipboard, pasteLocation, rotation);
@@ -428,7 +433,7 @@ public class SchematicHandler {
      * @param rotation      The rotate value (in degrees).
      * @return The list of locations
      */
-    private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, int rotation, Structure structure) {
+    private List<Location> getContainersAndSignsLocations(Clipboard clipboard, Location pasteLocation, double rotation, Structure structure) {
         Location minLoc = getMinimumLocation(clipboard, pasteLocation, rotation);
         Location maxLoc = getMaximumLocation(clipboard, pasteLocation, rotation);
         List<Location> locations = new ArrayList<>();
@@ -563,10 +568,29 @@ public class SchematicHandler {
 
     }
 
+    /**
+     * Replace a sign with a schematic.
+     *
+     * @param location        The location of the sign.
+     * @param subSchematics   The sub schematic handler for the structure.
+     * @param parentStructure The parent structure.
+     * @param iteration       The iteration of schematic pasting.
+     */
     private void replaceSignWithSchematic(Location location, SubSchematics subSchematics, Structure parentStructure, int iteration) {
         Sign sign = (Sign) location.getBlock().getState();
         String firstLine = sign.getLine(0).trim();
         String secondLine = sign.getLine(1).trim();
+
+        org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign) location.getBlock().getBlockData();
+
+        Vector direction = signData.getRotation().getDirection();
+        double rotation = Math.atan2(direction.getZ(), direction.getX());
+        if (direction.getX() != 0) {
+            rotation -= (Math.PI / 2);
+        } else {
+            rotation += (Math.PI / 2);
+        }
+        parentStructure.setSubSchemRotation(rotation);
 
         if (firstLine.equalsIgnoreCase("[schematic]") || firstLine.equalsIgnoreCase("[schem]")) {
             int number = -1;
@@ -599,6 +623,10 @@ public class SchematicHandler {
             location.getBlock().setType(Material.AIR);
 
             SubSchematic subSchem = subSchematics.getSchematics().get(number);
+
+            // Disable rotation if the structure is not using it.
+            if (!subSchem.isUsingRotation())
+                parentStructure.setSubSchemRotation(0);
             try {
                 schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure.getLootTables(), parentStructure, iteration + 1);
             } catch (Exception ex) {
@@ -703,9 +731,9 @@ public class SchematicHandler {
     /**
      * Rotate the point around a center.
      *
-     * @param point The point
+     * @param point  The point
      * @param center The center
-     * @param angle The angle to rotate by.
+     * @param angle  The angle to rotate by.
      * @return The final position (in Location form).
      */
     private Location rotateAround(Location point, Location center, double angle) {

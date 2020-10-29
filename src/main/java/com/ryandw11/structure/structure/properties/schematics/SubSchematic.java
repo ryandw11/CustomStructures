@@ -9,6 +9,7 @@ public class SubSchematic {
 
     private String file;
     private boolean placeAir = false;
+    private boolean useRotation = false;
 
     /**
      * Create a sub schematic from a configuration section.
@@ -21,16 +22,19 @@ public class SubSchematic {
         file = section.getString("file");
         if (section.contains("PlaceAir"))
             placeAir = section.getBoolean("PlaceAir");
+        if (section.contains("UseRotation"))
+            useRotation = section.getBoolean("UseRotation");
     }
 
     /**
      * Create a sub schematic.
      *
-     * @param file     The file.
-     *                 <p>Note: The plugin does not check to make sure this file is valid!</p>
-     * @param placeAir If the structure should place air.
+     * @param file        The file.
+     *                    <p>Note: The plugin does not check to make sure this file is valid!</p>
+     * @param placeAir    If the structure should place air.
+     * @param useRotation If you want the structure to use the rotation of the sign.
      */
-    public SubSchematic(String file, boolean placeAir) {
+    public SubSchematic(String file, boolean placeAir, boolean useRotation) {
         this.file = file;
         this.placeAir = placeAir;
     }
@@ -51,6 +55,24 @@ public class SubSchematic {
      */
     public boolean isPlacingAir() {
         return placeAir;
+    }
+
+    /**
+     * Set if the sub schematic should use the rotation of the signs.
+     *
+     * @param useRotation If the sub schematic should use the rotation of the signs.
+     */
+    public void setUseRotation(boolean useRotation) {
+        this.useRotation = useRotation;
+    }
+
+    /**
+     * Get if the sub schematic is using the rotation of the signs.
+     *
+     * @return If the sub schematic is using the rotations of the signs.
+     */
+    public boolean isUsingRotation() {
+        return useRotation;
     }
 
     /**

@@ -34,6 +34,8 @@ public class Structure {
     private final SubSchematics subSchematics;
     private final RandomCollection<LootTable> lootTables;
 
+    private double subSchemRotation = 0d;
+
     /**
      * Create a structure from the {@link StructureBuilder}.
      *
@@ -179,9 +181,9 @@ public class Structure {
         }
 
         // Check to see if the structure is far enough away from spawn.
-        if(Math.abs(block.getX()) < getStructureLocation().getXLimitation())
+        if (Math.abs(block.getX()) < getStructureLocation().getXLimitation())
             return false;
-        if(Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
+        if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
             return false;
 
         // Check to see if the structure has the chance to spawn
@@ -190,6 +192,26 @@ public class Structure {
 
         // Check to see if the structure can spawn in the current biome.
         return getStructureLocation().hasBiome(block.getBiome());
+    }
+
+    /**
+     * The rotation of the current sub schematic.
+     * <p>This is for internal use only.</p>
+     *
+     * @param rot The rotation of the sub schematic in radians.
+     */
+    public void setSubSchemRotation(double rot) {
+        this.subSchemRotation = rot;
+    }
+
+    /**
+     * Get the rotation of the current sub schematic.
+     * <p>For internal use only.</p>
+     *
+     * @return The rotation of the current sub schematic in radians.
+     */
+    public double getSubSchemRotation() {
+        return this.subSchemRotation;
     }
 
     /**

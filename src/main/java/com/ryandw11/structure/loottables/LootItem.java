@@ -2,6 +2,8 @@ package com.ryandw11.structure.loottables;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,7 +21,7 @@ public class LootItem {
     private ItemStack item;
 
     /**
-     * This is for normal loottable items.
+     * This is for normal loot table items.
      *
      * @param customName The custom name.
      * @param type       The type.
@@ -34,13 +36,17 @@ public class LootItem {
 
         if (customName != null) { //Catch for people who do not want different names
             ItemMeta meta = this.item.getItemMeta();
+            assert meta != null;
             meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', customName));
             this.item.setItemMeta(meta);
         }
 
         for (String enchantName : enchants.keySet()) {
             int level = enchants.get(enchantName);
-            this.item.addUnsafeEnchantment(EnchantmentWrapper.getByName(enchantName), level);
+            Enchantment enchantment = EnchantmentWrapper.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
+            if (enchantment == null)
+                throw new RuntimeException("Invalid Enchantment: " + enchantName);
+            this.item.addUnsafeEnchantment(enchantment, level);
         }
     }
 
