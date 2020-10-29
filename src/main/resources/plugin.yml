@@ -9,4 +9,4 @@ api-version: 1.13
 commands:
     customstructure:
      description: Main command.
-     aliases: [cs, cstructure, customs, cws]
+     aliases: [cs, cstructure, customs, cws, cstruct]

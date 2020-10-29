@@ -139,7 +139,7 @@ public class CustomStructures extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
 		getCommand("customstructure").setExecutor(new SCommand(this));
-		getCommand("customstructure").setTabCompleter(new SCommandTab());
+		getCommand("customstructure").setTabCompleter(new SCommandTab(this));
 	}
 
 	private void registerConfig() {

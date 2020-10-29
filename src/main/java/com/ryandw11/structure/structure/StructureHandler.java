@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 public class StructureHandler {
 
     private List<Structure> structures;
+    private List<String> names;
 
     public StructureHandler(List<String> stringStructs, CustomStructures cs){
         structures = new ArrayList<>();
+        names = new ArrayList<>();
         cs.getLogger().info("Loading structures from files.");
         for(String s : stringStructs){
             File struct = new File(cs.getDataFolder() + File.separator + "structures" + File.separator + s.replace(".yml", "") + ".yml");
@@ -29,6 +31,7 @@ public class StructureHandler {
             if(tempStruct == null)
                 continue;
             structures.add(tempStruct);
+            names.add(tempStruct.getName());
         }
     }
 
@@ -60,5 +63,13 @@ public class StructureHandler {
      */
     public Structure getStructure(int i){
         return structures.get(i);
+    }
+
+    /**
+     * Get the names of the structures.
+     * @return The names of the structures.
+     */
+    public List<String> getStructureNames(){
+        return names;
     }
 }

@@ -595,6 +595,9 @@ public class SchematicHandler {
                 return;
             }
 
+            // Remove the sign after placing the schematic.
+            location.getBlock().setType(Material.AIR);
+
             SubSchematic subSchem = subSchematics.getSchematics().get(number);
             try {
                 schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure.getLootTables(), parentStructure, iteration + 1);
