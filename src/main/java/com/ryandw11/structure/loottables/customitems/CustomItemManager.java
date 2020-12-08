@@ -28,8 +28,8 @@ public class CustomItemManager {
                 file.createNewFile();
             } catch (IOException ex) {
                 structures.getLogger().severe("Cannot create Custom Items file. Enable debug mode for more information.");
-//               if(structures.isDebug())
-                ex.printStackTrace();
+               if(structures.isDebug())
+                   ex.printStackTrace();
                 return;
             }
         }

@@ -27,6 +27,7 @@ SubSchematics:
     demo2:
       file: 'demo2.schem'
       PlaceAir: false
+      UseRotation: false
 
 StructureLimitations:
   whitelistSpawnBlocks:

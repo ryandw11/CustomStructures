@@ -1,5 +1,6 @@
 package com.ryandw11.structure.loottables;
 
+import com.ryandw11.structure.exceptions.LootTableException;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -31,7 +32,12 @@ public class LootItem {
      */
     public LootItem(String customName, String type, int amount, int weight, Map<String, Integer> enchants) {
         this.weight = weight;
-        this.item = new ItemStack(Material.valueOf(type));
+        try {
+            this.item = new ItemStack(Material.valueOf(type.toUpperCase()));
+        }
+        catch (IllegalArgumentException ex){
+            throw new LootTableException("Unknown Material Type: " + type);
+        }
         this.item.setAmount(amount);
 
         if (customName != null) { //Catch for people who do not want different names
@@ -45,7 +51,7 @@ public class LootItem {
             int level = enchants.get(enchantName);
             Enchantment enchantment = EnchantmentWrapper.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
             if (enchantment == null)
-                throw new RuntimeException("Invalid Enchantment: " + enchantName);
+                throw new LootTableException("Invalid Enchantment: " + enchantName);
             this.item.addUnsafeEnchantment(enchantment, level);
         }
     }

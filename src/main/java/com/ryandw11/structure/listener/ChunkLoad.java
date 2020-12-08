@@ -17,14 +17,19 @@ import com.ryandw11.structure.utils.StructurePicker;
  */
 public class ChunkLoad implements Listener {
 
+    private CustomStructures plugin;
     public ChunkLoad() {
+        this.plugin = CustomStructures.getInstance();
     }
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent e) {
         if (!CustomStructures.enabled) return;
 
-        if (!e.isNewChunk()) return;
+        // Allow new chunk to be disabled.
+        boolean newChunk = !plugin.getConfig().contains("new_chunks") || plugin.getConfig().getBoolean("new_chunks");
+
+        if (newChunk && !e.isNewChunk()) return;
 
 
         World w = e.getChunk().getWorld(); //Grabs the world

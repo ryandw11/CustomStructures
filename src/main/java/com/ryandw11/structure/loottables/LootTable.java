@@ -1,6 +1,7 @@
 package com.ryandw11.structure.loottables;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.exceptions.LootTableException;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -10,10 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a LootTable file.
@@ -22,7 +20,7 @@ import java.util.Map;
  */
 public class LootTable {
 
-    private LootTableType type;
+    private List<LootTableType> types;
     private int rolls;
     private RandomCollection<LootItem> randomCollection;
     private String name;
@@ -33,18 +31,30 @@ public class LootTable {
         this.LoadFile(name);
         this.name = name;
 
-        this.type = LootTableType.valueOf(this.lootTablesFC.getString("Type"));
+        if(!lootTablesFC.contains("Type")) throw new LootTableException("Invalid loot table format! Cannot find global 'Type' setting.");
+        if(!lootTablesFC.contains("Rolls")) throw new LootTableException("Invalid loot table format! Cannot find global 'Rolls' setting.");
+
+        this.types = LootTableType.valueOfList(Objects.requireNonNull(this.lootTablesFC.getString("Type")));
+        if(this.types.isEmpty()) throw new LootTableException("Invalid loot table format! Global setting 'Type' is not valid!");
+
         this.rolls = this.lootTablesFC.getInt("Rolls");
 
 
         this.loadItems();
     }
 
+    /**
+     * Load the items of the Loot Table.
+     */
     private void loadItems() {
-
         this.randomCollection = new RandomCollection<>();
+        if (!lootTablesFC.contains("Items"))
+            throw new LootTableException("Invalid LootTable format! The 'Items' section is required!");
 
         for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
+            // This will throw an exception if the item is not valid.
+            validateItem(itemID);
+
             if (lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("CUSTOM")) {
                 int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
                 int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
@@ -78,35 +88,56 @@ public class LootTable {
 
     }
 
+    /**
+     * Validate that a certain item contains all of the required information.
+     *
+     * @param itemID The item id.
+     */
+    private void validateItem(String itemID) {
+        ConfigurationSection item = lootTablesFC.getConfigurationSection("Items." + itemID);
+        if (item == null) throw new LootTableException("Invalid file format for loot table!");
+        if (!item.contains("Amount")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+                "'Amount' setting for item: " + itemID);
+        if (!item.contains("Weight")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+                "'Weight' setting for item: " + itemID);
+        if (!item.contains("Type")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+                "'Type' setting for item: " + itemID);
+    }
+
+    /**
+     * Load the file.
+     *
+     * @param name The file name.
+     */
     private void LoadFile(String name) {
         File lootTablesfile = new File(CustomStructures.plugin.getDataFolder() + "/lootTables/" + name + ".yml");
+        if (!lootTablesfile.exists())
+            throw new LootTableException("Cannot find the following loot table file: " + name);
         this.lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
 
         try {
             lootTablesFC.load(lootTablesfile);
-
         } catch (IOException | InvalidConfigurationException e) {
-
-            e.printStackTrace();
+            throw new LootTableException("Invalid LootTable Configuration! Please view the guide on the wiki for more information.");
         }
     }
 
     /**
-     * Get the type of the loot table.
+     * Get the types of the loot table.
      *
-     * @return The type
+     * @return The types
      */
-    public LootTableType getType() {
-        return type;
+    public List<LootTableType> getTypes() {
+        return types;
     }
 
     /**
-     * Set the type of the loot table.
+     * Set the types of the loot table.
      *
-     * @param type The type to set the loot table to.
+     * @param types The types to set the loot table to.
      */
-    public void setType(LootTableType type) {
-        this.type = type;
+    public void setTypes(List<LootTableType> types) {
+        this.types = types;
     }
 
     /**
@@ -146,8 +177,9 @@ public class LootTable {
      * @return A list of items.
      */
     public List<LootItem> getItems() {
-        List<LootItem> result = new ArrayList<LootItem>();
+        List<LootItem> result = new ArrayList<>();
         for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
+            this.validateItem(itemID);
 
             String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
             String type = this.lootTablesFC.getString("Items." + itemID + ".Type");

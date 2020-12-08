@@ -2,6 +2,7 @@ package com.ryandw11.structure;
 
 import com.ryandw11.structure.io.BlockTag;
 import com.ryandw11.structure.loottables.LootTable;
+import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
@@ -33,6 +34,7 @@ import me.ryandw11.ods.tags.ListTag;
 import me.ryandw11.ods.tags.ObjectTag;
 import org.bukkit.*;
 import org.bukkit.block.*;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -528,11 +530,13 @@ public class SchematicHandler {
             Container container = (Container) blockState;
             Inventory containerInventory = container.getInventory();
             Block block = location.getBlock();
-            if (block.getType() == lootTable.getType().getMaterial() && containerInventory instanceof FurnaceInventory) {
+            LootTableType blockType = LootTableType.valueOf(block.getType());
+
+            if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
-            } else if (block.getType() == lootTable.getType().getMaterial() && containerInventory instanceof BrewerInventory) {
+            } else if (lootTable.getTypes().contains(blockType) && containerInventory instanceof BrewerInventory) {
                 this.replaceBrewerContent(lootTable, random, (BrewerInventory) containerInventory);
-            } else if (block.getType() == lootTable.getType().getMaterial()) {
+            } else if (lootTable.getTypes().contains(blockType)) {
                 this.replaceChestContent(lootTable, random, containerInventory);
             }
         }
@@ -546,8 +550,16 @@ public class SchematicHandler {
      */
     private void replaceSignWithMob(Location location) {
         Sign sign = (Sign) location.getBlock().getState();
-        String firstLine = sign.getLine(0).trim();
-        String secondLine = sign.getLine(1).trim();
+        String firstLine;
+        String secondLine;
+        if(location.getBlock().getState() instanceof Sign){
+            firstLine = sign.getLine(0).trim();
+            secondLine = sign.getLine(1).trim();
+        }else if(location.getBlock().getState() instanceof WallSign){
+            firstLine = sign.getLine(0).trim();
+            secondLine = sign.getLine(1).trim();
+        }
+        else return;
 
         if (firstLine.equalsIgnoreCase("[mob]")) {
             try {
@@ -581,16 +593,30 @@ public class SchematicHandler {
         String firstLine = sign.getLine(0).trim();
         String secondLine = sign.getLine(1).trim();
 
-        org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign) location.getBlock().getBlockData();
+        // Allow this to work with both wall signs and normal signs.
+        if(location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign) {
+            org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign) location.getBlock().getBlockData();
 
-        Vector direction = signData.getRotation().getDirection();
-        double rotation = Math.atan2(direction.getZ(), direction.getX());
-        if (direction.getX() != 0) {
-            rotation -= (Math.PI / 2);
-        } else {
-            rotation += (Math.PI / 2);
+            Vector direction = signData.getRotation().getDirection();
+            double rotation = Math.atan2(direction.getZ(), direction.getX());
+            if (direction.getX() != 0) {
+                rotation -= (Math.PI / 2);
+            } else {
+                rotation += (Math.PI / 2);
+            }
+            parentStructure.setSubSchemRotation(rotation);
         }
-        parentStructure.setSubSchemRotation(rotation);
+        else if(location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.WallSign){
+            org.bukkit.block.data.type.WallSign signData = (org.bukkit.block.data.type.WallSign) location.getBlock().getBlockData();
+            Vector direction = signData.getFacing().getDirection();
+            double rotation = Math.atan2(direction.getZ(), direction.getX());
+            if (direction.getX() != 0) {
+                rotation -= (Math.PI / 2);
+            } else {
+                rotation += (Math.PI / 2);
+            }
+            parentStructure.setSubSchemRotation(rotation);
+        }
 
         if (firstLine.equalsIgnoreCase("[schematic]") || firstLine.equalsIgnoreCase("[schem]")) {
             int number = -1;
