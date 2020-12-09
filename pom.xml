@@ -7,7 +7,7 @@
 
     <groupId>com.ryandw11</groupId>
     <artifactId>CustomStructures</artifactId>
-    <version>1.5.4.2</version>
+    <version>1.5.5</version>
 
     <build>
         <sourceDirectory>/src/main/java</sourceDirectory>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>me.ryandw11</groupId>
             <artifactId>ods</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

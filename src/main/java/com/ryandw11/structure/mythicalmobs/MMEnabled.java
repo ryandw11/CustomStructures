@@ -13,4 +13,10 @@ public class MMEnabled implements MythicalMobHook {
 		mobManager.spawnMob(name, loc);
 	}
 
+	@Override
+	public void spawnMob(String name, Location loc, int level) {
+		MobManager mobManager = MythicMobs.inst().getMobManager();
+		mobManager.spawnMob(name, loc, level);
+	}
+
 }

@@ -96,12 +96,16 @@ public class LootTable {
     private void validateItem(String itemID) {
         ConfigurationSection item = lootTablesFC.getConfigurationSection("Items." + itemID);
         if (item == null) throw new LootTableException("Invalid file format for loot table!");
-        if (!item.contains("Amount")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+        if (!item.contains("Amount")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
                 "'Amount' setting for item: " + itemID);
-        if (!item.contains("Weight")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+        if (!item.contains("Weight")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
                 "'Weight' setting for item: " + itemID);
-        if (!item.contains("Type")) throw new LootTableException("Invalid file format for loot table! Cannot find" +
+        if (!item.contains("Type")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
                 "'Type' setting for item: " + itemID);
+        if(!item.isInt("Amount")) throw new LootTableException("Invalid file format for loot table! 'Amount' is not an " +
+                "integer for item: " + itemID);
+        if(!item.isInt("Weight")) throw new LootTableException("Invalid file format for loot table! 'Weight' is not an " +
+                "integer for item: " + itemID);
     }
 
     /**

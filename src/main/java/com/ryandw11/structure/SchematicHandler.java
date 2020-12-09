@@ -552,14 +552,16 @@ public class SchematicHandler {
         Sign sign = (Sign) location.getBlock().getState();
         String firstLine;
         String secondLine;
-        if(location.getBlock().getState() instanceof Sign){
+        String thirdLine;
+        if (location.getBlock().getState() instanceof Sign) {
             firstLine = sign.getLine(0).trim();
             secondLine = sign.getLine(1).trim();
-        }else if(location.getBlock().getState() instanceof WallSign){
+            thirdLine = sign.getLine(2).trim();
+        } else if (location.getBlock().getState() instanceof WallSign) {
             firstLine = sign.getLine(0).trim();
             secondLine = sign.getLine(1).trim();
-        }
-        else return;
+            thirdLine = sign.getLine(2).trim();
+        } else return;
 
         if (firstLine.equalsIgnoreCase("[mob]")) {
             try {
@@ -574,7 +576,18 @@ public class SchematicHandler {
             }
         }
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
-            plugin.mmh.spawnMob(secondLine, location);
+            // Allow for the third line to have the level of the mob.
+            if (thirdLine.isEmpty())
+                plugin.mmh.spawnMob(secondLine, location);
+            else {
+                int level;
+                try {
+                    level = Integer.parseInt(thirdLine);
+                } catch (NumberFormatException ex) {
+                    level = 1;
+                }
+                plugin.mmh.spawnMob(secondLine, location, level);
+            }
             location.getBlock().setType(Material.AIR);
         }
 
@@ -594,7 +607,7 @@ public class SchematicHandler {
         String secondLine = sign.getLine(1).trim();
 
         // Allow this to work with both wall signs and normal signs.
-        if(location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign) {
+        if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign) {
             org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign) location.getBlock().getBlockData();
 
             Vector direction = signData.getRotation().getDirection();
@@ -605,8 +618,7 @@ public class SchematicHandler {
                 rotation += (Math.PI / 2);
             }
             parentStructure.setSubSchemRotation(rotation);
-        }
-        else if(location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.WallSign){
+        } else if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.WallSign) {
             org.bukkit.block.data.type.WallSign signData = (org.bukkit.block.data.type.WallSign) location.getBlock().getBlockData();
             Vector direction = signData.getFacing().getDirection();
             double rotation = Math.atan2(direction.getZ(), direction.getX());
@@ -664,6 +676,13 @@ public class SchematicHandler {
         }
     }
 
+    /**
+     * Replace the chest content.
+     *
+     * @param lootTable          The loot table.
+     * @param random             The value of random.
+     * @param containerInventory The container inventory
+     */
     private void replaceChestContent(LootTable lootTable, Random random, Inventory containerInventory) {
         ItemStack[] containerContent = containerInventory.getContents();
 
