@@ -68,4 +68,7 @@ Masks:
 #List of lootTables for this Schematic, name and weight
 #Weight determines how often it will be chosen out of all the entries in the list.
 LootTables:
-  lootTable: 5
+  CHEST:
+    lootTable: 5
+  BARREL:
+    lootTable: 5

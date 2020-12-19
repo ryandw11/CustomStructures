@@ -1,7 +1,9 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.exceptions.LootTableException;
 import com.ryandw11.structure.loottables.LootTable;
+import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.configuration.ConfigurationSection;
@@ -105,8 +107,16 @@ public class StructureBuilder {
             ConfigurationSection lootableConfig = config.getConfigurationSection("LootTables");
             assert lootableConfig != null;
             for (String lootTable : lootableConfig.getKeys(false)) {
-                int weight = lootableConfig.getInt(lootTable);
-                lootTables.add(weight, CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTable));
+                if(!LootTableType.exists(lootTable))
+                    continue;
+                LootTableType type = LootTableType.valueOf(lootTable.toUpperCase());
+                // Loop through the new loot table section.
+                for(String lootTableName : Objects.requireNonNull(lootableConfig.getConfigurationSection(lootTable)).getKeys(false)){
+                    int weight = lootableConfig.getInt(lootTable + "." + lootTableName);
+                    LootTable table = CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTableName);
+                    table.addType(type);
+                    lootTables.add(weight, table);
+                }
             }
         }
     }
@@ -269,7 +279,9 @@ public class StructureBuilder {
             config.set("compiled_schematic", compiledSchematic);
 
         for (Map.Entry<Double, LootTable> entry : lootTables.getMap().entrySet()) {
-            config.set("LootTables." + entry.getValue().getName(), entry.getKey());
+            for(LootTableType type : entry.getValue().getTypes()){
+                config.set("LootTables." + type.toString() + "." + entry.getValue().getName(), entry.getKey());
+            }
         }
         config.save(file);
     }
