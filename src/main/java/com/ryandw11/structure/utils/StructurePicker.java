@@ -118,7 +118,6 @@ public class StructurePicker extends BukkitRunnable {
                     sh.schemHandle(bl.getLocation(),
                             structure.getSchematic(),
                             structure.getStructureProperties().canPlaceAir(),
-                            structure.getLootTables(),
                             structure);
                 } catch (IOException | WorldEditException e) {
                     e.printStackTrace();

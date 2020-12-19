@@ -11,14 +11,9 @@ import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.mythicalmobs.MMDisabled;
 import com.ryandw11.structure.mythicalmobs.MMEnabled;
 import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
-import com.ryandw11.structure.structure.StructureBuilder;
 import com.ryandw11.structure.structure.StructureHandler;
-import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.Pair;
-import com.ryandw11.structure.utils.RandomCollection;
-import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -26,7 +21,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Ryandw11
@@ -174,95 +172,11 @@ public class CustomStructures extends JavaPlugin {
         getLogger().info("Automatically converting old format into the new one.");
         // Update to new structure format.
         if (ver < 5) {
-            List<String> structures = new ArrayList<>();
-            File config = new File(getDataFolder(), "config.yml");
-            File configBackup = new File(getDataFolder(), "config.yml.backup");
-            File structuresDir = new File(getDataFolder(), "structures");
-            try {
-                configBackup.createNewFile();
-                FileUtils.copyFile(config, configBackup);
-                if (!structuresDir.exists())
-                    structuresDir.mkdir();
-            } catch (IOException ex) {
-                getLogger().severe("The config converter failed to create a backup of the config!");
-                getLogger().severe("Custom Structures will now disable itself.");
-                getServer().getPluginManager().disablePlugin(this);
-                if (debugMode)
-                    ex.printStackTrace();
-                return;
-            }
-            for (String key : Objects.requireNonNull(getConfig().getConfigurationSection("Schematics")).getKeys(false)) {
-                ConfigurationSection section = getConfig().getConfigurationSection("Schematics." + key);
-                File file = new File(getDataFolder() + File.separator + "structures" + File.separator + key + ".yml");
-                assert section != null;
-                StructureBuilder builder = new StructureBuilder(key, section.getString("Schematic"));
-
-                builder.setChance(section.getInt("Chance.Number"), section.getInt("Chance.OutOf"));
-
-                if (section.contains("whitelistSpawnBlocks"))
-                    builder.setStructureLimitations(new StructureLimitations(section.getStringList("whitelistSpawnBlocks"), new BlockLevelLimit(), new HashMap<>()));
-                else
-                    builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
-
-                StructureLocation structLocation = new StructureLocation();
-                if (section.contains("AllowedWorlds") && section.contains("AllWorlds")) {
-                    if (!section.getBoolean("AllWorlds")) {
-                        structLocation.setWorlds(section.getStringList("AllowedWorlds"));
-                    }
-                }
-                if (section.contains("SpawnY")) {
-                    structLocation.setSpawnSettings(new StructureYSpawning(Objects.requireNonNull(section.getString("SpawnY"))));
-                }
-                if (section.contains("Biome")) {
-                    String biomeValue = section.getString("Biome");
-                    assert biomeValue != null;
-                    if (!biomeValue.equalsIgnoreCase("all")) {
-                        String[] biomes = biomeValue.split(",");
-                        structLocation.setBiomes(new ArrayList<>(Arrays.asList(biomes)));
-                    }
-                }
-                builder.setStructureLocation(structLocation);
-
-                StructureProperties structProperties = new StructureProperties();
-                structProperties.setIgnorePlants(section.getBoolean("ignorePlants"));
-                structProperties.setPlaceAir(section.getBoolean("PlaceAir"));
-                structProperties.setRandomRotation(section.getBoolean("randomRotation"));
-                structProperties.setSpawnInWater(section.getBoolean("Ocean_Properties.spawnInLiquid"));
-                builder.setStructureProperties(structProperties);
-
-                if (section.contains("LootTables"))
-                    builder.setLootTables(Objects.requireNonNull(section.getConfigurationSection("LootTables")));
-                else
-                    builder.setLootTables(new RandomCollection<>());
-
-                try {
-                    builder.save(file);
-                } catch (IOException ex) {
-                    getLogger().severe("The config converter failed to convert a structure to the new format!");
-                    getLogger().severe("The structure that failed is " + key);
-                    getLogger().severe("Custom Structures will now disable itself.");
-                    getServer().getPluginManager().disablePlugin(this);
-                    if (debugMode)
-                        ex.printStackTrace();
-                    return;
-                }
-                structures.add(key);
-            }
-            getConfig().set("Schematics", null);
-            getConfig().set("Structures", structures);
-            getConfig().set("configversion", 5);
-            try {
-                getConfig().save(plugin.getDataFolder() + File.separator + "config.yml");
-            } catch (IOException ex) {
-                getLogger().severe("An error has occurred when trying to save the new config.");
-                getLogger().severe("The plugin will now disable itself.");
-                getServer().getPluginManager().disablePlugin(this);
-                if (debugMode)
-                    ex.printStackTrace();
-                return;
-            }
-            reloadConfig();
-            getLogger().info("Successfully converted " + structures.size() + " structures to the new format!");
+            getLogger().severe("Error: Your config is too old for the plugin to update.");
+            getLogger().severe("Please use custom structures 1.5.4 or older before updating to the latest version.");
+            getLogger().severe("The plugin will now disable itself.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
         // Update to new loot table format.
         if (ver < 6) {
@@ -272,7 +186,7 @@ public class CustomStructures extends JavaPlugin {
                 getLogger().severe("An error occurred when trying to update the structure format: Unable to find structure directory! Does it exist?");
                 return;
             }
-			int structuresConverted = 0;
+            int structuresConverted = 0;
             Map<String, Pair<List<LootTableType>, Double>> alreadyConverted = new HashMap<>();
             for (File file : Objects.requireNonNull(structDir.listFiles())) {
                 if (!file.getName().contains(".yml"))
@@ -280,7 +194,7 @@ public class CustomStructures extends JavaPlugin {
                 FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
                 if (!fileConfiguration.contains("LootTables"))
                     continue;
-				Map<LootTableType, Map<String, Double>> lootTables = new HashMap<>();
+                Map<LootTableType, Map<String, Double>> lootTables = new HashMap<>();
                 for (String lootName : fileConfiguration.getConfigurationSection("LootTables").getKeys(false)) {
                     if (LootTableType.exists(lootName)) break;
                     File lootFile = new File(getDataFolder(), "lootTables" + File.separator + lootName + ".yml");
@@ -290,15 +204,14 @@ public class CustomStructures extends JavaPlugin {
                         return;
                     }
                     FileConfiguration lootConfig = YamlConfiguration.loadConfiguration(lootFile);
-                    if(!lootConfig.contains("Type")){
-                        if(alreadyConverted.containsKey(lootName)){
-                            for(LootTableType type : alreadyConverted.get(lootName).getLeft()){
-                                if(!lootTables.containsKey(type)){
+                    if (!lootConfig.contains("Type")) {
+                        if (alreadyConverted.containsKey(lootName)) {
+                            for (LootTableType type : alreadyConverted.get(lootName).getLeft()) {
+                                if (!lootTables.containsKey(type)) {
                                     Map<String, Double> lt = new HashMap<>();
                                     lt.put(lootName, alreadyConverted.get(lootName).getRight());
                                     lootTables.put(type, lt);
-                                }
-                                else
+                                } else
                                     lootTables.get(type).put(lootName, alreadyConverted.get(lootName).getRight());
                             }
                         }
@@ -315,34 +228,35 @@ public class CustomStructures extends JavaPlugin {
                     }
                     alreadyConverted.put(lootName, Pair.of(types, fileConfiguration.getDouble("LootTables." + lootName)));
                     lootConfig.set("Type", null);
-                    try{
+                    try {
                         lootConfig.save(lootFile);
-                    }catch (IOException ex){
+                    } catch (IOException ex) {
                         getLogger().severe("Error: Unable to save loot table file! Does the plugin have permission to edit that file?");
                     }
                 }
                 getLogger().info(file.getName() + ": " + lootTables.size() + "");
                 fileConfiguration.set("LootTables", null);
-                for(Map.Entry<LootTableType, Map<String, Double>> entry : lootTables.entrySet()){
-                	for(Map.Entry<String,Double> loot : entry.getValue().entrySet()){
-                		fileConfiguration.set(String.format("LootTables.%s.%s", entry.getKey().toString(), loot.getKey()), loot.getValue());
-					}
-				}
+                for (Map.Entry<LootTableType, Map<String, Double>> entry : lootTables.entrySet()) {
+                    for (Map.Entry<String, Double> loot : entry.getValue().entrySet()) {
+                        fileConfiguration.set(String.format("LootTables.%s.%s", entry.getKey().toString(), loot.getKey()), loot.getValue());
+                    }
+                }
                 try {
                     fileConfiguration.save(file);
-                }catch (IOException ex){
+                } catch (IOException ex) {
                     getLogger().severe("Error: Unable to save changed structure file! Does the plugin have permission to edit that file?");
                 }
                 structuresConverted++;
             }
             getConfig().set("configversion", 6);
             saveConfig();
-			getLogger().info("Successfully updated " + structuresConverted + " structures!");
+            getLogger().info("Successfully updated " + structuresConverted + " structures!");
         }
     }
 
     /**
      * If the plugin is in debug mode.
+     *
      * @return If the plugin is in debug mode.
      */
     public boolean isDebug() {

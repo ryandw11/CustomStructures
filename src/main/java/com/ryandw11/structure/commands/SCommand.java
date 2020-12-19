@@ -243,7 +243,6 @@ public class SCommand implements CommandExecutor {
 			}
 			StructureBuilder builder = new StructureBuilder(name, schematic + ".schem");
 			builder.setChance(1, 1000);
-			builder.setLootTables(new RandomCollection<>());
 			if(new File(plugin.getDataFolder() + "/schematics/" + schematic + ".cschem").exists()){
 				builder.setCompiledSchematic(schematic + ".cschem");
 			}

@@ -1,7 +1,6 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.exceptions.LootTableException;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.properties.*;
@@ -12,6 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,7 +47,7 @@ public class StructureBuilder {
     protected StructureLimitations structureLimitations;
     protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
-    protected RandomCollection<LootTable> lootTables;
+    protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
 
     private boolean invalid;
 
@@ -60,7 +60,7 @@ public class StructureBuilder {
     public StructureBuilder(String name, String schematic) {
         this.name = name;
         this.schematic = schematic;
-        lootTables = new RandomCollection<>();
+        lootTables = new HashMap<>();
     }
 
 
@@ -102,20 +102,25 @@ public class StructureBuilder {
         structureLimitations = new StructureLimitations(config);
         maskProperty = new MaskProperty(config);
         subSchematics = new SubSchematics(config, CustomStructures.getInstance());
-        lootTables = new RandomCollection<>();
+        lootTables = new HashMap<>();
         if (config.contains("LootTables")) {
             ConfigurationSection lootableConfig = config.getConfigurationSection("LootTables");
             assert lootableConfig != null;
             for (String lootTable : lootableConfig.getKeys(false)) {
-                if(!LootTableType.exists(lootTable))
+                if (!LootTableType.exists(lootTable))
                     continue;
                 LootTableType type = LootTableType.valueOf(lootTable.toUpperCase());
                 // Loop through the new loot table section.
-                for(String lootTableName : Objects.requireNonNull(lootableConfig.getConfigurationSection(lootTable)).getKeys(false)){
+                for (String lootTableName : Objects.requireNonNull(lootableConfig.getConfigurationSection(lootTable)).getKeys(false)) {
                     int weight = lootableConfig.getInt(lootTable + "." + lootTableName);
                     LootTable table = CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTableName);
                     table.addType(type);
-                    lootTables.add(weight, table);
+                    if (lootTables.containsKey(type))
+                        lootTables.get(type).add(weight, table);
+                    else {
+                        lootTables.put(type, new RandomCollection<>());
+                        lootTables.get(type).add(weight, table);
+                    }
                 }
             }
         }
@@ -212,11 +217,24 @@ public class StructureBuilder {
      * @param lootableConfig The loot table configuration section.
      */
     public void setLootTables(ConfigurationSection lootableConfig) {
-        lootTables = new RandomCollection<>();
+        lootTables = new HashMap<>();
         assert lootableConfig != null;
         for (String lootTable : lootableConfig.getKeys(false)) {
-            int weight = lootableConfig.getInt(lootTable);
-            lootTables.add(weight, CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTable));
+            if (!LootTableType.exists(lootTable))
+                continue;
+            LootTableType type = LootTableType.valueOf(lootTable.toUpperCase());
+            // Loop through the new loot table section.
+            for (String lootTableName : Objects.requireNonNull(lootableConfig.getConfigurationSection(lootTable)).getKeys(false)) {
+                int weight = lootableConfig.getInt(lootTable + "." + lootTableName);
+                LootTable table = CustomStructures.getInstance().getLootTableHandler().getLootTableByName(lootTableName);
+                table.addType(type);
+                if (lootTables.containsKey(type))
+                    lootTables.get(type).add(weight, table);
+                else {
+                    lootTables.put(type, new RandomCollection<>());
+                    lootTables.get(type).add(weight, table);
+                }
+            }
         }
     }
 
@@ -225,8 +243,14 @@ public class StructureBuilder {
      *
      * @param lootTables The collection of LootTables.
      */
-    public void setLootTables(RandomCollection<LootTable> lootTables) {
+    public void setLootTables(Map<LootTableType, RandomCollection<LootTable>> lootTables) {
         this.lootTables = lootTables;
+    }
+
+    public void addLootTable(LootTableType type, LootTable lootTable, double weight){
+        if(!lootTables.containsKey(type))
+            lootTables.put(type, new RandomCollection<>());
+        lootTables.get(type).add(weight, lootTable);
     }
 
     /**
@@ -278,9 +302,9 @@ public class StructureBuilder {
         if (isCompiled)
             config.set("compiled_schematic", compiledSchematic);
 
-        for (Map.Entry<Double, LootTable> entry : lootTables.getMap().entrySet()) {
-            for(LootTableType type : entry.getValue().getTypes()){
-                config.set("LootTables." + type.toString() + "." + entry.getValue().getName(), entry.getKey());
+        for(Map.Entry<LootTableType, RandomCollection<LootTable>> loot : lootTables.entrySet()){
+            for(Map.Entry<Double, LootTable> entry : loot.getValue().getMap().entrySet()){
+                config.set("LootTables." + loot.getKey().toString() + "." + entry.getValue().getName(), entry.getKey());
             }
         }
         config.save(file);

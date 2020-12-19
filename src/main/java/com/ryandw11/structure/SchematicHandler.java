@@ -62,15 +62,14 @@ public class SchematicHandler {
      * Handles the actual pasting of the structure.
      * <p>This method is to be called on the main Server thread.</p>
      *
-     * @param loc        - The location
-     * @param filename   - The file name. Ex: demo.schematic
-     * @param useAir     - if air is to be used in the schematic
-     * @param lootTables - The Loot Tables specified for this structure, if any.
-     * @param structure  - The structure that is getting spawned.
-     * @param iteration  - The number of iterations in a structure.
+     * @param loc       - The location
+     * @param filename  - The file name. Ex: demo.schematic
+     * @param useAir    - if air is to be used in the schematic
+     * @param structure - The structure that is getting spawned.
+     * @param iteration - The number of iterations in a structure.
      * @throws WorldEditException If world edit has a problem pasting the schematic.
      */
-    public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure, int iteration)
+    public void schemHandle(Location loc, String filename, boolean useAir, Structure structure, int iteration)
             throws IOException, WorldEditException {
 
         if (iteration > 2) {
@@ -184,7 +183,7 @@ public class SchematicHandler {
 
             for (Location location : containersAndSignsLocations) {
                 if (location.getBlock().getState() instanceof Container) {
-                    replaceContainerContent(lootTables, location);
+                    replaceContainerContent(structure, location);
                 }
                 if (location.getBlock().getState() instanceof Sign) {
                     replaceSignWithMob(location);
@@ -202,16 +201,15 @@ public class SchematicHandler {
      * Handles the schematic.
      * <p>This method is to be called on the main Server thread.</p>
      *
-     * @param loc        - The location
-     * @param filename   - The file name. Ex: demo.schematic
-     * @param useAir     - if air is to be used in the schematic
-     * @param lootTables - The Loot Tables specified for this structure, if any.
-     * @param structure  - The structure that is getting spawned.
+     * @param loc       - The location
+     * @param filename  - The file name. Ex: demo.schematic
+     * @param useAir    - if air is to be used in the schematic
+     * @param structure - The structure that is getting spawned.
      * @throws WorldEditException If world edit has a problem pasting the schematic.
      */
-    public void schemHandle(Location loc, String filename, boolean useAir, RandomCollection<LootTable> lootTables, Structure structure)
+    public void schemHandle(Location loc, String filename, boolean useAir, Structure structure)
             throws IOException, WorldEditException {
-        schemHandle(loc, filename, useAir, lootTables, structure, 0);
+        schemHandle(loc, filename, useAir, structure, 0);
     }
 
     /**
@@ -515,23 +513,25 @@ public class SchematicHandler {
     }
 
     /**
-     * Replace the contents of a container with the loottable.
+     * Replace the contents of a container with the loottable from a structure.
      *
-     * @param lootTables The loot table
-     * @param location   The location of the container.
+     * @param structure The structure that is being spawned.
+     * @param location  The location of the container.
      */
-    private void replaceContainerContent(RandomCollection<LootTable> lootTables, Location location) {
-        if (lootTables.isEmpty()) return;
-        LootTable lootTable = lootTables.next();
+    private void replaceContainerContent(Structure structure, Location location) {
+        if (structure.getLootTables().isEmpty()) return;
+
+        BlockState blockState = location.getBlock().getState();
+        Container container = (Container) blockState;
+        Inventory containerInventory = container.getInventory();
+        Block block = location.getBlock();
+        LootTableType blockType = LootTableType.valueOf(block.getType());
+
+        RandomCollection<LootTable> tables = structure.getLootTables(blockType);
+        LootTable lootTable = tables.next();
         Random random = new Random();
 
         for (int i = 0; i < lootTable.getRolls(); i++) {
-            BlockState blockState = location.getBlock().getState();
-            Container container = (Container) blockState;
-            Inventory containerInventory = container.getInventory();
-            Block block = location.getBlock();
-            LootTableType blockType = LootTableType.valueOf(block.getType());
-
             if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
             } else if (lootTable.getTypes().contains(blockType) && containerInventory instanceof BrewerInventory) {
@@ -666,7 +666,7 @@ public class SchematicHandler {
             if (!subSchem.isUsingRotation())
                 parentStructure.setSubSchemRotation(0);
             try {
-                schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure.getLootTables(), parentStructure, iteration + 1);
+                schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure, iteration + 1);
             } catch (Exception ex) {
                 plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
                 if (plugin.isDebug()) {

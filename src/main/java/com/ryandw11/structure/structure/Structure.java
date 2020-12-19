@@ -2,6 +2,7 @@ package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.loottables.LootTable;
+import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
@@ -11,6 +12,7 @@ import org.bukkit.block.Block;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -32,7 +34,7 @@ public class Structure {
     private final StructureLimitations structureLimitations;
     private final MaskProperty maskProperty;
     private final SubSchematics subSchematics;
-    private final RandomCollection<LootTable> lootTables;
+    private final Map<LootTableType, RandomCollection<LootTable>> lootTables;
 
     private double subSchemRotation = 0d;
 
@@ -159,12 +161,22 @@ public class Structure {
     }
 
     /**
-     * Get the collection of loot tables.
+     * Get the map of loot tables containing all types.
      *
-     * @return The collection of loot tables.
+     * @return The map of loot tables containing all types.
      */
-    public RandomCollection<LootTable> getLootTables() {
+    public Map<LootTableType, RandomCollection<LootTable>> getLootTables() {
         return this.lootTables;
+    }
+
+    /**
+     * Get the collection of loot tables for a certain loot table type.
+     *
+     * @param type The type of loot table to get.
+     * @return The loot table type.
+     */
+    public RandomCollection<LootTable> getLootTables(LootTableType type) {
+        return this.lootTables.get(type);
     }
 
     /**
@@ -222,7 +234,7 @@ public class Structure {
     public void spawn(Location location) {
         SchematicHandler handler = new SchematicHandler();
         try {
-            handler.schemHandle(location, getSchematic(), getStructureProperties().canPlaceAir(), getLootTables(), this);
+            handler.schemHandle(location, getSchematic(), getStructureProperties().canPlaceAir(), this);
         } catch (IOException | WorldEditException ex) {
             ex.printStackTrace();
         }
