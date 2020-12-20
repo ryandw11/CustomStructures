@@ -55,4 +55,17 @@ public enum LootTableType {
         return null;
     }
 
+    /**
+     * Check to see if a name exists in the enum.
+     * @param value The value.
+     * @return If the enum name exists.
+     */
+    public static boolean exists(String value){
+        for(LootTableType s : values()){
+            if(s.toString().equalsIgnoreCase(value))
+                return true;
+        }
+        return false;
+    }
+
 }

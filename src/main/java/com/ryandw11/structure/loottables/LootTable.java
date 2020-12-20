@@ -31,12 +31,9 @@ public class LootTable {
         this.LoadFile(name);
         this.name = name;
 
-        if(!lootTablesFC.contains("Type")) throw new LootTableException("Invalid loot table format! Cannot find global 'Type' setting.");
         if(!lootTablesFC.contains("Rolls")) throw new LootTableException("Invalid loot table format! Cannot find global 'Rolls' setting.");
 
-        this.types = LootTableType.valueOfList(Objects.requireNonNull(this.lootTablesFC.getString("Type")));
-        if(this.types.isEmpty()) throw new LootTableException("Invalid loot table format! Global setting 'Type' is not valid!");
-
+        this.types = new ArrayList<>();
         this.rolls = this.lootTablesFC.getInt("Rolls");
 
 
@@ -142,6 +139,10 @@ public class LootTable {
      */
     public void setTypes(List<LootTableType> types) {
         this.types = types;
+    }
+
+    public void addType(LootTableType type){
+        this.types.add(type);
     }
 
     /**
