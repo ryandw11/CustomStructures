@@ -8,6 +8,7 @@ StructureLocation:
   Worlds:
     - world
   SpawnY: top
+  CalculateSpawnFirst: true
   Biome: []
   # Set a custom spawn distance for the structures.
   spawn_distance:
@@ -38,6 +39,7 @@ StructureLimitations:
 
   # This could cause issue with lag depending on how large the search area is.
   BlockLevelLimit:
+    # Can be flat or flat_error.
     mode: flat
     cornerOne:
       x: -5

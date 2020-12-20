@@ -1,6 +1,7 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.properties.*;
@@ -49,8 +50,6 @@ public class StructureBuilder {
     protected SubSchematics subSchematics;
     protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
 
-    private boolean invalid;
-
     /**
      * Build a structure using code.
      *
@@ -77,12 +76,9 @@ public class StructureBuilder {
             throw new RuntimeException("Cannot build structure: That file does not exist!");
         config = YamlConfiguration.loadConfiguration(file);
 
-        invalid = false;
-
         this.name = name;
 
-        if (!checkValidity())
-            return;
+        checkValidity();
 
         schematic = config.getString("schematic");
         chanceNumber = config.getInt("Chance.Number");
@@ -126,27 +122,22 @@ public class StructureBuilder {
         }
     }
 
-    private boolean checkValidity() {
+    private void checkValidity() {
         if (!config.contains("schematic")) {
-            CustomStructures.getInstance().getLogger().severe("Invalid Structure format for:" + config.getName());
-            CustomStructures.getInstance().getLogger().severe("Schematic is mandatory, please add one in for this file to be valid.");
-            setInvalid();
-            return false;
+            throw new StructureConfigurationException("Invalid structure config: No Schematic found!");
         }
-
         if (!config.contains("Chance.Number")) {
-            CustomStructures.getInstance().getLogger().severe("Invalid Structure format for:" + config.getName());
-            CustomStructures.getInstance().getLogger().severe("Chance.Number is mandatory, please add one in for this file to be valid.");
-            setInvalid();
-            return false;
+            throw new StructureConfigurationException("Invalid structure config: `Chance.Number` is required!");
         }
         if (!config.contains("Chance.OutOf")) {
-            CustomStructures.getInstance().getLogger().severe("Invalid Structure format for:" + config.getName());
-            CustomStructures.getInstance().getLogger().severe("Chance.OutOf is mandatory, please add one in for this file to be valid.");
-            setInvalid();
-            return false;
+            throw new StructureConfigurationException("Invalid structure config: `Chance.OutOf` is required!");
         }
-        return true;
+        if (!config.isInt("Chance.Number") || config.getInt("Chance.Number") < 1) {
+            throw new StructureConfigurationException("Invalid structure config: `Chance.Number` must be a number cannot be less than 1!");
+        }
+        if (!config.isInt("Chance.OutOf") || config.getInt("Chance.OutOf") < 1) {
+            throw new StructureConfigurationException("Invalid structure config: `Chance.OutOf` must be a number cannot be less than 1!");
+        }
     }
 
     /**
@@ -247,17 +238,18 @@ public class StructureBuilder {
         this.lootTables = lootTables;
     }
 
-    public void addLootTable(LootTableType type, LootTable lootTable, double weight){
-        if(!lootTables.containsKey(type))
-            lootTables.put(type, new RandomCollection<>());
-        lootTables.get(type).add(weight, lootTable);
-    }
-
     /**
-     * Set this structure to be invalid.
+     * Add a loot table to the structure.
+     *
+     * @param lootTable The loot table to add.
+     * @param weight    The weight.
      */
-    public void setInvalid() {
-        invalid = true;
+    public void addLootTable(LootTable lootTable, double weight) {
+        for (LootTableType type : lootTable.getTypes()) {
+            if (!lootTables.containsKey(type))
+                lootTables.put(type, new RandomCollection<>());
+            lootTables.get(type).add(weight, lootTable);
+        }
     }
 
     /**
@@ -265,11 +257,9 @@ public class StructureBuilder {
      * <p>Note: This does not check to see if all values are set. If any of the properties are not set
      * than a NullPointerException will occur.</p>
      *
-     * @return The structure. (Null if the structure is invalid).
+     * @return The structure.
      */
     public Structure build() {
-        if (invalid)
-            return null;
         return new Structure(this);
     }
 
@@ -302,8 +292,8 @@ public class StructureBuilder {
         if (isCompiled)
             config.set("compiled_schematic", compiledSchematic);
 
-        for(Map.Entry<LootTableType, RandomCollection<LootTable>> loot : lootTables.entrySet()){
-            for(Map.Entry<Double, LootTable> entry : loot.getValue().getMap().entrySet()){
+        for (Map.Entry<LootTableType, RandomCollection<LootTable>> loot : lootTables.entrySet()) {
+            for (Map.Entry<Double, LootTable> entry : loot.getValue().getMap().entrySet()) {
                 config.set("LootTables." + loot.getKey().toString() + "." + entry.getValue().getName(), entry.getKey());
             }
         }

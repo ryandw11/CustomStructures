@@ -1,20 +1,18 @@
 package com.ryandw11.structure.utils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
+import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.structure.properties.BlockLevelLimit;
 import com.ryandw11.structure.structure.properties.StructureYSpawning;
+import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.SchematicHandler;
-import com.sk89q.worldedit.WorldEditException;
+import java.io.IOException;
 
 /**
  * This class prevents the server from crashing when it attempts to pick a
@@ -45,7 +43,7 @@ public class StructurePicker extends BukkitRunnable {
 
     @Override
     public void run() {
-        try{
+        try {
             currentStructure++;
             if (currentStructure >= structureHandler.getStructures().size()) {
                 this.cancel();
@@ -73,16 +71,16 @@ public class StructurePicker extends BukkitRunnable {
 
             // Allows the structures to no longer spawn on plant life.
             if (structure.getStructureProperties().isIgnoringPlants() && CSConstants.plantBlocks.contains(bl.getType())) {
-                for (int i = bl.getY(); i <= 4; i--) {
-                    if (!CSConstants.plantBlocks.contains(ch.getBlock(0, i, 0).getType())) {
+                for (int i = bl.getY(); i >= 4; i--) {
+                    if (!CSConstants.plantBlocks.contains(ch.getBlock(0, i, 0).getType()) && ch.getBlock(0, i, 0).getType() != Material.AIR) {
                         bl = ch.getBlock(0, i, 0);
                         break;
                     }
                 }
             }
 
-            // calculate spawny
-            if (!structureSpawnSettings.isOceanFloor()) {
+            // calculate SpawnY if first is true
+            if (!structureSpawnSettings.isOceanFloor() && structureSpawnSettings.isCalculateSpawnYFirst()) {
                 bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
             }
 
@@ -99,15 +97,44 @@ public class StructurePicker extends BukkitRunnable {
                 if (bl.getType() == Material.LAVA) return;
             }
 
+            // calculate SpawnY if first is false
+            if (!structureSpawnSettings.isOceanFloor() && !structureSpawnSettings.isCalculateSpawnYFirst()) {
+                bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
+            }
+
             // If the structure can follows block level limit.
             // This only triggers if it spawns on the top.
-            if(structure.getStructureLimitations().getBlockLevelLimit().isEnabled() && structure.getStructureLocation().getSpawnSettings().isTop()){
+            if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {
                 BlockLevelLimit limit = structure.getStructureLimitations().getBlockLevelLimit();
-                for(int x = limit.getX1() + bl.getX(); x <= limit.getX2() + bl.getX(); x++){
-                    for(int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++){
-                        Block b = ch.getWorld().getBlockAt(x, bl.getY(), z);
-                        if(b.getType() == Material.AIR) return;
+                if (limit.getMode().equalsIgnoreCase("flat")) {
+                    for (int x = limit.getX1() + bl.getX(); x <= limit.getX2() + bl.getX(); x++) {
+                        for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
+                            Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
+                            Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
+                            if (!(top.getType() == Material.AIR || CSConstants.plantBlocks.contains(top.getType())))
+                                return;
+                            if (bottom.getType() == Material.AIR)
+                                return;
+                        }
                     }
+                } else if (limit.getMode().equalsIgnoreCase("flat_error")) {
+                    int total = 0;
+                    int error = 0;
+                    for (int x = limit.getX1() + bl.getX(); x <= limit.getX2() + bl.getX(); x++) {
+                        for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
+                            Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
+                            Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
+                            if (!(top.getType() == Material.AIR || CSConstants.plantBlocks.contains(top.getType())))
+                                error++;
+                            if (bottom.getType() == Material.AIR)
+                                error++;
+
+                            total += 2;
+                        }
+                    }
+
+                    if (((double) error / total) > limit.getError())
+                        return;
                 }
             }
 
@@ -125,22 +152,14 @@ public class StructurePicker extends BukkitRunnable {
             });
 
             this.cancel();// return after pasting
-        }catch(Exception ex){
+        } catch (Exception ex) {
             this.cancel();
             plugin.getLogger().severe("An error was encountered during the schematic pasting section.");
             plugin.getLogger().severe("The task was stopped for the safety of your server!");
             plugin.getLogger().severe("For more information enable debug mode.");
-            if(plugin.isDebug())
+            if (plugin.isDebug())
                 ex.printStackTrace();
         }
-    }
-
-    protected ArrayList<String> getBiomes(String s) {
-        String[] biomes = s.split(",");
-        ArrayList<String> output = new ArrayList<String>();
-        for (String b : biomes)
-            output.add(b);
-        return output;
     }
 
 }

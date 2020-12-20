@@ -1,14 +1,28 @@
 package com.ryandw11.structure.structure.properties;
 
+import com.ryandw11.structure.exceptions.StructureConfigurationException;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 /**
  * Handles the block level limit of the StructureLimitations property.
+ * <p>
+ * This setting can have multiple modes. The following are valid modes:
+ * <code>
+ * flat, flat_error
+ * </code>
+ * flat - The ground must not be air in the cube region while the blocks above the ground must be air or plants.
+ * <p>
+ * flat_error - Same as flat; however, a certain error is acceptable. So if the error is set to 0.33 than it has a 1/3
+ * error allowance. Error is calculated by (error_blocks/total_block) if (total_error > allowed_error) than the structure does
+ * not spawn. See logic in {@link com.ryandw11.structure.utils.StructurePicker} for more details.
  */
 public class BlockLevelLimit {
     private String mode;
 
     private int x1, z1, x2, z2;
+
+    private double error = -1;
 
     /**
      * Create a block level limit.
@@ -45,20 +59,58 @@ public class BlockLevelLimit {
             return;
         }
 
-        this.mode = fileConfiguration.getString("StructureLimitations.BlockLevelLimit.mode");
-        this.x1 = fileConfiguration.getInt("StructureLimitations.BlockLevelLimit.cornerOne.x");
-        this.z1 = fileConfiguration.getInt("StructureLimitations.BlockLevelLimit.cornerOne.z");
-        this.x2 = fileConfiguration.getInt("StructureLimitations.BlockLevelLimit.cornerTwo.x");
-        this.z2 = fileConfiguration.getInt("StructureLimitations.BlockLevelLimit.cornerTwo.z");
+        ConfigurationSection cs = fileConfiguration.getConfigurationSection("StructureLimitations.BlockLevelLimit");
+
+        assert cs != null;
+        this.mode = cs.getString("mode");
+        this.x1 = cs.getInt("cornerOne.x");
+        this.z1 = cs.getInt("cornerOne.z");
+        this.x2 = cs.getInt("cornerTwo.x");
+        this.z2 = cs.getInt("cornerTwo.z");
+
+        if (cs.contains("error")) {
+            error = cs.getDouble("error");
+            if(error < 0 || error > 1)
+                throw new StructureConfigurationException("`BlockLevelLimit.error` must be greater than 0 and less than 1.");
+        }
+
+        assert mode != null;
+        if(mode.equalsIgnoreCase("flat_error") && !cs.contains("error")){
+            throw new StructureConfigurationException("The BlockLevelLimit mode `flat_error` must contain an error setting!");
+        }
     }
 
     /**
      * If Block Level Limit is enabled.
      *
-     * @return
+     * @return If the block level limit is enabled.
      */
     public boolean isEnabled() {
         return !mode.equalsIgnoreCase("none");
+    }
+
+    /**
+     * Get the error of the level limit.
+     * <p>The error configuration is only used by the flat_error mode.
+     * This value will be -1 for all other modes.</p>
+     *
+     * @return The error of the level limit.
+     */
+    public double getError() {
+        return error;
+    }
+
+    /**
+     * Set the error for the level limit.
+     * <p>This is only used by the flat_error mode.</p>
+     *
+     * @param error The error of the level limit.
+     *              <p>This is a percent is decimal form. (0-1) only.</p>
+     */
+    public void setError(double error) {
+        if (error < 0 || error > 1)
+            throw new IllegalArgumentException("Error value must be > 0 and < 1!");
+        this.error = error;
     }
 
     /**
