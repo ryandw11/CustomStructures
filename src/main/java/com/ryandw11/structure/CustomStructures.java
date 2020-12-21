@@ -1,6 +1,5 @@
 package com.ryandw11.structure;
 
-import com.ryandw11.structure.bstats.Metrics;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.listener.ChunkLoad;
@@ -13,6 +12,7 @@ import com.ryandw11.structure.mythicalmobs.MMEnabled;
 import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.utils.Pair;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
