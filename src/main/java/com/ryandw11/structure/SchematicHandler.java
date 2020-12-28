@@ -528,6 +528,8 @@ public class SchematicHandler {
         LootTableType blockType = LootTableType.valueOf(block.getType());
 
         RandomCollection<LootTable> tables = structure.getLootTables(blockType);
+        if(tables == null) return;
+
         LootTable lootTable = tables.next();
         Random random = new Random();
 
