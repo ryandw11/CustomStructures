@@ -25,13 +25,13 @@ import java.io.IOException;
  */
 public class StructurePicker extends BukkitRunnable {
 
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     private int currentStructure;
-    private StructureHandler structureHandler;
+    private final StructureHandler structureHandler;
 
     private Block bl;
-    private Chunk ch;
+    private final Chunk ch;
 
     public StructurePicker(Block bl, Chunk ch, CustomStructures plugin) {
         this.plugin = plugin;
