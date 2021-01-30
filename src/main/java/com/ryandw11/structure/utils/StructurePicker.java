@@ -2,6 +2,7 @@ package com.ryandw11.structure.utils;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandler;
+import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.structure.properties.BlockLevelLimit;
@@ -29,6 +30,7 @@ public class StructurePicker extends BukkitRunnable {
 
     private int currentStructure;
     private final StructureHandler structureHandler;
+    private final IgnoreBlocks ignoreBlocks;
 
     private Block bl;
     private final Chunk ch;
@@ -39,6 +41,7 @@ public class StructurePicker extends BukkitRunnable {
         this.bl = bl;
         this.ch = ch;
         this.structureHandler = plugin.getStructureHandler();
+        this.ignoreBlocks = plugin.getBlockIgnoreManager();
     }
 
     @Override
@@ -70,9 +73,9 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // Allows the structures to no longer spawn on plant life.
-            if (structure.getStructureProperties().isIgnoringPlants() && CSConstants.plantBlocks.contains(bl.getType())) {
+            if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(bl.getType())) {
                 for (int i = bl.getY(); i >= 4; i--) {
-                    if (!CSConstants.plantBlocks.contains(ch.getBlock(0, i, 0).getType()) && ch.getBlock(0, i, 0).getType() != Material.AIR) {
+                    if (!ignoreBlocks.getBlocks().contains(ch.getBlock(0, i, 0).getType()) && ch.getBlock(0, i, 0).getType() != Material.AIR) {
                         bl = ch.getBlock(0, i, 0);
                         break;
                     }
@@ -111,7 +114,7 @@ public class StructurePicker extends BukkitRunnable {
                         for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
                             Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
                             Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                            if (!(top.getType() == Material.AIR || CSConstants.plantBlocks.contains(top.getType())))
+                            if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType())))
                                 return;
                             if (bottom.getType() == Material.AIR)
                                 return;
@@ -124,7 +127,7 @@ public class StructurePicker extends BukkitRunnable {
                         for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
                             Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
                             Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                            if (!(top.getType() == Material.AIR || CSConstants.plantBlocks.contains(top.getType())))
+                            if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType())))
                                 error++;
                             if (bottom.getType() == Material.AIR)
                                 error++;

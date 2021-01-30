@@ -1,4 +1,4 @@
-package com.ryandw11.structure.utils;
+package com.ryandw11.structure.ignoreblocks;
 
 import org.bukkit.Material;
 
@@ -7,17 +7,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Variables containing constant data
- *
- * @author Ryandw11
- * @since 1.4.3
- */
-public class CSConstants {
-    /**
-     * All of the blocks that the plugin considers as plants.
-     */
-    public static final List<Material> plantBlocks = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
+public class IgnoreBlocks_1_16 implements IgnoreBlocks{
+
+    private final List<Material> plantBlocks = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
             // Grasses
             Material.GRASS,
             Material.TALL_GRASS,
@@ -95,4 +87,9 @@ public class CSConstants {
             Material.FIRE_CORAL_WALL_FAN,
             Material.HORN_CORAL_WALL_FAN
     )));
+
+    @Override
+    public List<Material> getBlocks() {
+        return plantBlocks;
+    }
 }

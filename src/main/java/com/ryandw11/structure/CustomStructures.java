@@ -2,6 +2,7 @@ package com.ryandw11.structure;
 
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.commands.SCommandTab;
+import com.ryandw11.structure.ignoreblocks.*;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.listener.PlayerJoin;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -42,6 +43,7 @@ public class CustomStructures extends JavaPlugin {
     private StructureHandler structureHandler;
     private LootTablesHandler lootTablesHandler;
     private CustomItemManager customItemManager;
+    private IgnoreBlocks blockIgnoreManager;
     private boolean debugMode;
 
     public static boolean enabled;
@@ -55,6 +57,7 @@ public class CustomStructures extends JavaPlugin {
         plugin = this;
         loadManager();
         registerConfig();
+        setupBlockIgnore();
 
         if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
             mmh = new MMEnabled();
@@ -97,6 +100,45 @@ public class CustomStructures extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    /**
+     * Set up block ignore depending on the Minecraft version.
+     */
+    private void setupBlockIgnore() {
+        String version;
+        try {
+            version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            getLogger().severe("Unable to detect Minecraft version! The plugin will now be disabled.");
+            getPluginLoader().disablePlugin(this);
+            return;
+        }
+
+        // Initialize blockIgnoreManager with the proper class for the version.
+        switch (version) {
+            case "v1_15_R1":
+                blockIgnoreManager = new IgnoreBlocks_1_15();
+                break;
+            case "v1_14_R1":
+                blockIgnoreManager = new IgnoreBlocks_1_14();
+                break;
+            case "v1_13_R1":
+                blockIgnoreManager = new IgnoreBlocks_1_13();
+                break;
+            default:
+                blockIgnoreManager = new IgnoreBlocks_1_16();
+                break;
+        }
+    }
+
+    /**
+     * Get the blocks the plugin should ignore for the server's minecraft version.
+     *
+     * @return The proper block ignore list.
+     */
+    public IgnoreBlocks getBlockIgnoreManager() {
+        return blockIgnoreManager;
     }
 
     /**
