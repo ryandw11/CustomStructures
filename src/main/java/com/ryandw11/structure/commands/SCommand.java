@@ -63,14 +63,14 @@ public class SCommand implements CommandExecutor {
             }
             Structure structure = plugin.getStructureHandler().getStructure(args[1]);
             if (structure == null) {
-                p.sendMessage(ChatColor.RED + "That schematic does not exist!");
+                p.sendMessage(ChatColor.RED + "That structure does not exist!");
                 return true;
             }
 
             structure.spawn(p.getLocation());
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
-            sender.sendMessage(ChatColor.GREEN + "Currently Active Schematics:");
+            sender.sendMessage(ChatColor.GREEN + "Currently Active Structures:");
             for (Structure st : plugin.getStructureHandler().getStructures()) {
                 sender.sendMessage(ChatColor.GREEN + " - " + ChatColor.BLUE + st.getName());
             }
