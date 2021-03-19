@@ -16,11 +16,12 @@ public class StructureProperties {
 
     /**
      * Create StructureProperties from a config file.
+     *
      * @param configuration The configuration file.
      */
-    public StructureProperties(FileConfiguration configuration){
+    public StructureProperties(FileConfiguration configuration) {
         ConfigurationSection cs = configuration.getConfigurationSection("StructureProperties");
-        if(cs == null){
+        if (cs == null) {
             this.placeAir = true;
             this.randomRotation = false;
             this.ignorePlants = true;
@@ -38,7 +39,7 @@ public class StructureProperties {
     /**
      * Create StructureProperties using default values.
      */
-    public StructureProperties(){
+    public StructureProperties() {
         this.placeAir = true;
         this.randomRotation = false;
         this.ignorePlants = true;
@@ -48,81 +49,91 @@ public class StructureProperties {
 
     /**
      * If the structure will place air.
+     *
      * @return if the structure will place air.
      */
-    public boolean canPlaceAir(){
+    public boolean canPlaceAir() {
         return placeAir;
     }
 
     /**
      * Set if the structure should place air.
+     *
      * @param placeAir If the structure should place air.
      */
-    public void setPlaceAir(boolean placeAir){
+    public void setPlaceAir(boolean placeAir) {
         this.placeAir = placeAir;
     }
 
     /**
      * If the structure is randomly rotated.
+     *
      * @return If the structure is randomly rotated.
      */
-    public boolean isRandomRotation(){
+    public boolean isRandomRotation() {
         return randomRotation;
     }
 
     /**
      * Set if the structure is randomly rotated.
+     *
      * @param randomRotation If the structure is randomly rotated.
      */
-    public void setRandomRotation(boolean randomRotation){
+    public void setRandomRotation(boolean randomRotation) {
         this.randomRotation = randomRotation;
     }
 
     /**
      * If the structure ignores plants.
+     *
      * @return If the structure ignores plants.
      */
-    public boolean isIgnoringPlants(){
+    public boolean isIgnoringPlants() {
         return ignorePlants;
     }
 
     /**
      * Set if the structure ignores plants.
+     *
      * @param ignorePlants If the structure ignores plants.
      */
-    public void setIgnorePlants(boolean ignorePlants){
+    public void setIgnorePlants(boolean ignorePlants) {
         this.ignorePlants = ignorePlants;
     }
 
     /**
      * If the structure can spawn in water.
+     *
      * @return If the structure can spawn in water.
      */
-    public boolean canSpawnInWater(){
+    public boolean canSpawnInWater() {
         return spawnInWater;
     }
 
     /**
      * Set if the structure can spawn in water.
+     *
      * @param spawnInWater If the structure can spawn in water.
      */
-    public void setSpawnInWater(boolean spawnInWater){
+    public void setSpawnInWater(boolean spawnInWater) {
         this.spawnInWater = spawnInWater;
     }
 
     /**
      * If the structure can spawn in lava lakes.
+     *
      * @return If the structure can spawn in lava lakes.
      */
-    public boolean canSpawnInLavaLakes(){
+    public boolean canSpawnInLavaLakes() {
         return spawnInLavaLakes;
     }
 
     /**
      * Set if the structure can spawn in lava lakes.
+     *
      * @param spawnInLavaLakes If the structure can spawn in lava lakes.
      */
-    public void setSpawnInLavaLakes(boolean spawnInLavaLakes){
+    public void setSpawnInLavaLakes(boolean spawnInLavaLakes) {
         this.spawnInLavaLakes = spawnInLavaLakes;
     }
 }

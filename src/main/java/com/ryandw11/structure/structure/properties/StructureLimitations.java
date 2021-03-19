@@ -11,9 +11,9 @@ import java.util.*;
  */
 public class StructureLimitations {
 
-    private List<String> whitelistSpawnBlocks;
-    private BlockLevelLimit blockLevelLimit;
-    private Map<Material, Material> blockReplacement;
+    private final List<String> whitelistSpawnBlocks;
+    private final BlockLevelLimit blockLevelLimit;
+    private final Map<Material, Material> blockReplacement;
     private double replacementBlocksDelay;
 
 

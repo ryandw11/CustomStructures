@@ -15,5 +15,9 @@ bstats: true
 #Allow Plugins to delete structures at will.
 allowDeletion: true
 
+# Save where structures spawn into a yaml file.
+# Enabling this option allows developers to use the API to get the location of structures.
+logStructures: false
+
 Structures:
     - demo

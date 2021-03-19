@@ -10,6 +10,7 @@ StructureLocation:
   SpawnY: top
   CalculateSpawnFirst: true
   Biome: []
+  DistanceFromOthers: 200
   # Set a custom spawn distance for the structures.
   spawn_distance:
     x: 10

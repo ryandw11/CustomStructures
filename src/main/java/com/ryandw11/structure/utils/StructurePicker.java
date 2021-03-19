@@ -144,6 +144,10 @@ public class StructurePicker extends BukkitRunnable {
             // Now to finally paste the schematic
             SchematicHandler sh = new SchematicHandler();
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                // It is assumed at this point that the structure has been spawned.
+                // Add it to the list of spawned structures.
+                plugin.getStructureHandler().putSpawnedStructure(bl.getLocation(),
+                        structure);
                 try {
                     sh.schemHandle(bl.getLocation(),
                             structure.getSchematic(),

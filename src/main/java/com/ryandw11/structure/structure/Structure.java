@@ -1,5 +1,6 @@
 package com.ryandw11.structure.structure;
 
+import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -35,6 +36,7 @@ public class Structure {
     private final MaskProperty maskProperty;
     private final SubSchematics subSchematics;
     private final Map<LootTableType, RandomCollection<LootTable>> lootTables;
+    private final double baseRotation;
 
     private double subSchemRotation = 0d;
 
@@ -56,6 +58,7 @@ public class Structure {
         this.maskProperty = builder.maskProperty;
         this.subSchematics = builder.subSchematics;
         this.lootTables = builder.lootTables;
+        this.baseRotation = builder.baseRotation;
     }
 
     /**
@@ -180,6 +183,15 @@ public class Structure {
     }
 
     /**
+     * Get the base rotation of a structure.
+     *
+     * @return The base rotation. (In Radians).
+     */
+    public double getBaseRotation() {
+        return baseRotation;
+    }
+
+    /**
      * Checks to see if the structure can spawn.
      * <p>This also checks structure locations.</p>
      *
@@ -196,6 +208,9 @@ public class Structure {
         if (Math.abs(block.getX()) < getStructureLocation().getXLimitation())
             return false;
         if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
+            return false;
+
+        if (!CustomStructures.getInstance().getStructureHandler().validDistance(this))
             return false;
 
         // Check to see if the structure has the chance to spawn

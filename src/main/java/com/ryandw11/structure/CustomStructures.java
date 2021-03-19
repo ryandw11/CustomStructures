@@ -99,7 +99,7 @@ public class CustomStructures extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        structureHandler.cleanup();
     }
 
     /**
@@ -164,6 +164,7 @@ public class CustomStructures extends JavaPlugin {
      * <p>This is for internal use only.</p>
      */
     public void reloadHandlers() {
+        this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();
     }

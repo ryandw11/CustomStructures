@@ -52,7 +52,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class SchematicHandler {
 
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     public SchematicHandler() {
         this.plugin = CustomStructures.plugin;
@@ -112,7 +112,9 @@ public class SchematicHandler {
 
         ClipboardHolder ch = new ClipboardHolder(clipboard);
         AffineTransform transform = new AffineTransform();
-        double rotY = 0;
+
+        // Define rotation y with the default base rotation.
+        double rotY = Math.toDegrees(structure.getBaseRotation());
 
         // If random rotation is enabled, rotate the clipboard
         if (structure.getStructureProperties().isRandomRotation() && iteration == 0) {
@@ -528,7 +530,7 @@ public class SchematicHandler {
         LootTableType blockType = LootTableType.valueOf(block.getType());
 
         RandomCollection<LootTable> tables = structure.getLootTables(blockType);
-        if(tables == null) return;
+        if (tables == null) return;
 
         LootTable lootTable = tables.next();
         Random random = new Random();

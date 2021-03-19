@@ -14,7 +14,7 @@ public class StructureYSpawning {
     private boolean top = false;
     private boolean oceanFloor = false;
     private boolean calculateSpawnYFirst = true;
-    private String value;
+    private final String value;
 
     /**
      * Get SpawnY from a configuration file.

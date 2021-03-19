@@ -49,6 +49,8 @@ public class StructureBuilder {
     protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
     protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
+    // Base Rotation in Radians.
+    protected double baseRotation;
 
     /**
      * Build a structure using code.
@@ -59,6 +61,7 @@ public class StructureBuilder {
     public StructureBuilder(String name, String schematic) {
         this.name = name;
         this.schematic = schematic;
+        this.baseRotation = 0;
         lootTables = new HashMap<>();
     }
 
@@ -83,6 +86,7 @@ public class StructureBuilder {
         schematic = config.getString("schematic");
         chanceNumber = config.getInt("Chance.Number");
         chanceOutOf = config.getInt("Chance.OutOf");
+        baseRotation = 0;
 
         if (config.contains("compiled_schematic")) {
             isCompiled = new File(CustomStructures.getInstance().getDataFolder() + "/schematics/" +
@@ -250,6 +254,18 @@ public class StructureBuilder {
                 lootTables.put(type, new RandomCollection<>());
             lootTables.get(type).add(weight, lootTable);
         }
+    }
+
+    /**
+     * Set the base rotation of a structure.
+     *
+     * <p>This is an API only functionality. It sets what the structure should be rotated by, while still allowing
+     * for random rotation is desired.</p>
+     *
+     * @param baseRotation The base rotation of a structure. (In Radians.)
+     */
+    public void setBaseRotation(double baseRotation) {
+        this.baseRotation = baseRotation;
     }
 
     /**
