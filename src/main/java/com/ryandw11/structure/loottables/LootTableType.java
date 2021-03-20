@@ -16,7 +16,7 @@ public enum LootTableType {
     BARREL(Material.BARREL),
     TRAPPED_CHEST(Material.TRAPPED_CHEST);
 
-    private Material material;
+    private final Material material;
 
     LootTableType(Material material) {
         this.material = material;

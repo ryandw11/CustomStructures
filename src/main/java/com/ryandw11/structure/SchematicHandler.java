@@ -231,6 +231,9 @@ public class SchematicHandler {
             CuboidRegion region = new CuboidRegion(selection.getWorld(), selection.getMinimumPoint(), selection.getMaximumPoint());
             BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 
+            // Set the origin point to where the player is standing.
+            clipboard.setOrigin(BlockVector3.at(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()));
+
             try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(selection.getWorld(), -1)) {
                 ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
                         editSession, region, clipboard, region.getMinimumPoint()

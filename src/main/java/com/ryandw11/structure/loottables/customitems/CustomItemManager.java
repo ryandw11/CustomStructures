@@ -8,6 +8,9 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Manages the custom items defined for the loot tables.
+ */
 public class CustomItemManager {
     private FileConfiguration config;
     private File file;
@@ -28,8 +31,8 @@ public class CustomItemManager {
                 file.createNewFile();
             } catch (IOException ex) {
                 structures.getLogger().severe("Cannot create Custom Items file. Enable debug mode for more information.");
-               if(structures.isDebug())
-                   ex.printStackTrace();
+                if (structures.isDebug())
+                    ex.printStackTrace();
                 return;
             }
         }

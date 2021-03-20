@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * This class stores everything about a structure.
- * <p>Nothing in this class can be edited.</p>
+ * Represents a complete Structure for the plugin.
+ * <p>This class is read-only and cannot be edited.</p>
  * <p>The class is organized like the structure configuration files. Everything
  * is sorted into properties.</p>
  * <p>Use {@link StructureBuilder} to create a new Structure.</p>
@@ -210,7 +210,7 @@ public class Structure {
         if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
             return false;
 
-        if (!CustomStructures.getInstance().getStructureHandler().validDistance(this))
+        if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation()))
             return false;
 
         // Check to see if the structure has the chance to spawn

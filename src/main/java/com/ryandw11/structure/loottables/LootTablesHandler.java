@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class LootTablesHandler {
 
-    private Map<String, LootTable> lootTables;
+    private final Map<String, LootTable> lootTables;
 
     public LootTablesHandler() {
         this.lootTables = new HashMap<>();

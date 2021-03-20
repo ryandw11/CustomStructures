@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class SCommandTab implements TabCompleter {
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     public SCommandTab(CustomStructures plugin) {
         this.plugin = plugin;
@@ -21,11 +21,12 @@ public class SCommandTab implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         List<String> completions = new ArrayList<>();
-        if (args.length == 2 && args[0].equalsIgnoreCase("test")) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("test") || args[0].equalsIgnoreCase("testspawn"))) {
             completions = new ArrayList<>(plugin.getStructureHandler().getStructureNames());
             completions = getApplicableTabCompleter(args[1], completions);
         } else if (args.length <= 1) {
-            completions = new ArrayList<>(Arrays.asList("reload", "test", "list", "additem", "checkkey", "getitem", "createschem", "create", "nearby"));
+            completions = new ArrayList<>(Arrays.asList("reload", "test", "list", "additem", "checkkey", "getitem",
+                    "createschem", "create", "nearby", "testspawn"));
             completions = getApplicableTabCompleter(args.length == 1 ? args[0] : "", completions);
         }
         Collections.sort(completions);

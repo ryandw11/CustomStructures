@@ -10,9 +10,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * This ensures that there is not a memory leak with the structure list.
+ */
 public class CheckStructureList extends BukkitRunnable {
 
-    public static final int MAX_STORED_STRUCTURES = 100;
+    public static final int MAX_STORED_STRUCTURES = 300;
 
     private final StructureHandler handler;
 

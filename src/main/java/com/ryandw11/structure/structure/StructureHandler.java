@@ -6,6 +6,7 @@ import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.io.StructureFileReader;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
@@ -149,17 +150,14 @@ public class StructureHandler {
      * @param struct The structure to calculate that for.
      * @return If the distance is valid according to its config.
      */
-    public boolean validDistance(Structure struct) {
+    public boolean validDistance(Structure struct, Location location) {
         double closest = Double.MAX_VALUE;
-        Location zero_loc = new Location(null, 0, 0, 0);
         synchronized (spawnedStructures) {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
-                zero_loc.setWorld(entry.getKey().getLeft().getWorld());
-                if (entry.getKey().getLeft().distance(zero_loc) < closest)
-                    closest = entry.getKey().getLeft().distance(zero_loc);
+                if (entry.getKey().getLeft().distance(location) < closest)
+                    closest = entry.getKey().getLeft().distance(location);
             }
         }
-
         return struct.getStructureLocation().getDistanceFromOthers() < closest;
     }
 
