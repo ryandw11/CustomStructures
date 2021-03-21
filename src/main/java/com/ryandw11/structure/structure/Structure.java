@@ -195,6 +195,8 @@ public class Structure {
      * Checks to see if the structure can spawn.
      * <p>This also checks structure locations.</p>
      *
+     * @param block The block
+     * @param chunk The chunk
      * @return If the structure can spawn
      */
     public boolean canSpawn(Block block, Chunk chunk) {

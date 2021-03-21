@@ -14,7 +14,7 @@ import org.bukkit.configuration.file.FileConfiguration;
  * flat - The ground must not be air in the cube region while the blocks above the ground must be air or plants.
  * <p>
  * flat_error - Same as flat; however, a certain error is acceptable. So if the error is set to 0.33 than it has a 1/3
- * error allowance. Error is calculated by (error_blocks/total_block) if (total_error > allowed_error) than the structure does
+ * error allowance. Error is calculated by (error_blocks/total_block) if (total_error &#62; allowed_error) than the structure does
  * not spawn. See logic in {@link com.ryandw11.structure.utils.StructurePicker} for more details.
  */
 public class BlockLevelLimit {

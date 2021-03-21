@@ -148,6 +148,7 @@ public class StructureHandler {
      * Calculate if the structure is far enough away from other structures.
      *
      * @param struct The structure to calculate that for.
+     * @param location The location that the structure is spawning.
      * @return If the distance is valid according to its config.
      */
     public boolean validDistance(Structure struct, Location location) {

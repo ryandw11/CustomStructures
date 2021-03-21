@@ -92,7 +92,7 @@ public class StructureFileReader extends BukkitRunnable {
      * <h2>Usage</h2>
      * <code>
      * fileReader.getStructure(myLocation)<br>
-     * .thenAccept(structure -> {<br>
+     * .thenAccept(structure -&#62; {<br>
      * if(structure != null)<br>
      * System.out.println(structure.getName());<br>
      * else<br>

@@ -68,6 +68,7 @@ public class SchematicHandler {
      * @param structure - The structure that is getting spawned.
      * @param iteration - The number of iterations in a structure.
      * @throws WorldEditException If world edit has a problem pasting the schematic.
+     * @throws IOException        If an error occurs during file reading.
      */
     public void schemHandle(Location loc, String filename, boolean useAir, Structure structure, int iteration)
             throws IOException, WorldEditException {
@@ -208,6 +209,7 @@ public class SchematicHandler {
      * @param useAir    - if air is to be used in the schematic
      * @param structure - The structure that is getting spawned.
      * @throws WorldEditException If world edit has a problem pasting the schematic.
+     * @throws IOException        If an error occurs during file reading.
      */
     public void schemHandle(Location loc, String filename, boolean useAir, Structure structure)
             throws IOException, WorldEditException {

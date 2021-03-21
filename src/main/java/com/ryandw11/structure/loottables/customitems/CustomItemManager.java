@@ -22,6 +22,7 @@ public class CustomItemManager {
      *
      * @param structures The main class.
      * @param file       The file.
+     * @param dir        The directory to put the file.
      */
     public CustomItemManager(CustomStructures structures, File file, File dir) {
         if (!dir.exists())
