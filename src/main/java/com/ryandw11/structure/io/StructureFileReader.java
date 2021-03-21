@@ -148,18 +148,22 @@ public class StructureFileReader extends BukkitRunnable {
     @Override
     public void run() {
         for (Map.Entry<Location, Structure> entry : structuresToSave.entrySet()) {
-            if (!fileConfiguration.contains(entry.getValue().getName()))
-                fileConfiguration.set(entry.getValue().getName(), new ArrayList<>());
-            List<String> locs = fileConfiguration.getStringList(entry.getValue().getName());
+            String worldName = Objects.requireNonNull(entry.getKey().getWorld()).getName();
+            if (!fileConfiguration.contains(entry.getValue().getName() + "." + worldName))
+                // Split up the list of locations into Structures, then worlds.
+                fileConfiguration.set(entry.getValue().getName() +
+                        "." + worldName, new ArrayList<>());
+            List<String> locs = fileConfiguration.getStringList(entry.getValue().getName() + "." + worldName);
             locs.add(serializeLocation(entry.getKey()));
-            fileConfiguration.set(entry.getValue().getName(), locs);
+            fileConfiguration.set(entry.getValue().getName() + "." + worldName, locs);
         }
         structuresToSave.clear();
 
         for (Pair<Location, CompletableFuture<Structure>> pair : structuresToGet) {
             boolean found = false;
             for (String key : fileConfiguration.getKeys(false)) {
-                List<String> locs = fileConfiguration.getStringList(key);
+                List<String> locs = fileConfiguration.getStringList(key + "." +
+                        Objects.requireNonNull(pair.getLeft().getWorld()).getName());
                 if (locs.contains(serializeLocation(pair.getLeft()))) {
                     pair.getRight().complete(plugin.getStructureHandler().getStructure(key));
                     found = true;
@@ -174,13 +178,15 @@ public class StructureFileReader extends BukkitRunnable {
 
         for (Pair<Structure, CompletableFuture<List<Location>>> pair : locationsToGet) {
             if (fileConfiguration.contains(pair.getLeft().getName())) {
-                List<String> locations = fileConfiguration.getStringList(pair.getLeft().getName());
                 List<Location> result = new ArrayList<>();
-                for (String strLoc : locations) {
-                    Location loc = deserializeLocation(strLoc);
-                    if (loc == null)
-                        continue;
-                    result.add(loc);
+                for (String world : Objects.requireNonNull(fileConfiguration.getConfigurationSection(pair.getLeft().getName())).getKeys(false)) {
+                    List<String> locations = fileConfiguration.getStringList(pair.getLeft().getName() + "." + world);
+                    for (String strLoc : locations) {
+                        Location loc = deserializeLocation(strLoc);
+                        if (loc == null)
+                            continue;
+                        result.add(loc);
+                    }
                 }
                 pair.getRight().complete(result);
             } else {
@@ -194,7 +200,8 @@ public class StructureFileReader extends BukkitRunnable {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 Pair<Structure, Location> closest = null;
                 for (String key : fileConfiguration.getKeys(false)) {
-                    List<String> locs = fileConfiguration.getStringList(key);
+                    List<String> locs = fileConfiguration.getStringList(key + "." +
+                            Objects.requireNonNull(pair.getLeft().getWorld()).getName());
                     for (String s : locs) {
                         Location loc = deserializeLocation(s);
                         if (loc == null) continue;
@@ -227,12 +234,12 @@ public class StructureFileReader extends BukkitRunnable {
     }
 
     private String serializeLocation(Location location) {
-        return String.format("%s_%s_%s_%s", Objects.requireNonNull(location.getWorld()).getName(),
+        return String.format("%s;%s;%s;%s", Objects.requireNonNull(location.getWorld()).getName(),
                 location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     private Location deserializeLocation(String location) {
-        String[] data = location.split("_");
+        String[] data = location.split(";");
         if (data.length < 4)
             return null;
         World w = plugin.getServer().getWorld(data[0]);

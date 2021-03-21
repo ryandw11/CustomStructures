@@ -28,15 +28,17 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * The main class for the Custom Structures plugin.
+ *
  * @author Ryandw11
- * @version 1.5.4
+ * @version 1.5.7
  */
 
 public class CustomStructures extends JavaPlugin {
 
     public static CustomStructures plugin;
-    public File lootTablesfile = new File(getDataFolder() + "/lootTables/lootTable.yml");
-    public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
+    public File lootTableFile = new File(getDataFolder() + "/lootTables/lootTable.yml");
+    public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTableFile);
 
     public MythicalMobHook mmh;
 
@@ -191,9 +193,9 @@ public class CustomStructures extends JavaPlugin {
 
     public void loadFile() {
 
-        if (lootTablesfile.exists()) {
+        if (lootTableFile.exists()) {
             try {
-                lootTablesFC.load(lootTablesfile);
+                lootTablesFC.load(lootTableFile);
 
             } catch (IOException | InvalidConfigurationException e) {
 

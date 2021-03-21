@@ -11,13 +11,13 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author iShadey
  *
  * Class created to check updates using SpigotMC's legacy API.
- *
+ * 38249
  */
 public class UpdateChecker {
 	private int project = 0;
     private URL checkURL;
     private String newVersion = "";
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
  
     public UpdateChecker(JavaPlugin plugin, int projectID) {
         this.plugin = plugin;

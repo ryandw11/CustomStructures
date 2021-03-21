@@ -10,7 +10,7 @@ import com.ryandw11.structure.structure.StructureHandler;
  */
 public class CustomStructuresAPI {
 
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     public CustomStructuresAPI() {
         this.plugin = CustomStructures.plugin;
