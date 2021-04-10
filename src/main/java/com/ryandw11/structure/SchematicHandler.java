@@ -1,5 +1,7 @@
 package com.ryandw11.structure;
 
+import com.ryandw11.structure.api.StructureSpawnEvent;
+import com.ryandw11.structure.api.holder.StructureSpawnHolder;
 import com.ryandw11.structure.io.BlockTag;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -195,6 +197,14 @@ public class SchematicHandler {
                 if (location.getBlock().getState() instanceof Sign) {
                     replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
                 }
+            }
+
+            // Call the event for use by other plugins (only if it is the first iteration though.)
+            if (iteration < 1) {
+                StructureSpawnHolder structureSpawnHolder = new StructureSpawnHolder(getMinimumLocation(clipboard, loc, 0),
+                        getMaximumLocation(clipboard, loc, 0), containersAndSignsLocations);
+                StructureSpawnEvent structureSpawnEvent = new StructureSpawnEvent(structure, loc, finalRotY, structureSpawnHolder);
+                Bukkit.getServer().getPluginManager().callEvent(structureSpawnEvent);
             }
 
         }, Math.round(structure.getStructureLimitations().getReplacementBlocksDelay() * 20));

@@ -14,7 +14,11 @@ public enum LootTableType {
     HOPPER(Material.HOPPER),
     BREWING_STAND(Material.BREWING_STAND),
     BARREL(Material.BARREL),
-    TRAPPED_CHEST(Material.TRAPPED_CHEST);
+    TRAPPED_CHEST(Material.TRAPPED_CHEST),
+    DROPPER(Material.DROPPER),
+    DISPENSER(Material.DISPENSER),
+    BLAST_FURNACE(Material.BLAST_FURNACE),
+    SMOKER(Material.SMOKER);
 
     private final Material material;
 
