@@ -4,8 +4,8 @@ Custom Structures is a Minecraft server plugin that generates unique structures 
 
 [Please visit SpigotMC to download this plugin](https://www.spigotmc.org/resources/custom-structures.38249/)
 
-![Image of structure generation](https://i.imgur.com/fD4w67S.jpg)
-![Another image of structure generaton](https://i.imgur.com/3cBdWuj.png)
+![Image of structure generation](https://img.ryandw11.com/raw/o51am2cdq.jpg)
+![Another image of structure generaton](https://img.ryandw11.com/raw/o51a1lo86.png)
 (Credit to Bibouche for the last image)
 
 ## Features
