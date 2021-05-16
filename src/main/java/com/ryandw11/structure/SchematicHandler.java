@@ -1,5 +1,6 @@
 package com.ryandw11.structure;
 
+import com.ryandw11.structure.api.LootPopulateEvent;
 import com.ryandw11.structure.api.StructureSpawnEvent;
 import com.ryandw11.structure.api.holder.StructureSpawnHolder;
 import com.ryandw11.structure.io.BlockTag;
@@ -549,7 +550,8 @@ public class SchematicHandler {
 
         LootTable lootTable = tables.next();
         Random random = new Random();
-
+        LootPopulateEvent event = new LootPopulateEvent(structure,location,lootTable);
+        Bukkit.getServer().getPluginManager().callEvent(event);
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
