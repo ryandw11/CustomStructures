@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p>The class is organized like the structure configuration files. Everything
  * is sorted into properties.</p>
  * <p>Use {@link StructureBuilder} to create a new Structure.</p>
+ * <p>You can detect when a structure spawns using {@link com.ryandw11.structure.api.StructureSpawnEvent}.</p>
  */
 public class Structure {
     private final String name;

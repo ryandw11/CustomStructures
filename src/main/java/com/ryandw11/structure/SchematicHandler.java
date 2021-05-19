@@ -531,7 +531,7 @@ public class SchematicHandler {
     }
 
     /**
-     * Replace the contents of a container with the loottable from a structure.
+     * Replace the contents of a container with the loot table from a structure.
      *
      * @param structure The structure that is being spawned.
      * @param location  The location of the container.
@@ -550,8 +550,13 @@ public class SchematicHandler {
 
         LootTable lootTable = tables.next();
         Random random = new Random();
-        LootPopulateEvent event = new LootPopulateEvent(structure,location,lootTable);
+
+        // Trigger the loot populate event.
+        LootPopulateEvent event = new LootPopulateEvent(structure, location, lootTable);
         Bukkit.getServer().getPluginManager().callEvent(event);
+
+        if(event.isCanceled()) return;
+
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);

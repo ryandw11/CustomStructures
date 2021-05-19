@@ -31,7 +31,7 @@ import java.util.Objects;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.5.7
+ * @version 1.5.7.1
  */
 
 public class CustomStructures extends JavaPlugin {

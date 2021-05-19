@@ -7,6 +7,9 @@ import com.ryandw11.structure.structure.StructureHandler;
 
 /**
  * The class for the general API of CustomStructures.
+ *
+ * <p>This class is used to access the entire API of the plugin. From here you can access the various
+ * handlers that the plugin uses.</p>
  */
 public class CustomStructuresAPI {
 

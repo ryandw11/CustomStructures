@@ -1,6 +1,7 @@
 package com.ryandw11.structure.loottables.customitems;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.api.CustomStructuresAPI;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -10,6 +11,8 @@ import java.io.IOException;
 
 /**
  * Manages the custom items defined for the loot tables.
+ *
+ * <p>Get this handler from {@link CustomStructuresAPI#getCustomItemManager()}</p>
  */
 public class CustomItemManager {
     private FileConfiguration config;
@@ -18,7 +21,7 @@ public class CustomItemManager {
 
     /**
      * This should only ever be constructed by the CustomStructures main class.
-     * <p>Use {@link CustomStructures#getCustomItemManager()} to access this class for the plugin.</p>
+     * <p>Use {@link CustomStructuresAPI#getCustomItemManager()} to access this class for the plugin.</p>
      *
      * @param structures The main class.
      * @param file       The file.
@@ -101,6 +104,13 @@ public class CustomItemManager {
         return config.getItemStack(key);
     }
 
+    /**
+     * Get the File Configuration for the custom items file.
+     *
+     * <p>This is meant for internal use only.</p>
+     *
+     * @return The File Configuration.
+     */
     public FileConfiguration getConfig() {
         return config;
     }

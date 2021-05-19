@@ -1,13 +1,17 @@
 package com.ryandw11.structure.loottables;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.exceptions.LootTableException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * This handles the loot tables.
+ *
+ * <p>Get this handler via {@link CustomStructuresAPI#getLootTableHandler()}.</p>
  */
 public class LootTablesHandler {
 
@@ -35,5 +39,16 @@ public class LootTablesHandler {
             }
         }
         return this.lootTables.get(lootTableName);
+    }
+
+    /**
+     * Get the map of loot tables.
+     *
+     * <p>This returns an unmodifiable map.</p>
+     *
+     * @return The unmodifiable map of loot tables.
+     */
+    public Map<String, LootTable> getLootTables() {
+        return Collections.unmodifiableMap(lootTables);
     }
 }
