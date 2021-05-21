@@ -94,9 +94,23 @@ public class StructureYSpawning {
      *
      * @param currentHeight The current height (This is usually the highest block y in the chunk).
      *                      <p>AKA: What value top should return.</p>
+     *                      <p>If this is -1, than that means the structure is spawning in the void.</p>
      * @return The height according to the rules of SpawnY
      */
     public int getHeight(int currentHeight) {
+
+        // Ensure that the spawnY is configured correctly for the void.
+        if(currentHeight == -1){
+            if(top) throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
+                    "absolute spawn y value. Top is not absolute.");
+            if(oceanFloor) throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
+                    "absolute spawn y value. Ocean Floor is not absolute.");
+            if(value.startsWith("+")) throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
+                    "absolute spawn y value. Relative value is not absolute.");
+            if(value.startsWith("-")) throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
+                    "absolute spawn y value. Relative value is not absolute.");
+        }
+
         if (top) return currentHeight;
         if (value.contains("[")) {
             //If +[num-num]

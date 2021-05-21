@@ -13,6 +13,7 @@ public class StructureProperties {
     private boolean ignorePlants;
     private boolean spawnInWater;
     private boolean spawnInLavaLakes;
+    private boolean spawnInVoid;
 
     /**
      * Create StructureProperties from a config file.
@@ -27,6 +28,7 @@ public class StructureProperties {
             this.ignorePlants = true;
             this.spawnInWater = true;
             this.spawnInLavaLakes = true;
+            this.spawnInVoid = false;
             return;
         }
         this.placeAir = cs.contains("PlaceAir") && cs.getBoolean("PlaceAir");
@@ -34,6 +36,7 @@ public class StructureProperties {
         this.ignorePlants = cs.contains("ignorePlants") && cs.getBoolean("ignorePlants");
         this.spawnInWater = cs.contains("spawnInWater") && cs.getBoolean("spawnInWater");
         this.spawnInLavaLakes = cs.contains("spawnInLavaLakes") && cs.getBoolean("spawnInLavaLakes");
+        this.spawnInVoid = cs.contains("spawnInVoid") && cs.getBoolean("spawnInVoid");
     }
 
     /**
@@ -45,6 +48,7 @@ public class StructureProperties {
         this.ignorePlants = true;
         this.spawnInWater = true;
         this.spawnInLavaLakes = true;
+        this.spawnInVoid = false;
     }
 
     /**
@@ -135,5 +139,25 @@ public class StructureProperties {
      */
     public void setSpawnInLavaLakes(boolean spawnInLavaLakes) {
         this.spawnInLavaLakes = spawnInLavaLakes;
+    }
+
+    /**
+     * Get if the structure can spawn in the void.
+     *
+     * @return If the structure can spawn in the void.
+     */
+    public boolean canSpawnInVoid() {
+        return spawnInVoid;
+    }
+
+    /**
+     * Set if the structure should spawn in the void.
+     *
+     * <p>Note: This option does nothing if spawning in the void is not enabled in the config file by the user.</p>
+     *
+     * @param spawnInVoid If the structure should spawn in the void.
+     */
+    public void setSpawnInVoid(boolean spawnInVoid) {
+        this.spawnInVoid = spawnInVoid;
     }
 }

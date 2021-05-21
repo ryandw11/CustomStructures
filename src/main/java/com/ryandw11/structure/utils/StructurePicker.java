@@ -2,6 +2,7 @@ package com.ryandw11.structure.utils;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandler;
+import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureHandler;
@@ -12,6 +13,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -35,7 +37,7 @@ public class StructurePicker extends BukkitRunnable {
     private Block bl;
     private final Chunk ch;
 
-    public StructurePicker(Block bl, Chunk ch, CustomStructures plugin) {
+    public StructurePicker(@Nullable Block bl, Chunk ch, CustomStructures plugin) {
         this.plugin = plugin;
         currentStructure = -1;
         this.bl = bl;
@@ -59,6 +61,31 @@ public class StructurePicker extends BukkitRunnable {
             // Calculate the chance.
             if (!structure.canSpawn(bl, ch))
                 return;
+
+            // If the block is null, Skip the other steps and spawn.
+            if(bl == null) {
+                bl = ch.getBlock(0, structureSpawnSettings.getHeight(-1), 0);
+                // Now to finally paste the schematic
+                SchematicHandler sh = new SchematicHandler();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    // It is assumed at this point that the structure has been spawned.
+                    // Add it to the list of spawned structures.
+                    plugin.getStructureHandler().putSpawnedStructure(bl.getLocation(),
+                            structure);
+                    try {
+                        sh.schemHandle(bl.getLocation(),
+                                structure.getSchematic(),
+                                structure.getStructureProperties().canPlaceAir(),
+                                structure);
+                    } catch (IOException | WorldEditException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                // Cancel the process and return.
+                this.cancel();
+                return;
+            }
 
             // Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
             if (structureSpawnSettings.isOceanFloor()) {
@@ -159,6 +186,11 @@ public class StructurePicker extends BukkitRunnable {
             });
 
             this.cancel();// return after pasting
+        } catch (StructureConfigurationException ex){
+          this.cancel();
+          plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
+                  + structureHandler.getStructure(currentStructure).getName());
+          plugin.getLogger().severe(ex.getMessage());
         } catch (Exception ex) {
             this.cancel();
             plugin.getLogger().severe("An error was encountered during the schematic pasting section.");

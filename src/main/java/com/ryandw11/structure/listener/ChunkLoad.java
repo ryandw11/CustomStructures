@@ -16,7 +16,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
  */
 public class ChunkLoad implements Listener {
 
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     public ChunkLoad() {
         this.plugin = CustomStructures.getInstance();
@@ -33,19 +33,27 @@ public class ChunkLoad implements Listener {
 
         World w = e.getChunk().getWorld(); //Grabs the world
         Block b = e.getChunk().getBlock(0, 5, 0); //Grabs the block 0, 5, 0 in that chunk.
-
+        Block bb = null;
         boolean foundLand = false; //True when the block selected is an ideal place for a structure.
-        if (w.getHighestBlockYAt(b.getX(), b.getZ()) == -1) return;
-        Block bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
-        int trys = 0;
-        while (!foundLand) {//While land was not found it keeps checking.
-            if (trys >= 20) return; //added anti crash.
-            if (bb.getType() != Material.AIR) {
-                foundLand = true;
-            } else {
-                bb = bb.getLocation().subtract(0, 1, 0).getBlock();
+        if (w.getHighestBlockYAt(b.getX(), b.getZ()) != -1) {
+             bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
+            int trys = 0;
+            while (!foundLand) {//While land was not found it keeps checking.
+                if (trys >= 20) return; //added anti crash.
+                if (bb.getType() != Material.AIR) {
+                    foundLand = true;
+                } else {
+                    bb = bb.getLocation().subtract(0, 1, 0).getBlock();
+                }
+                trys++;
             }
-            trys++;
+        }
+
+        boolean isVoidAllowed = plugin.getConfig().contains("spawnInVoid") && plugin.getConfig().getBoolean("spawnInVoid");
+
+        if(w.getHighestBlockYAt(b.getX(), b.getZ()) == -1 && !isVoidAllowed){
+            // Stop if void is not allowed.
+            return;
         }
 
         /*

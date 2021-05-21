@@ -10,6 +10,7 @@ import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -196,15 +197,24 @@ public class Structure {
      * Checks to see if the structure can spawn.
      * <p>This also checks structure locations.</p>
      *
-     * @param block The block
+     * @param block The block (Null means it is spawning in the void.)
      * @param chunk The chunk
      * @return If the structure can spawn
      */
-    public boolean canSpawn(Block block, Chunk chunk) {
+    public boolean canSpawn(@Nullable Block block, @NotNull Chunk chunk) {
         // Check to see if the structure can spawn in the current world.
         if (!getStructureLocation().getWorlds().isEmpty()) {
             if (!getStructureLocation().getWorlds().contains(chunk.getWorld().getName()))
                 return false;
+        }
+        // If the block is null, that means it is in the void, check if it can spawn in the void.
+        if(block == null && !getStructureProperties().canSpawnInVoid())
+            return false;
+        else if(block == null){
+            if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
+                return false;
+
+            return getStructureLocation().hasBiome(chunk.getBlock(0,20,0).getBiome());
         }
 
         // Check to see if the structure is far enough away from spawn.
