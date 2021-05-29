@@ -3,8 +3,8 @@ package com.ryandw11.structure.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Extremely primitive command handler.
@@ -12,7 +12,7 @@ import java.util.Map;
  * This will be replaced in the future with a proper one.
  */
 public class CommandHandler {
-    private final Map<String, SubCommand> commandMap;
+    private final Map<List<String>, SubCommand> commandMap;
 
     public CommandHandler() {
         commandMap = new HashMap<>();
@@ -25,10 +25,25 @@ public class CommandHandler {
      * @param subCommand The sub command.
      */
     public void registerCommand(String s, SubCommand subCommand) {
-        if (commandMap.containsKey(s.toLowerCase()))
+        if (commandMap.containsKey(Collections.singletonList(s.toLowerCase())))
             throw new IllegalArgumentException("Command already exists!");
 
-        commandMap.put(s.toLowerCase(), subCommand);
+        commandMap.put(Collections.singletonList(s.toLowerCase()), subCommand);
+    }
+
+    /**
+     * Register a command.
+     *
+     * @param subCommand The sub command.
+     * @param args The aliases to register.
+     */
+    public void registerCommand(SubCommand subCommand, String... args) {
+        List<String> list = new ArrayList<>(Arrays.asList(args));
+        list = list.stream().map(String::toLowerCase).collect(Collectors.toList());
+        if (commandMap.containsKey(list))
+            throw new IllegalArgumentException("Command already exists!");
+
+        commandMap.put(list, subCommand);
     }
 
     /**
@@ -45,8 +60,8 @@ public class CommandHandler {
     public boolean handleCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if (args.length == 0)
             return false;
-        for (Map.Entry<String, SubCommand> entry : commandMap.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(args[0])) {
+        for (Map.Entry<List<String>, SubCommand> entry : commandMap.entrySet()) {
+            if (entry.getKey().contains(args[0])) {
                 String[] newArgs = new String[args.length - 1];
                 if (newArgs.length > 0) {
                     System.arraycopy(args, 1, newArgs, 0, newArgs.length);

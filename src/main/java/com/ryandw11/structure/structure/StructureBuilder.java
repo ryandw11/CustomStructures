@@ -1,6 +1,8 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
+import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -12,9 +14,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * This class is used to make a brand new Structure. (This class is also used internally to load structures
@@ -36,6 +37,7 @@ import java.util.Objects;
 public class StructureBuilder {
 
     private FileConfiguration config;
+    private CustomStructures plugin;
 
     protected String name;
     protected String schematic;
@@ -49,6 +51,7 @@ public class StructureBuilder {
     protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
     protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
+    protected List<StructureSection> structureSections;
     // Base Rotation in Radians.
     protected double baseRotation;
 
@@ -59,10 +62,25 @@ public class StructureBuilder {
      * @param schematic The schematic of the structure.
      */
     public StructureBuilder(String name, String schematic) {
+        this(name, schematic, new ArrayList<>());
+    }
+
+    public StructureBuilder(String name, String schematic, List<StructureSection> sections) {
+        this.plugin = CustomStructures.getInstance();
         this.name = name;
         this.schematic = schematic;
         this.baseRotation = 0;
         lootTables = new HashMap<>();
+        this.structureSections = sections;
+    }
+
+    public StructureBuilder(String name, String schematic, StructureSection... sections) {
+        this.plugin = CustomStructures.getInstance();
+        this.name = name;
+        this.schematic = schematic;
+        this.baseRotation = 0;
+        lootTables = new HashMap<>();
+        this.structureSections = Arrays.asList(sections);
     }
 
 
@@ -79,7 +97,10 @@ public class StructureBuilder {
             throw new RuntimeException("Cannot build structure: That file does not exist!");
         config = YamlConfiguration.loadConfiguration(file);
 
+        plugin = CustomStructures.getInstance();
+
         this.name = name;
+        this.structureSections = new ArrayList<>();
 
         checkValidity();
 
@@ -121,6 +142,40 @@ public class StructureBuilder {
                         lootTables.put(type, new RandomCollection<>());
                         lootTables.get(type).add(weight, table);
                     }
+                }
+            }
+        }
+
+        // Go through and setup the sections for the addons.
+        for (CustomStructureAddon addon : CustomStructures.getInstance().getAddonHandler().getCustomStructureAddons()) {
+            for (Class<? extends StructureSection> section : addon.getStructureSections()) {
+                try {
+                    StructureSection constructedSection = section.getConstructor().newInstance();
+                    // Check if the section exists in the config file.
+                    if (!config.contains(constructedSection.getName())) {
+                        constructedSection.setupSection(null);
+                    } else {
+                        constructedSection.setupSection(config.getConfigurationSection(constructedSection.getName()));
+                    }
+                    this.structureSections.add(constructedSection);
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                    // Inform the user of errors.
+                    plugin.getLogger().severe(String.format("The section %s for the addon %s" +
+                                    "is configured incorrectly. If you are the developer please refer to the API documentation.",
+                            section.getName(), addon.getName()));
+                    plugin.getLogger().severe("This is not an issue with CustomStructures." +
+                            "Report this error to the addon developer!!");
+                } catch (StructureConfigurationException ex) {
+                    // Handle the structureConfigurationException.
+                    throw new StructureConfigurationException(String.format("[%s Addon] %s. This is not" +
+                            "an issue with the CustomStructures plugin.", addon.getName(), ex.getMessage()));
+                } catch (Exception ex) {
+                    // Inform the user of errors.
+                    plugin.getLogger().severe(String.format("An error was encountered in the %s addon! Enable debug for more information.", addon.getName()));
+                    plugin.getLogger().severe(ex.getMessage());
+                    plugin.getLogger().severe("This is not an issue with CustomStructures! Please contact the addon developer.");
+                    if (plugin.isDebug())
+                        ex.printStackTrace();
                 }
             }
         }
@@ -266,6 +321,17 @@ public class StructureBuilder {
      */
     public void setBaseRotation(double baseRotation) {
         this.baseRotation = baseRotation;
+    }
+
+    /**
+     * Add a structure section to the structure builder.
+     * <p>Note: {@link StructureSection#setupSection(ConfigurationSection)} is NOT called by this method. You are expected
+     * to use a constructor.</p>
+     *
+     * @param structureSection The structure section to add.
+     */
+    public void addStructureSection(StructureSection structureSection) {
+        this.structureSections.add(structureSection);
     }
 
     /**

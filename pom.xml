@@ -7,7 +7,7 @@
 
     <groupId>com.ryandw11</groupId>
     <artifactId>CustomStructures</artifactId>
-    <version>1.5.7.3</version>
+    <version>1.5.8-SNAPSHOT</version>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>

@@ -45,6 +45,7 @@ public class SCommand implements CommandExecutor {
         this.commandHandler.registerCommand("createschem", new CreateSchematicCommand(plugin));
         this.commandHandler.registerCommand("create", new CreateCommand(plugin));
         this.commandHandler.registerCommand("testspawn", new TestSpawnCommand(plugin));
+        this.commandHandler.registerCommand(new AddonsCommand(plugin), "addon", "addons");
     }
 
     @Override
@@ -91,6 +92,8 @@ public class SCommand implements CommandExecutor {
                     "&3/cstructure createschem {name} [-options] - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     "&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    "&3/cstructure addon - &2The list of addons."));
         } else {
             sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
         }

@@ -25,8 +25,8 @@ public class SCommandTab implements TabCompleter {
             completions = new ArrayList<>(plugin.getStructureHandler().getStructureNames());
             completions = getApplicableTabCompleter(args[1], completions);
         } else if (args.length <= 1) {
-            completions = new ArrayList<>(Arrays.asList("reload", "test", "list", "additem", "checkkey", "getitem",
-                    "createschem", "create", "nearby", "testspawn"));
+            completions = new ArrayList<>(Arrays.asList("reload", "test", "list", "addItem", "checkKey", "getItem",
+                    "createSchem", "create", "nearby", "testspawn", "addons"));
             completions = getApplicableTabCompleter(args.length == 1 ? args[0] : "", completions);
         }
         Collections.sort(completions);

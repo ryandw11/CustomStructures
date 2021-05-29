@@ -31,7 +31,7 @@ import java.util.Objects;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.5.7.1
+ * @version 1.5.8
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -46,6 +46,8 @@ public class CustomStructures extends JavaPlugin {
     private LootTablesHandler lootTablesHandler;
     private CustomItemManager customItemManager;
     private IgnoreBlocks blockIgnoreManager;
+    private AddonHandler addonHandler;
+
     private boolean debugMode;
 
     public static boolean enabled;
@@ -87,9 +89,14 @@ public class CustomStructures extends JavaPlugin {
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
         lootTablesHandler = new LootTablesHandler();
-        this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
+        this.addonHandler = new AddonHandler();
+        // Run this after the loading of all plugins.
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
+            getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
+            getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
+        }, 20);
 
-        getLogger().info("The plugin has been enabled with " + structureHandler.getStructures().size() + " structures.");
 
         if (getConfig().getBoolean("bstats")) {
             new Metrics(this, 7056);
@@ -145,6 +152,8 @@ public class CustomStructures extends JavaPlugin {
 
     /**
      * Get the structure handler for the plugin.
+     *
+     * <p>This will be null until after all plugins have been enabled.</p>
      *
      * @return The structure handler.
      */
@@ -309,11 +318,30 @@ public class CustomStructures extends JavaPlugin {
     }
 
     /**
+     * Get if structure events are cancelable.
+     *
+     * @return If structure events are cancelable.
+     */
+    public boolean isStructureEventCancelable() {
+        if (!getConfig().contains("allow_structure_spawning_cancellation")) return true;
+        return getConfig().getBoolean("allow_structure_spawning_cancellation");
+    }
+
+    /**
      * Get the custom item manager.
      *
      * @return The custom item manager.
      */
     public CustomItemManager getCustomItemManager() {
         return customItemManager;
+    }
+
+    /**
+     * Get the addon handler for the plugin.
+     *
+     * @return The addon handler.
+     */
+    public AddonHandler getAddonHandler() {
+        return addonHandler;
     }
 }

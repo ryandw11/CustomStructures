@@ -1,6 +1,7 @@
 package com.ryandw11.structure.api;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.structure.StructureHandler;
@@ -15,8 +16,34 @@ public class CustomStructuresAPI {
 
     private final CustomStructures plugin;
 
+    /**
+     * Construct the CustomStructuresAPI class.
+     *
+     * <p>This is how you obtain the CustomStructureAPI class. Nothing special needs to be done
+     * other than use this constructor.</p>
+     */
     public CustomStructuresAPI() {
         this.plugin = CustomStructures.plugin;
+    }
+
+    /**
+     * Register an addon to the Custom Structure plugin.
+     *
+     * <p>This is used to add custom configuration sections and inform the plugin
+     * that your plugin interfaces with it. This is not required to use
+     * any of the events.</p>
+     *
+     * <p>This should be called in the plugin's onEnable method. Ensure that you add CustomStructures
+     * as a dependency in your plugin.yml file so that way the plugin loads first and the addon
+     * system can be initialized. An error may occur if your plugin loads first.</p>
+     *
+     * @param customStructureAddon The addon to register.
+     */
+    public void registerCustomAddon(CustomStructureAddon customStructureAddon) {
+        if (plugin.getAddonHandler() == null)
+            throw new IllegalStateException("The addon system has not been initialized yet. Please add CustomStructures" +
+                    "as a dependency in your plugin.yml file.");
+        plugin.getAddonHandler().registerAddon(customStructureAddon);
     }
 
     /**
@@ -30,6 +57,8 @@ public class CustomStructuresAPI {
 
     /**
      * Get the structure handler.
+     *
+     * <p>This is not initialized until after all plugins are loaded.</p>
      *
      * @return The structure handler.
      */

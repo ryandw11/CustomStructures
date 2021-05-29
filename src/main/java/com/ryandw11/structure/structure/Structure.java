@@ -2,6 +2,7 @@ package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandler;
+import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.properties.*;
@@ -14,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,6 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p>The class is organized like the structure configuration files. Everything
  * is sorted into properties.</p>
  * <p>Use {@link StructureBuilder} to create a new Structure.</p>
+ * <p>Consider using the {@link StructureSection} API to add custom configuration sections to your structures.</p>
  * <p>You can detect when a structure spawns using {@link com.ryandw11.structure.api.StructureSpawnEvent}.</p>
  */
 public class Structure {
@@ -38,6 +42,7 @@ public class Structure {
     private final MaskProperty maskProperty;
     private final SubSchematics subSchematics;
     private final Map<LootTableType, RandomCollection<LootTable>> lootTables;
+    private final List<StructureSection> structureSections;
     private final double baseRotation;
 
     private double subSchemRotation = 0d;
@@ -60,6 +65,7 @@ public class Structure {
         this.maskProperty = builder.maskProperty;
         this.subSchematics = builder.subSchematics;
         this.lootTables = builder.lootTables;
+        this.structureSections = builder.structureSections;
         this.baseRotation = builder.baseRotation;
     }
 
@@ -185,6 +191,15 @@ public class Structure {
     }
 
     /**
+     * Get the unmodifiable list of structure sections.
+     *
+     * @return The unmodifiable list of structure sections.
+     */
+    public List<StructureSection> getStructureSections() {
+        return Collections.unmodifiableList(structureSections);
+    }
+
+    /**
      * Get the base rotation of a structure.
      *
      * @return The base rotation. (In Radians).
@@ -208,13 +223,13 @@ public class Structure {
                 return false;
         }
         // If the block is null, that means it is in the void, check if it can spawn in the void.
-        if(block == null && !getStructureProperties().canSpawnInVoid())
+        if (block == null && !getStructureProperties().canSpawnInVoid())
             return false;
-        else if(block == null){
+        else if (block == null) {
             if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
                 return false;
 
-            return getStructureLocation().hasBiome(chunk.getBlock(0,20,0).getBiome());
+            return getStructureLocation().hasBiome(chunk.getBlock(0, 20, 0).getBiome());
         }
 
         // Check to see if the structure is far enough away from spawn.

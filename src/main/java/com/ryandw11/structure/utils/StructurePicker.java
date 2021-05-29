@@ -2,6 +2,7 @@ package com.ryandw11.structure.utils;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.SchematicHandler;
+import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
 import com.ryandw11.structure.structure.Structure;
@@ -63,7 +64,7 @@ public class StructurePicker extends BukkitRunnable {
                 return;
 
             // If the block is null, Skip the other steps and spawn.
-            if(bl == null) {
+            if (bl == null) {
                 bl = ch.getBlock(0, structureSpawnSettings.getHeight(-1), 0);
                 // Now to finally paste the schematic
                 SchematicHandler sh = new SchematicHandler();
@@ -168,6 +169,25 @@ public class StructurePicker extends BukkitRunnable {
                 }
             }
 
+            for (StructureSection section : structure.getStructureSections()) {
+                // Check if the structure can spawn according to the section.
+                // If an error occurs, report it to the user.
+                try {
+                    if(!section.checkStructureConditions(structure, bl, ch)) return;
+                } catch (Exception ex) {
+                    plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn" +
+                            "the structure %s with the custom property %s!", structure.getName(), section.getName()));
+                    plugin.getLogger().severe("This is not a CustomStructures error! Please report" +
+                            "this to the developer of the addon.");
+                    if (plugin.isDebug()) {
+                        ex.printStackTrace();
+                    } else {
+                        plugin.getLogger().severe("Enable debug mode to see the stack trace.");
+                    }
+                    return;
+                }
+            }
+
             // Now to finally paste the schematic
             SchematicHandler sh = new SchematicHandler();
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
@@ -186,11 +206,11 @@ public class StructurePicker extends BukkitRunnable {
             });
 
             this.cancel();// return after pasting
-        } catch (StructureConfigurationException ex){
-          this.cancel();
-          plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
-                  + structureHandler.getStructure(currentStructure).getName());
-          plugin.getLogger().severe(ex.getMessage());
+        } catch (StructureConfigurationException ex) {
+            this.cancel();
+            plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
+                    + structureHandler.getStructure(currentStructure).getName());
+            plugin.getLogger().severe(ex.getMessage());
         } catch (Exception ex) {
             this.cancel();
             plugin.getLogger().severe("An error was encountered during the schematic pasting section.");
