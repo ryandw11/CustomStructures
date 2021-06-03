@@ -318,16 +318,6 @@ public class CustomStructures extends JavaPlugin {
     }
 
     /**
-     * Get if structure events are cancelable.
-     *
-     * @return If structure events are cancelable.
-     */
-    public boolean isStructureEventCancelable() {
-        if (!getConfig().contains("allow_structure_spawning_cancellation")) return true;
-        return getConfig().getBoolean("allow_structure_spawning_cancellation");
-    }
-
-    /**
      * Get the custom item manager.
      *
      * @return The custom item manager.

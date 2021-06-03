@@ -555,7 +555,7 @@ public class SchematicHandler {
         LootPopulateEvent event = new LootPopulateEvent(structure, location, lootTable);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
-        if(event.isCanceled()) return;
+        if (event.isCanceled()) return;
 
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
