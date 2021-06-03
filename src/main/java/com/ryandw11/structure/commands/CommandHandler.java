@@ -61,7 +61,7 @@ public class CommandHandler {
         if (args.length == 0)
             return false;
         for (Map.Entry<List<String>, SubCommand> entry : commandMap.entrySet()) {
-            if (entry.getKey().contains(args[0])) {
+            if (entry.getKey().contains(args[0].toLowerCase())) {
                 String[] newArgs = new String[args.length - 1];
                 if (newArgs.length > 0) {
                     System.arraycopy(args, 1, newArgs, 0, newArgs.length);
