@@ -31,7 +31,7 @@ import java.util.Objects;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.5.8
+ * @version 1.6.0-SNAPSHOT
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -53,6 +53,7 @@ public class CustomStructures extends JavaPlugin {
     public static boolean enabled;
 
     public static final int COMPILED_STRUCT_VER = 1;
+    public static final int CONFIG_VERSION = 7;
 
     @Override
     public void onEnable() {
@@ -70,7 +71,8 @@ public class CustomStructures extends JavaPlugin {
             mmh = new MMDisabled();
         loadFile();
         debugMode = getConfig().getBoolean("debug");
-        if (getConfig().getInt("configversion") < 6) {
+
+        if (getConfig().getInt("configversion") < CONFIG_VERSION) {
             lootTablesHandler = new LootTablesHandler();
             updateConfig(getConfig().getInt("configversion"));
         }
@@ -126,6 +128,11 @@ public class CustomStructures extends JavaPlugin {
 
         // Initialize blockIgnoreManager with the proper class for the version.
         switch (version) {
+            case "v1_16_R3":
+            case "v1_16_R2":
+            case "v1_16_R1":
+                blockIgnoreManager = new IgnoreBlocks_1_16();
+                break;
             case "v1_15_R1":
                 blockIgnoreManager = new IgnoreBlocks_1_15();
                 break;
@@ -136,7 +143,7 @@ public class CustomStructures extends JavaPlugin {
                 blockIgnoreManager = new IgnoreBlocks_1_13();
                 break;
             default:
-                blockIgnoreManager = new IgnoreBlocks_1_16();
+                blockIgnoreManager = new IgnoreBlocks_1_17();
                 break;
         }
     }
@@ -192,8 +199,8 @@ public class CustomStructures extends JavaPlugin {
     private void loadManager() {
         Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
-        getCommand("customstructure").setExecutor(new SCommand(this));
-        getCommand("customstructure").setTabCompleter(new SCommandTab(this));
+        Objects.requireNonNull(getCommand("customstructure")).setExecutor(new SCommand(this));
+        Objects.requireNonNull(getCommand("customstructure")).setTabCompleter(new SCommandTab(this));
     }
 
     private void registerConfig() {
@@ -217,8 +224,7 @@ public class CustomStructures extends JavaPlugin {
 
     /**
      * Updates the config to the latest version.
-     * (Config version 4 to version 5)
-     * or loot table version from 5 to 6.
+     * (Also currently updates loot tables from 5 to 6)
      * This will be removed in future versions.
      */
     private void updateConfig(int ver) {
@@ -305,6 +311,11 @@ public class CustomStructures extends JavaPlugin {
             getConfig().set("configversion", 6);
             saveConfig();
             getLogger().info("Successfully updated " + structuresConverted + " structures!");
+        }
+        if (ver < 7) {
+            getLogger().info("Updating all structure config files...");
+            getLogger().info("Warning: This is a developer build, no updates will be performed right now.");
+            // TODO implement a version updater
         }
     }
 
