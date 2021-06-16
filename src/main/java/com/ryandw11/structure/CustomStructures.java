@@ -13,6 +13,8 @@ import com.ryandw11.structure.mythicalmobs.MMEnabled;
 import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.utils.Pair;
+import com.ryandw11.structure.utils.SpawnYConversion;
+import org.apache.commons.io.FileUtils;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -22,10 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * The main class for the Custom Structures plugin.
@@ -314,9 +313,118 @@ public class CustomStructures extends JavaPlugin {
         }
         if (ver < 7) {
             getLogger().info("Updating all structure config files...");
-            getLogger().info("Warning: This is a developer build, no updates will be performed right now.");
+
+            File structDir = new File(getDataFolder(), "structures");
+            if (!structDir.exists() && !structDir.isDirectory()) {
+                getLogger().severe("An error occurred when trying to update the structure format: Unable to find structure directory! Does it exist?");
+                return;
+            }
+
+            List<String> updatedStructures = new ArrayList<>();
+
+            File backupDirectory = new File(getDataFolder(), "backup");
+            File backupdata = new File(backupDirectory, ".backups");
+            if(!backupDirectory.exists()){
+                if(!backupDirectory.mkdir()) {
+                    getLogger().severe("Error: Unable to create backup directory!");
+                    return;
+                }
+            }
+
+            if(!backupdata.exists()) {
+                try{
+                    backupdata.createNewFile();
+                }catch (IOException ex) {
+                    getLogger().severe("Error: Unable to create backup file.");
+                    return;
+                }
+            }
+
+            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(backupdata);
+            List<String> loadedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
+
+            // This detects if there are any loaded structures, and alerts the user if this is an error.
+            if(!loadedStructures.isEmpty()) {
+                getLogger().info("Previous update attempt detected.");
+                getLogger().info(String.format("%s completed structure updates were found. If this is your first time updating" +
+                        " to this version of CustomStructures, then please delete the backup directory and restart the server.",
+                        loadedStructures.size()));
+                getLogger().info("The server will now wait 5 seconds to give you a chance to stop the server before " +
+                        "the update automatically continues. Press ctrl+c to cancel running the server.");
+                try{
+                    Thread.sleep(5000);
+                }catch (InterruptedException ex) {
+                    getLogger().info("Server shutdown detected. Stopping update.");
+                    return;
+                }
+            }
+
+            createBackupForFile("config.yml", "/backup/config.yml.backup");
+            for(String s : getConfig().getStringList("Structures")) {
+                if(loadedStructures.contains(s)) continue;
+
+                try {
+                    createBackupForFile("/structures/" + s + ".yml", "/backup/" + s + ".yml.backup");
+
+                    FileConfiguration structConfig = YamlConfiguration.loadConfiguration(new File(structDir, s + ".yml"));
+
+                    if(!structConfig.contains("StructureLocation.SpawnY")) {
+                        getLogger().severe("Error: unable to find SpawnY value, please fix that issue and restart the server.");
+                        return;
+                    }
+                    String spawnY = structConfig.getString("StructureLocation.SpawnY");
+                    assert spawnY != null;
+                    String newSpawnY = SpawnYConversion.convertSpawnYValue(spawnY);
+                    structConfig.set("StructureLocation.SpawnY", newSpawnY);
+                    try{
+                        structConfig.save(new File(structDir, s + ".yml"));
+                    }catch (IOException ex) {
+                        getLogger().info(String.format("An error has occurred when updating %s!", s));
+                        getLogger().severe("Error: unable to save updated structure file!");
+                        return;
+                    }
+                    getLogger().info(String.format("Successfully updated the structure: %s!", s));
+                    // Add the updated structure to the list.
+                    updatedStructures.add(s);
+                    fileConfiguration.set("UpdatedStructures", updatedStructures);
+                    fileConfiguration.save(backupdata);
+                }catch (Exception ex) {
+                    getLogger().severe(String.format("An error has occurred when updating %s:", s));
+                    ex.printStackTrace();
+                    getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
+                            " from where it left off.");
+                    return;
+                }
+            }
+
+            getConfig().set("configversion", 7);
+            saveConfig();
+
+            getLogger().info("Successfully updated all structure files to the latest version.");
+            getLogger().info("Please delete the backup folder that was created in the CustomStructures directory" +
+                    " after you confirm everything was updated correctly.");
+
+
+
             // TODO implement a version updater
         }
+    }
+
+    private boolean createBackupForFile(String file, String backupFile) {
+        File config = new File(getDataFolder(), file);
+        File configBackup = new File(getDataFolder(), backupFile);
+        try {
+            configBackup.createNewFile();
+            FileUtils.copyFile(config, configBackup);
+        } catch (IOException ex) {
+            getLogger().severe("A critical error was encountered when attempting to update plugin configuration" +
+                    " files!");
+            getLogger().severe("Unable to create a backup for " + file);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -97,6 +97,7 @@ public class StructureYSpawning {
      *                      <p>If this is -1, than that means the structure is spawning in the void.</p>
      * @return The height according to the rules of SpawnY
      */
+    // TODO this needs to be fixed.
     public int getHeight(int currentHeight) {
 
         // Ensure that the spawnY is configured correctly for the void.
@@ -112,11 +113,12 @@ public class StructureYSpawning {
         }
 
         if (top) return currentHeight;
-        if (value.contains("[")) {
-            //If +[num-num]
+        // If it is a range
+        if (value.contains(";")) {
+            //If +[num;num]
             if (value.startsWith("+")) {
                 String v = value.replace("[", "").replace("]", "").replace("+", "");
-                String[] out = v.split("-");
+                String[] out = v.split(";");
                 try {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
@@ -130,10 +132,10 @@ public class StructureYSpawning {
                     return currentHeight;
                 }
             }
-            // if -[num-num]
+            // if -[num;num]
             else if (value.startsWith("-")) {
                 String v = value.replace("[", "").replace("]", "").replace("-", "");
-                String[] out = v.split("-");
+                String[] out = v.split(";");
                 try {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
@@ -147,10 +149,10 @@ public class StructureYSpawning {
                     return currentHeight;
                 }
             }
-            // if just [num-num]
+            // if just [num;num]
             else {
                 String v = value.replace("[", "").replace("]", "");
-                String[] out = v.split("-");
+                String[] out = v.split(";");
                 try {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
@@ -162,9 +164,9 @@ public class StructureYSpawning {
                 }
             }
         }
-        // if +num
-        else if (value.startsWith("+")) {
-            String v = value.replace("+", "");
+        // if +[num]
+        else if (value.startsWith("+[")) {
+            String v = value.replace("+", "").replace("[", "").replace("]", "");
             try {
                 int num = Integer.parseInt(v);
                 return currentHeight + num;
@@ -172,9 +174,9 @@ public class StructureYSpawning {
                 return currentHeight;
             }
         }
-        // if -num
-        else if (value.startsWith("-")) {
-            String v = value.replace("-", "");
+        // if -[num]
+        else if (value.startsWith("-[")) {
+            String v = value.replace("-", "").replace("[", "").replace("]", "");
 
             try {
                 int num = Integer.parseInt(v);
