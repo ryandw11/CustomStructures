@@ -8,6 +8,7 @@ StructureLocation:
   Worlds:
     - world
   SpawnY: top
+  SpawnYHeightMap: 'WORLD_SURFACE'
   CalculateSpawnFirst: true
   Biome: []
   DistanceFromOthers: 200

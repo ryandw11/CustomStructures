@@ -2,6 +2,7 @@ package com.ryandw11.structure.structure.properties;
 
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.structure.StructureBuilder;
+import org.bukkit.HeightMap;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -78,7 +79,7 @@ public class StructureLocation {
      * Construct the Structure Location using default values.
      */
     public StructureLocation() {
-        this(new ArrayList<>(), new StructureYSpawning("top", true), new ArrayList<>());
+        this(new ArrayList<>(), new StructureYSpawning("top", HeightMap.WORLD_SURFACE_WG, true), new ArrayList<>());
     }
 
     /**

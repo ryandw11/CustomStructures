@@ -63,6 +63,12 @@ public class CustomStructures extends JavaPlugin {
         registerConfig();
         setupBlockIgnore();
 
+        // Alert about the developer build.
+        getLogger().info("===============[Custom Structures]===============");
+        getLogger().info("Warning: You are running a Developer Build of Custom Structures.");
+        getLogger().info("Please report any bugs to Github or the Discord support server.");
+        getLogger().info("===============[Custom Structures]===============");
+
         if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
             mmh = new MMEnabled();
             getLogger().info("MythicMobs detected! Activating plugin hook!");
@@ -374,8 +380,19 @@ public class CustomStructures extends JavaPlugin {
                     }
                     String spawnY = structConfig.getString("StructureLocation.SpawnY");
                     assert spawnY != null;
+
                     String newSpawnY = SpawnYConversion.convertSpawnYValue(spawnY);
-                    structConfig.set("StructureLocation.SpawnY", newSpawnY);
+
+                    // Add the new SpawnYHeightMap feature.
+                    if(newSpawnY.equals("ocean_floor")) {
+                        structConfig.set("StructureLocation.SpawnY", "top");
+                        structConfig.set("StructureLocation.SpawnYHeightMap", "OCEAN_FLOOR");
+                    }
+                    else {
+                        structConfig.set("StructureLocation.SpawnY", newSpawnY);
+                        structConfig.set("StructureLocation.SpawnYHeightMap", "WORLD_SURFACE");
+                    }
+
                     try{
                         structConfig.save(new File(structDir, s + ".yml"));
                     }catch (IOException ex) {

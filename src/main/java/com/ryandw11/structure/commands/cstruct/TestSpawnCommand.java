@@ -4,7 +4,6 @@ import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.commands.SubCommand;
 import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
 import com.ryandw11.structure.structure.Structure;
-import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.structure.properties.BlockLevelLimit;
 import com.ryandw11.structure.structure.properties.StructureYSpawning;
 import org.bukkit.ChatColor;
@@ -69,41 +68,43 @@ public class TestSpawnCommand implements SubCommand {
 
         StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
 
-        bl = ch.getBlock(0, ch.getWorld().getHighestBlockYAt(bl.getX(), bl.getZ()), 0);
+        bl = structureSpawnSettings.getHighestBlock(bl.getLocation());
+        ;
 
         // Calculate the chance.
         canSpawn(p, structure, bl, ch);
 
         // Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
-        if (structureSpawnSettings.isOceanFloor()) {
-            if (bl.getType() == Material.WATER) {
-                for (int i = bl.getY(); i >= 4; i--) {
-                    if (ch.getBlock(0, i, 0).getType() != Material.WATER) {
-                        bl = ch.getBlock(0, i, 0);
-                        break;
-                    }
-                }
-            }
-        }
+        // TODO Remove this code as it is no longer needed.
+//        if (structureSpawnSettings.isOceanFloor()) {
+//            if (bl.getType() == Material.WATER) {
+//                for (int i = bl.getY(); i >= 4; i--) {
+//                    if (ch.getBlock(0, i, 0).getType() != Material.WATER) {
+//                        bl = ch.getBlock(0, i, 0);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
 
         // Allows the structures to no longer spawn on plant life.
         if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(bl.getType())) {
             for (int i = bl.getY(); i >= 4; i--) {
-                if (!ignoreBlocks.getBlocks().contains(ch.getBlock(0, i, 0).getType()) && ch.getBlock(0, i, 0).getType() != Material.AIR) {
-                    bl = ch.getBlock(0, i, 0);
+                if (!ignoreBlocks.getBlocks().contains(ch.getBlock(8, i, 8).getType()) && !ch.getBlock(8, i, 8).getType().isAir()) {
+                    bl = ch.getBlock(8, i, 8);
                     break;
                 }
             }
         }
 
         // calculate SpawnY if first is true
-        if (!structureSpawnSettings.isOceanFloor() && structureSpawnSettings.isCalculateSpawnYFirst()) {
-            bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
+        if (structureSpawnSettings.isCalculateSpawnYFirst()) {
+            bl = ch.getBlock(8, structureSpawnSettings.getHeight(bl.getLocation()), 8);
             quickSendMessage(p, "&aSpawn Y Value: " + bl.getY());
         }
 
         if (!structure.getStructureLimitations().hasBlock(bl)) {
-            quickSendMessage(p, "&cFailed Block Limitation! Cannot spawn on this block!");
+            quickSendMessage(p, String.format("&cFailed Block Limitation! Cannot spawn on %s!", bl.getType()));
             return;
         }
 
@@ -124,8 +125,8 @@ public class TestSpawnCommand implements SubCommand {
         }
 
         // calculate SpawnY if first is false
-        if (!structureSpawnSettings.isOceanFloor() && !structureSpawnSettings.isCalculateSpawnYFirst()) {
-            bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
+        if (!structureSpawnSettings.isCalculateSpawnYFirst()) {
+            bl = ch.getBlock(8, structureSpawnSettings.getHeight(bl.getLocation()), 8);
             quickSendMessage(p, "&aSpawn Y Value: " + bl.getY());
         }
 
@@ -138,11 +139,19 @@ public class TestSpawnCommand implements SubCommand {
                     for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
                         Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
                         Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                        if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType()))){
+                        if (!(top.getType().isAir() || ignoreBlocks.getBlocks().contains(top.getType()))) {
+                            // Output debug info if in debug mode.
+                            if (plugin.isDebug()) {
+                                p.sendMessage(top.getLocation() + " || TOP FAIL");
+                                p.sendMessage(top.getType() + " || TOP FAIL");
+                            }
                             quickSendMessage(p, "&cFailed Flat Block Level Limit test! The ground is not flat!");
                             return;
                         }
-                        if (bottom.getType() == Material.AIR) {
+                        if (bottom.getType().isAir()) {
+                            if (plugin.isDebug()) {
+                                p.sendMessage(bottom.getLocation() + " || BOTTOM FAIL");
+                            }
                             quickSendMessage(p, "&cFailed Flat Block Level Limit test! The ground is not flat!");
                             return;
                         }
@@ -155,23 +164,27 @@ public class TestSpawnCommand implements SubCommand {
                     for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
                         Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
                         Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                        if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType())))
+                        if (!(top.getType().isAir()|| ignoreBlocks.getBlocks().contains(top.getType())))
                             error++;
-                        if (bottom.getType() == Material.AIR)
+                        if (bottom.getType().isAir())
                             error++;
 
                         total += 2;
                     }
                 }
+                // Debug the percent failure.
+                if(plugin.isDebug()) {
+                    p.sendMessage("Percent Failure: " + ((double) error / total) + " / " + limit.getError());
+                }
+                if (((double) error / total) > limit.getError()) {
 
-                if (((double) error / total) > limit.getError()){
                     quickSendMessage(p, "&cFailed Flat Error Block Level Limit test! The ground is not flat enough!");
                 }
             }
         }
     }
 
-    void canSpawn(Player p, Structure structure, Block block, Chunk chunk){
+    void canSpawn(Player p, Structure structure, Block block, Chunk chunk) {
         if (!structure.getStructureLocation().getWorlds().isEmpty()) {
             if (!structure.getStructureLocation().getWorlds().contains(chunk.getWorld().getName()))
                 quickSendMessage(p, "&cFailed world test! Cannot spawn in current world!");
@@ -191,11 +204,11 @@ public class TestSpawnCommand implements SubCommand {
             quickSendMessage(p, "&eDid not spawn by probability!");
 
         // Check to see if the structure can spawn in the current biome.
-        if(!structure.getStructureLocation().hasBiome(block.getBiome()))
+        if (!structure.getStructureLocation().hasBiome(block.getBiome()))
             quickSendMessage(p, "&cFailed Biome test! Cannot spawn in this biome!");
     }
 
-    void quickSendMessage(Player p, String msg){
+    void quickSendMessage(Player p, String msg) {
         p.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
