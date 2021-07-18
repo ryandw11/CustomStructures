@@ -1,5 +1,6 @@
 package com.ryandw11.structure;
 
+import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.ignoreblocks.*;
@@ -16,7 +17,9 @@ import com.ryandw11.structure.utils.Pair;
 import com.ryandw11.structure.utils.SpawnYConversion;
 import org.apache.commons.io.FileUtils;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -30,7 +33,7 @@ import java.util.*;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.6.0-SNAPSHOT
+ * @version 1.6.0
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -47,6 +50,8 @@ public class CustomStructures extends JavaPlugin {
     private IgnoreBlocks blockIgnoreManager;
     private AddonHandler addonHandler;
 
+    private Metrics metrics;
+
     private boolean debugMode;
 
     public static boolean enabled;
@@ -62,12 +67,6 @@ public class CustomStructures extends JavaPlugin {
         loadManager();
         registerConfig();
         setupBlockIgnore();
-
-        // Alert about the developer build.
-        getLogger().info("===============[Custom Structures]===============");
-        getLogger().info("Warning: You are running a Developer Build of Custom Structures.");
-        getLogger().info("Please report any bugs to Github or the Discord support server.");
-        getLogger().info("===============[Custom Structures]===============");
 
         if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
             mmh = new MMEnabled();
@@ -102,11 +101,24 @@ public class CustomStructures extends JavaPlugin {
             this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
             getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
             getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
+
+            if (metrics != null) {
+                // Add a custom pie chart to track the addons used.
+                metrics.addCustomChart(new AdvancedPie("used_addons", () -> {
+                    Map<String, Integer> valueMap = new HashMap<>();
+                    for (CustomStructureAddon addon : addonHandler.getCustomStructureAddons()) {
+                        valueMap.put(addon.getName(), 1);
+                    }
+                    return valueMap;
+                }));
+            }
+
         }, 20);
 
 
         if (getConfig().getBoolean("bstats")) {
-            new Metrics(this, 7056);
+            metrics = new Metrics(this, 7056);
+
             getLogger().info("Bstat metrics for this plugin is enabled. Disable it in the config if you do not want it on.");
         } else {
             getLogger().info("Bstat metrics is disabled for this plugin.");
@@ -326,55 +338,73 @@ public class CustomStructures extends JavaPlugin {
                 return;
             }
 
-            List<String> updatedStructures = new ArrayList<>();
-
             File backupDirectory = new File(getDataFolder(), "backup");
             File backupdata = new File(backupDirectory, ".backups");
-            if(!backupDirectory.exists()){
-                if(!backupDirectory.mkdir()) {
+            if (!backupDirectory.exists()) {
+                if (!backupDirectory.mkdir()) {
                     getLogger().severe("Error: Unable to create backup directory!");
                     return;
                 }
             }
 
-            if(!backupdata.exists()) {
-                try{
+            if (!backupdata.exists()) {
+                try {
                     backupdata.createNewFile();
-                }catch (IOException ex) {
+                } catch (IOException ex) {
                     getLogger().severe("Error: Unable to create backup file.");
                     return;
                 }
             }
 
             FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(backupdata);
-            List<String> loadedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
+
+            if (fileConfiguration.contains("backupVer")) {
+                int backupVer = fileConfiguration.getInt("backupVer");
+                if (backupVer != 7) {
+                    Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "===============[CUSTOM STRUCTURES UPDATE]===============" + ChatColor.RESET);
+                    getLogger().severe("Unable to update plugin! Backup data is outdated!");
+                    getLogger().severe("Please delete the backup folder in the CustomStructures directory before continuing!");
+                    Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "===============[CUSTOM STRUCTURES UPDATE]===============" + ChatColor.RESET);
+                    return;
+                }
+            } else {
+                fileConfiguration.set("backupVer", 7);
+                try {
+                    fileConfiguration.save(backupdata);
+                } catch (IOException ex) {
+                    getLogger().severe("A critical error has occurred while backing up the plugin data.");
+                    return;
+                }
+            }
+
+            List<String> updatedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
 
             // This detects if there are any loaded structures, and alerts the user if this is an error.
-            if(!loadedStructures.isEmpty()) {
+            if (!updatedStructures.isEmpty()) {
                 getLogger().info("Previous update attempt detected.");
                 getLogger().info(String.format("%s completed structure updates were found. If this is your first time updating" +
-                        " to this version of CustomStructures, then please delete the backup directory and restart the server.",
-                        loadedStructures.size()));
+                                " to this version of CustomStructures, then please delete the backup directory and restart the server.",
+                        updatedStructures.size()));
                 getLogger().info("The server will now wait 5 seconds to give you a chance to stop the server before " +
                         "the update automatically continues. Press ctrl+c to cancel running the server.");
-                try{
+                try {
                     Thread.sleep(5000);
-                }catch (InterruptedException ex) {
+                } catch (InterruptedException ex) {
                     getLogger().info("Server shutdown detected. Stopping update.");
                     return;
                 }
             }
 
             createBackupForFile("config.yml", "/backup/config.yml.backup");
-            for(String s : getConfig().getStringList("Structures")) {
-                if(loadedStructures.contains(s)) continue;
+            for (String s : getConfig().getStringList("Structures")) {
+                if (updatedStructures.contains(s)) continue;
 
                 try {
                     createBackupForFile("/structures/" + s + ".yml", "/backup/" + s + ".yml.backup");
 
                     FileConfiguration structConfig = YamlConfiguration.loadConfiguration(new File(structDir, s + ".yml"));
 
-                    if(!structConfig.contains("StructureLocation.SpawnY")) {
+                    if (!structConfig.contains("StructureLocation.SpawnY")) {
                         getLogger().severe("Error: unable to find SpawnY value, please fix that issue and restart the server.");
                         return;
                     }
@@ -384,18 +414,17 @@ public class CustomStructures extends JavaPlugin {
                     String newSpawnY = SpawnYConversion.convertSpawnYValue(spawnY);
 
                     // Add the new SpawnYHeightMap feature.
-                    if(newSpawnY.equals("ocean_floor")) {
+                    if (newSpawnY.equals("ocean_floor")) {
                         structConfig.set("StructureLocation.SpawnY", "top");
                         structConfig.set("StructureLocation.SpawnYHeightMap", "OCEAN_FLOOR");
-                    }
-                    else {
+                    } else {
                         structConfig.set("StructureLocation.SpawnY", newSpawnY);
                         structConfig.set("StructureLocation.SpawnYHeightMap", "WORLD_SURFACE");
                     }
 
-                    try{
+                    try {
                         structConfig.save(new File(structDir, s + ".yml"));
-                    }catch (IOException ex) {
+                    } catch (IOException ex) {
                         getLogger().info(String.format("An error has occurred when updating %s!", s));
                         getLogger().severe("Error: unable to save updated structure file!");
                         return;
@@ -405,7 +434,7 @@ public class CustomStructures extends JavaPlugin {
                     updatedStructures.add(s);
                     fileConfiguration.set("UpdatedStructures", updatedStructures);
                     fileConfiguration.save(backupdata);
-                }catch (Exception ex) {
+                } catch (Exception ex) {
                     getLogger().severe(String.format("An error has occurred when updating %s:", s));
                     ex.printStackTrace();
                     getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
@@ -420,13 +449,16 @@ public class CustomStructures extends JavaPlugin {
             getLogger().info("Successfully updated all structure files to the latest version.");
             getLogger().info("Please delete the backup folder that was created in the CustomStructures directory" +
                     " after you confirm everything was updated correctly.");
-
-
-
-            // TODO implement a version updater
         }
     }
 
+    /**
+     * Create a backup of a certain file.
+     *
+     * @param file       The file to backup
+     * @param backupFile The location for the backup file.
+     * @return If the backup was successful.
+     */
     private boolean createBackupForFile(String file, String backupFile) {
         File config = new File(getDataFolder(), file);
         File configBackup = new File(getDataFolder(), backupFile);
