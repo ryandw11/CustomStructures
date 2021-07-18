@@ -66,7 +66,7 @@ public class StructurePicker extends BukkitRunnable {
             structureBlock = structureSpawnSettings.getHighestBlock(bl.getLocation());
 
             // If the block is the void, then set it to null to maintain compatibility.
-            if(structureBlock.getType() == Material.VOID_AIR) {
+            if (structureBlock.getType() == Material.VOID_AIR) {
                 structureBlock = null;
             }
 
@@ -98,19 +98,6 @@ public class StructurePicker extends BukkitRunnable {
                 this.cancel();
                 return;
             }
-
-            // Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
-            // TODO Remove this code, it is no longer used.
-//            if (structureSpawnSettings.isOceanFloor()) {
-//                if (structureBlock.getType() == Material.WATER) {
-//                    for (int i = structureBlock.getY(); i >= 4; i--) {
-//                        if (ch.getBlock(8, i, 8).getType() != Material.WATER) {
-//                            structureBlock = ch.getBlock(8, i, 8);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
 
             // Allows the structures to no longer spawn on plant life.
             if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(structureBlock.getType())) {
@@ -185,7 +172,7 @@ public class StructurePicker extends BukkitRunnable {
                 // Check if the structure can spawn according to the section.
                 // If an error occurs, report it to the user.
                 try {
-                    if(!section.checkStructureConditions(structure, structureBlock, ch)) return;
+                    if (!section.checkStructureConditions(structure, structureBlock, ch)) return;
                 } catch (Exception ex) {
                     plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn" +
                             "the structure %s with the custom property %s!", structure.getName(), section.getName()));

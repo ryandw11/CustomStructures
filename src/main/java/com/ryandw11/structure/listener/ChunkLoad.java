@@ -2,8 +2,6 @@ package com.ryandw11.structure.listener;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.utils.StructurePicker;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,31 +29,7 @@ public class ChunkLoad implements Listener {
         if (!newChunk && !e.isNewChunk()) return;
 
 
-        World w = e.getChunk().getWorld(); //Grabs the world
         Block b = e.getChunk().getBlock(8, 5, 8); //Grabs the block 8, 5, 8 in that chunk.
-        // TODO Remove this code.
-//        Block bb = null;
-//        boolean foundLand = false; //True when the block selected is an ideal place for a structure.
-//        if (w.getHighestBlockYAt(b.getX(), b.getZ()) != -1) {
-//             bb = e.getChunk().getBlock(0, w.getHighestBlockYAt(b.getX(), b.getZ()), 0); //grabs the highest block in that chunk at X = 0 and Z = 0 for that chunk.
-//            int trys = 0;
-//            while (!foundLand) {//While land was not found it keeps checking.
-//                if (trys >= 20) return; //added anti crash.
-//                if (bb.getType() != Material.AIR) {
-//                    foundLand = true;
-//                } else {
-//                    bb = bb.getLocation().subtract(0, 1, 0).getBlock();
-//                }
-//                trys++;
-//            }
-//        }
-//
-//        boolean isVoidAllowed = plugin.getConfig().contains("spawnInVoid") && plugin.getConfig().getBoolean("spawnInVoid");
-//
-//        if(w.getHighestBlockYAt(b.getX(), b.getZ()) == -1 && !isVoidAllowed){
-//            // Stop if void is not allowed.
-//            return;
-//        }
 
         /*
          * Schematic handler

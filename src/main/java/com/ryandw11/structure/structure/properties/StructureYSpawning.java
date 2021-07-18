@@ -120,7 +120,6 @@ public class StructureYSpawning {
      *                 <p>If Null is passed in that means it will spawn in the void.</p>
      * @return The height according to the rules of SpawnY.
      */
-    // TODO this needs to be fixed.
     public int getHeight(@Nullable Location location) {
 
         // Ensure that the spawnY is configured correctly for the void.

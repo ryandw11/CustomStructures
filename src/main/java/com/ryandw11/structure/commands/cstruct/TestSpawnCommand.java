@@ -74,19 +74,6 @@ public class TestSpawnCommand implements SubCommand {
         // Calculate the chance.
         canSpawn(p, structure, bl, ch);
 
-        // Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
-        // TODO Remove this code as it is no longer needed.
-//        if (structureSpawnSettings.isOceanFloor()) {
-//            if (bl.getType() == Material.WATER) {
-//                for (int i = bl.getY(); i >= 4; i--) {
-//                    if (ch.getBlock(0, i, 0).getType() != Material.WATER) {
-//                        bl = ch.getBlock(0, i, 0);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-
         // Allows the structures to no longer spawn on plant life.
         if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(bl.getType())) {
             for (int i = bl.getY(); i >= 4; i--) {
@@ -164,7 +151,7 @@ public class TestSpawnCommand implements SubCommand {
                     for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
                         Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
                         Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                        if (!(top.getType().isAir()|| ignoreBlocks.getBlocks().contains(top.getType())))
+                        if (!(top.getType().isAir() || ignoreBlocks.getBlocks().contains(top.getType())))
                             error++;
                         if (bottom.getType().isAir())
                             error++;
@@ -173,7 +160,7 @@ public class TestSpawnCommand implements SubCommand {
                     }
                 }
                 // Debug the percent failure.
-                if(plugin.isDebug()) {
+                if (plugin.isDebug()) {
                     p.sendMessage("Percent Failure: " + ((double) error / total) + " / " + limit.getError());
                 }
                 if (((double) error / total) > limit.getError()) {

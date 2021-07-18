@@ -13,7 +13,7 @@ public final class SpawnYConversion {
      */
     public static String convertSpawnYValue(String value) {
         if (value.equalsIgnoreCase("top")) return "top";
-        // TODO maybe consider relative ocean floor spawning.
+        // Ocean_floor is returned and the actual update to the new format is done in the main updater code.
         if (value.equalsIgnoreCase("ocean_floor")) return "ocean_floor";
         if (value.contains("[")) {
             //If +[num-num]
