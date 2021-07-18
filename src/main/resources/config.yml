@@ -1,4 +1,4 @@
-configversion: 6
+configversion: 7
 #========================================
 #             Custom Structures    
 #========================================
@@ -15,11 +15,6 @@ bstats: true
 # Save where structures spawn into a yaml file.
 # Enabling this option allows developers to use the API to get the location of structures.
 logStructures: false
-
-# If you want structures to spawn in the void, then enable this option.
-# Keep this option of if you don't want any structures to spawn in the void
-# for better performance.
-spawnInVoid: false
 
 Structures:
     - demo

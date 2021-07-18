@@ -35,8 +35,10 @@ public class StructurePicker extends BukkitRunnable {
     private final StructureHandler structureHandler;
     private final IgnoreBlocks ignoreBlocks;
 
-    private Block bl;
+    private final Block bl;
     private final Chunk ch;
+    // Variable that contains the structureBlock of the current structure being processed.
+    private Block structureBlock;
 
     public StructurePicker(@Nullable Block bl, Chunk ch, CustomStructures plugin) {
         this.plugin = plugin;
@@ -59,22 +61,31 @@ public class StructurePicker extends BukkitRunnable {
             Structure structure = structureHandler.getStructure(currentStructure);
             StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
 
+
+            // Get the highest block according to the settings for the structure.
+            structureBlock = structureSpawnSettings.getHighestBlock(bl.getLocation());
+
+            // If the block is the void, then set it to null to maintain compatibility.
+            if (structureBlock.getType() == Material.VOID_AIR) {
+                structureBlock = null;
+            }
+
             // Calculate the chance.
-            if (!structure.canSpawn(bl, ch))
+            if (!structure.canSpawn(structureBlock, ch))
                 return;
 
             // If the block is null, Skip the other steps and spawn.
-            if (bl == null) {
-                bl = ch.getBlock(0, structureSpawnSettings.getHeight(-1), 0);
+            if (structureBlock == null) {
+                structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(null), 8);
                 // Now to finally paste the schematic
                 SchematicHandler sh = new SchematicHandler();
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     // It is assumed at this point that the structure has been spawned.
                     // Add it to the list of spawned structures.
-                    plugin.getStructureHandler().putSpawnedStructure(bl.getLocation(),
+                    plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                             structure);
                     try {
-                        sh.schemHandle(bl.getLocation(),
+                        sh.schemHandle(structureBlock.getLocation(),
                                 structure.getSchematic(),
                                 structure.getStructureProperties().canPlaceAir(),
                                 structure);
@@ -88,49 +99,37 @@ public class StructurePicker extends BukkitRunnable {
                 return;
             }
 
-            // Allows the structure to spawn based on the ocean floor. (If the floor is not found than it just returns with the top of the water).
-            if (structureSpawnSettings.isOceanFloor()) {
-                if (bl.getType() == Material.WATER) {
-                    for (int i = bl.getY(); i >= 4; i--) {
-                        if (ch.getBlock(0, i, 0).getType() != Material.WATER) {
-                            bl = ch.getBlock(0, i, 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
             // Allows the structures to no longer spawn on plant life.
-            if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(bl.getType())) {
-                for (int i = bl.getY(); i >= 4; i--) {
-                    if (!ignoreBlocks.getBlocks().contains(ch.getBlock(0, i, 0).getType()) && ch.getBlock(0, i, 0).getType() != Material.AIR) {
-                        bl = ch.getBlock(0, i, 0);
+            if (structure.getStructureProperties().isIgnoringPlants() && ignoreBlocks.getBlocks().contains(structureBlock.getType())) {
+                for (int i = structureBlock.getY(); i >= 4; i--) {
+                    if (!ignoreBlocks.getBlocks().contains(ch.getBlock(8, i, 8).getType()) && !ch.getBlock(8, i, 8).getType().isAir()) {
+                        structureBlock = ch.getBlock(8, i, 8);
                         break;
                     }
                 }
             }
 
             // calculate SpawnY if first is true
-            if (!structureSpawnSettings.isOceanFloor() && structureSpawnSettings.isCalculateSpawnYFirst()) {
-                bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
+            if (structureSpawnSettings.isCalculateSpawnYFirst()) {
+                structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
-            if (!structure.getStructureLimitations().hasBlock(bl))
+            if (!structure.getStructureLimitations().hasBlock(structureBlock))
                 return;
 
             // If it can spawn in water
             if (!structure.getStructureProperties().canSpawnInWater()) {
-                if (bl.getType() == Material.WATER) return;
+                if (structureBlock.getType() == Material.WATER) return;
             }
 
             // If the structure can spawn in lava
             if (!structure.getStructureProperties().canSpawnInLavaLakes()) {
-                if (bl.getType() == Material.LAVA) return;
+                if (structureBlock.getType() == Material.LAVA) return;
             }
 
             // calculate SpawnY if first is false
-            if (!structureSpawnSettings.isOceanFloor() && !structureSpawnSettings.isCalculateSpawnYFirst()) {
-                bl = ch.getBlock(0, structureSpawnSettings.getHeight(bl.getY()), 0);
+            if (!structureSpawnSettings.isCalculateSpawnYFirst()) {
+                structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
             // If the structure can follows block level limit.
@@ -138,26 +137,26 @@ public class StructurePicker extends BukkitRunnable {
             if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {
                 BlockLevelLimit limit = structure.getStructureLimitations().getBlockLevelLimit();
                 if (limit.getMode().equalsIgnoreCase("flat")) {
-                    for (int x = limit.getX1() + bl.getX(); x <= limit.getX2() + bl.getX(); x++) {
-                        for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
-                            Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
-                            Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                            if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType())))
+                    for (int x = limit.getX1() + structureBlock.getX(); x <= limit.getX2() + structureBlock.getX(); x++) {
+                        for (int z = limit.getZ1() + structureBlock.getZ(); z <= limit.getZ2() + structureBlock.getZ(); z++) {
+                            Block top = ch.getWorld().getBlockAt(x, structureBlock.getY() + 1, z);
+                            Block bottom = ch.getWorld().getBlockAt(x, structureBlock.getY() - 1, z);
+                            if (!(top.getType().isAir() || ignoreBlocks.getBlocks().contains(top.getType())))
                                 return;
-                            if (bottom.getType() == Material.AIR)
+                            if (bottom.getType().isAir())
                                 return;
                         }
                     }
                 } else if (limit.getMode().equalsIgnoreCase("flat_error")) {
                     int total = 0;
                     int error = 0;
-                    for (int x = limit.getX1() + bl.getX(); x <= limit.getX2() + bl.getX(); x++) {
-                        for (int z = limit.getZ1() + bl.getZ(); z <= limit.getZ2() + bl.getZ(); z++) {
-                            Block top = ch.getWorld().getBlockAt(x, bl.getY() + 1, z);
-                            Block bottom = ch.getWorld().getBlockAt(x, bl.getY() - 1, z);
-                            if (!(top.getType() == Material.AIR || ignoreBlocks.getBlocks().contains(top.getType())))
+                    for (int x = limit.getX1() + structureBlock.getX(); x <= limit.getX2() + structureBlock.getX(); x++) {
+                        for (int z = limit.getZ1() + structureBlock.getZ(); z <= limit.getZ2() + structureBlock.getZ(); z++) {
+                            Block top = ch.getWorld().getBlockAt(x, structureBlock.getY() + 1, z);
+                            Block bottom = ch.getWorld().getBlockAt(x, structureBlock.getY() - 1, z);
+                            if (!(top.getType().isAir() || ignoreBlocks.getBlocks().contains(top.getType())))
                                 error++;
-                            if (bottom.getType() == Material.AIR)
+                            if (bottom.getType().isAir())
                                 error++;
 
                             total += 2;
@@ -173,7 +172,7 @@ public class StructurePicker extends BukkitRunnable {
                 // Check if the structure can spawn according to the section.
                 // If an error occurs, report it to the user.
                 try {
-                    if(!section.checkStructureConditions(structure, bl, ch)) return;
+                    if (!section.checkStructureConditions(structure, structureBlock, ch)) return;
                 } catch (Exception ex) {
                     plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn" +
                             "the structure %s with the custom property %s!", structure.getName(), section.getName()));
@@ -193,10 +192,10 @@ public class StructurePicker extends BukkitRunnable {
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 // It is assumed at this point that the structure has been spawned.
                 // Add it to the list of spawned structures.
-                plugin.getStructureHandler().putSpawnedStructure(bl.getLocation(),
+                plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                         structure);
                 try {
-                    sh.schemHandle(bl.getLocation(),
+                    sh.schemHandle(structureBlock.getLocation(),
                             structure.getSchematic(),
                             structure.getStructureProperties().canPlaceAir(),
                             structure);

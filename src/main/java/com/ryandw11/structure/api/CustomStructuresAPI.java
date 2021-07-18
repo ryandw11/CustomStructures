@@ -98,9 +98,12 @@ public class CustomStructuresAPI {
      *
      * <p>This setting is set by the user in the config file.</p>
      *
+     * @deprecated Void spawning is now always enabled.
+     *
      * @return Get if structures can spawn in the void.
      */
+    @Deprecated
     public boolean isVoidSpawningEnabled() {
-        return plugin.getConfig().contains("spawnInVoid") && plugin.getConfig().getBoolean("spawnInVoid");
+        return true;
     }
 }

@@ -7,7 +7,7 @@
 
     <groupId>com.ryandw11</groupId>
     <artifactId>CustomStructures</artifactId>
-    <version>1.5.8</version>
+    <version>1.6.0</version>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -125,12 +125,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.7</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>20.1.0</version>
@@ -138,7 +132,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.16.3-R0.1-SNAPSHOT</version>
+            <version>1.17-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -151,6 +145,10 @@
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -158,6 +156,16 @@
             <artifactId>worldedit-bukkit</artifactId>
             <version>7.1.0</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.lumine.xikage</groupId>
@@ -170,6 +178,11 @@
             <artifactId>bstats-bukkit</artifactId>
             <version>2.2.1</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.10.0</version>
         </dependency>
     </dependencies>
 </project>

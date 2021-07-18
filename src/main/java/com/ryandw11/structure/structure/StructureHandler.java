@@ -155,6 +155,8 @@ public class StructureHandler {
         double closest = Double.MAX_VALUE;
         synchronized (spawnedStructures) {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
+                if(entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
+
                 if (entry.getKey().getLeft().distance(location) < closest)
                     closest = entry.getKey().getLeft().distance(location);
             }
