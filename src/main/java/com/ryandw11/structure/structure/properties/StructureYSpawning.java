@@ -72,6 +72,14 @@ public class StructureYSpawning {
     }
 
     /**
+     * Get the SpawnY Height Map.
+     * @return The SpawnY Height Map.
+     */
+    public HeightMap getHeightMap() {
+        return heightMap;
+    }
+
+    /**
      * Get if the structure should spawn on the top.
      *
      * <p>As of 1.6.0, This will be true when spawning on the ocean floor too.</p>
