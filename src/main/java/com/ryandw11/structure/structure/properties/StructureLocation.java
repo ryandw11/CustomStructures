@@ -79,7 +79,7 @@ public class StructureLocation {
      * Construct the Structure Location using default values.
      */
     public StructureLocation() {
-        this(new ArrayList<>(), new StructureYSpawning("top", HeightMap.WORLD_SURFACE_WG, true), new ArrayList<>());
+        this(new ArrayList<>(), new StructureYSpawning("top", HeightMap.WORLD_SURFACE, true), new ArrayList<>());
     }
 
     /**
