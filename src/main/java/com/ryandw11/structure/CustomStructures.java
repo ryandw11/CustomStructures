@@ -27,7 +27,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The main class for the Custom Structures plugin.
@@ -50,6 +52,7 @@ public class CustomStructures extends JavaPlugin {
     private IgnoreBlocks blockIgnoreManager;
     private AddonHandler addonHandler;
 
+    private HashMap<String, Boolean> oneTimeStructures;
     private Metrics metrics;
 
     private boolean debugMode;
@@ -123,6 +126,13 @@ public class CustomStructures extends JavaPlugin {
         } else {
             getLogger().info("Bstat metrics is disabled for this plugin.");
         }
+
+        /**
+         * @author jazzyjake
+         * Custom code for WorldGuard and one-time structures implementation
+         */
+        reloadOneTimeStructures();
+        getLogger().info("Protected Structures: " + getConfig().getStringList("PROTECTED_STRUCTURES").stream().collect(Collectors.joining(", ")));
     }
 
     @Override
@@ -477,6 +487,38 @@ public class CustomStructures extends JavaPlugin {
     }
 
     /**
+     * Reloads the list of one-time structures from the database
+     *
+     * @author jazzyjake
+     */
+    public void reloadOneTimeStructures() {
+        // Registers the MySQL driver
+        try {
+            Class.forName("com.mysql.jdbc.Driver").getConstructor().newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        HashMap<String, Boolean> tempOneTimeStructures = new HashMap<>();
+
+        // Gets a JDBC connection using the JDBC_URL specified in config.yml
+        try (Connection conn = DriverManager.getConnection(getConfig().getString("JDBC_URL"))) {
+            try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM one_time_structures")) {
+                try (ResultSet rs = statement.executeQuery()) {
+                    // Adds all the structures to the ArrayList
+                    while (rs.next()) {
+                        tempOneTimeStructures.put(rs.getString("structure_name"), rs.getBoolean("has_spawned"));
+                    }
+                }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        oneTimeStructures = tempOneTimeStructures;
+    }
+
+    /**
      * If the plugin is in debug mode.
      *
      * @return If the plugin is in debug mode.
@@ -501,5 +543,15 @@ public class CustomStructures extends JavaPlugin {
      */
     public AddonHandler getAddonHandler() {
         return addonHandler;
+    }
+
+    /**
+     * Get one-time structures
+     *
+     * @return The one-time structures map
+     * @author jazzyjake
+     */
+    public HashMap<String, Boolean> getOneTimeStructures() {
+        return oneTimeStructures;
     }
 }

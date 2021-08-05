@@ -1,9 +1,9 @@
-name: CustomStructures
+name: CustomStructuresWithWG
 version: 1.6.0
 main: com.ryandw11.structure.CustomStructures
-author: Ryandw11
-description: A plugin which allows you to spawn in custom structures!
-depend: [WorldEdit]
+author: [Ryandw11, jazzyjake]
+description: A plugin which allows you to spawn in custom structures! (Other implementations added by jazzyjake)
+depend: [WorldEdit, WorldGuard]
 softdepend: [MythicMobs]
 api-version: 1.13
 commands:

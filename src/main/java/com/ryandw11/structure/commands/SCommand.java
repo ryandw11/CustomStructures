@@ -46,6 +46,8 @@ public class SCommand implements CommandExecutor {
         this.commandHandler.registerCommand("create", new CreateCommand(plugin));
         this.commandHandler.registerCommand("testspawn", new TestSpawnCommand(plugin));
         this.commandHandler.registerCommand(new AddonsCommand(plugin), "addon", "addons");
+        // Custom command for one-time structures
+        this.commandHandler.registerCommand("addonetimestructure", new AddOneTimeStructureCommand(plugin));
     }
 
     @Override

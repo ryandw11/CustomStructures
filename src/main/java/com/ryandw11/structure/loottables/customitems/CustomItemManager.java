@@ -1,7 +1,10 @@
 package com.ryandw11.structure.loottables.customitems;
 
+import com.jojodmo.itembridge.ItemBridge;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.api.CustomStructuresAPI;
+import dev.lone.itemsadder.api.CustomStack;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -102,6 +105,41 @@ public class CustomItemManager {
         if (!this.config.contains(key))
             return null;
         return config.getItemStack(key);
+    }
+
+    /**
+     * Gets a custom ItemBridge item
+     *
+     * @author jazzyjake
+     * @param key
+     * @return
+     */
+    public ItemStack getItemBridgeItem(String key) {
+        // Check if the server has ItemBridge
+        if (Bukkit.getPluginManager().getPlugin("ItemBridge") == null) {
+            CustomStructures.getInstance().getLogger().warning("ItemBridge is not installed!");
+            return null;
+        }
+
+        return ItemBridge.getItemStack(key);
+    }
+
+    /**
+     * Gets a custom ItemsAdder item
+     *
+     * @author jazzyjake
+     * @param key
+     * @return
+     */
+    public ItemStack getItemsAdderItem(String key) {
+        // Check if the server has ItemsAdder
+        if (Bukkit.getPluginManager().getPlugin("ItemsAdder") == null) {
+            CustomStructures.getInstance().getLogger().warning("ItemsAdder is not installed!");
+            return null;
+        }
+
+        CustomStack stack = CustomStack.getInstance(key);
+        return stack.getItemStack();
     }
 
     /**

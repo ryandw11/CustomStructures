@@ -52,9 +52,10 @@ public class LootTable {
             // This will throw an exception if the item is not valid.
             validateItem(itemID);
 
+            int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+            int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
+
             if (lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("CUSTOM")) {
-                int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
                 ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
                 if (item == null) {
                     CustomStructures.getInstance().getLogger().warning("Cannot find a custom item with the id of " + itemID +
@@ -62,11 +63,25 @@ public class LootTable {
                     continue;
                 }
                 this.randomCollection.add(weight, new LootItem(item, amount, weight));
+            } else if (lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("ITEMBRIDGE")) {
+                // Code for ItemBridge implementation
+                ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItemBridgeItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
+                if (item == null) {
+                    CustomStructures.getInstance().getLogger().warning("Cannot find a custom ItemBridge item with the id of " + itemID +
+                            " in the " + name + " loot table!");
+                    continue;
+                }
+            } else if (lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("ITEMSADDER")) {
+                // Code for ItemsAdder implementation
+                ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItemsAdderItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
+                if (item == null) {
+                    CustomStructures.getInstance().getLogger().warning("Cannot find a custom ItemsAdder item with the id of " + itemID +
+                            " in the " + name + " loot table!");
+                    continue;
+                }
             } else {
                 String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
                 String type = this.lootTablesFC.getString("Items." + itemID + ".Type");
-                int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
                 Map<String, Integer> enchants = new HashMap<>();
 
                 ConfigurationSection enchantMents = this.lootTablesFC

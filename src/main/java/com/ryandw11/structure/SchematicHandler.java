@@ -31,6 +31,14 @@ import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import me.ryandw11.ods.ObjectDataStructure;
 import me.ryandw11.ods.tags.IntTag;
 import me.ryandw11.ods.tags.ListTag;
@@ -50,12 +58,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SchematicHandler {
 
     private final CustomStructures plugin;
+
+    private static final HashMap<Flag<?>, Object> protectedStructureFlags = new HashMap<>();
+
+    static {
+        // Set flags to be added to protected regions here (along with region group flags)
+        protectedStructureFlags.put(Flags.USE, StateFlag.State.ALLOW);
+        protectedStructureFlags.put(Flags.INTERACT, StateFlag.State.ALLOW);
+        protectedStructureFlags.put(Flags.CHEST_ACCESS, StateFlag.State.ALLOW);
+    }
 
     public SchematicHandler() {
         this.plugin = CustomStructures.plugin;
@@ -75,6 +98,11 @@ public class SchematicHandler {
      */
     public void schemHandle(Location loc, String filename, boolean useAir, Structure structure, int iteration)
             throws IOException, WorldEditException {
+
+        // Checks if the structure is a one-time structure and has already been spawend
+        if (plugin.getOneTimeStructures().get(structure.getName())) {
+            return;
+        }
 
         if (iteration > 2) {
             plugin.getLogger().severe("Critical Error: StackOverflow detected. Automatically terminating the spawning of the structure.");
@@ -198,6 +226,47 @@ public class SchematicHandler {
                 if (location.getBlock().getState() instanceof Sign) {
                     replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
                 }
+                /**
+                 * @author jazzyjake
+                 * Custom code for xafnir's custom addons
+                 * This is separate so that if the block doesn't exist anymore than it will not error out
+                 */
+                if (location.getBlock().getState() instanceof Sign) {
+                    runScriptOnSign(location);
+                }
+            }
+
+            /**
+             * @author jazzyjake
+             * Custom code for xafnir's custom addons
+              */
+            Location minLocation = getMinimumLocation(clipboard, loc, 0);
+            BlockVector3 minVector = BlockVector3.at(minLocation.getX(), minLocation.getY(), minLocation.getZ());
+            Location maxLocation = getMaximumLocation(clipboard, loc, 0);
+            BlockVector3 maxVector = BlockVector3.at(maxLocation.getX(), maxLocation.getY(), maxLocation.getZ());
+
+            // Checks if the structure name is in the list of structures to be protected in config
+            if (CustomStructures.getInstance().getConfig().getStringList("PROTECTED_STRUCTURES").contains(structure.getName())) {
+                // Create the region for the structure
+                String regionID = String.format("%s-X%dY%dZ%d", structure.getName(), minLocation.getBlockX(), minLocation.getBlockY(), minLocation.getBlockZ());
+                ProtectedCuboidRegion region = new ProtectedCuboidRegion(regionID, minVector, maxVector);
+                region.setFlags(protectedStructureFlags);
+
+                // Set custom owner from config if DEFAULT is set to false
+                if (!CustomStructures.getInstance().getConfig().getBoolean("STRUCTURE_OWNERSHIP.DEFAULT")) {
+                    String ownerUUID = CustomStructures.getInstance().getConfig().getString("STRUCTURE_OWNERSHIP.OWNER");
+
+                    DefaultDomain members = new DefaultDomain();
+                    members.addPlayer(UUID.fromString(ownerUUID));
+                    region.setOwners(members);
+                }
+
+                // Adds the region to WorldGuard
+                RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+                RegionManager regions = container.get(BukkitAdapter.adapt(minLocation.getWorld()));
+                regions.addRegion(region);
+
+                Bukkit.getLogger().info(regionID + " region created!");
             }
 
             // Call the event for use by other plugins (only if it is the first iteration though.)
@@ -206,6 +275,27 @@ public class SchematicHandler {
                         getMaximumLocation(clipboard, loc, 0), containersAndSignsLocations);
                 StructureSpawnEvent structureSpawnEvent = new StructureSpawnEvent(structure, loc, finalRotY, structureSpawnHolder);
                 Bukkit.getServer().getPluginManager().callEvent(structureSpawnEvent);
+            }
+
+            /**
+             * @author jazzyjake
+             * Marks the structure as spawned in the database if it is marked as a one-time structure
+             */
+            if (plugin.getOneTimeStructures().containsKey(structure.getName())) {
+                // Gets a JDBC connection using the JDBC_URL specified in config.yml
+                try (Connection conn = DriverManager.getConnection(plugin.getConfig().getString("JDBC_URL"))) {
+                    try (PreparedStatement statement = conn.prepareStatement("UPDATE one_time_structures SET structure_coords=?, has_spawned=true WHERE structure_name=?")) {
+                        statement.setString(1, String.format("(%d,%d,%d)", minLocation.getBlockX(), minLocation.getBlockY(), minLocation.getBlockZ()));
+                        statement.setString(2, structure.getName());
+                        if (statement.executeUpdate() == 1) {
+                            plugin.getLogger().info(structure.getName() + " has been marked as spawned!");
+                        }
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+
+                plugin.reloadOneTimeStructures();
             }
 
         }, Math.round(structure.getStructureLimitations().getReplacementBlocksDelay() * 20));
@@ -698,6 +788,56 @@ public class SchematicHandler {
                 if (plugin.isDebug()) {
                     ex.printStackTrace();
                 }
+            }
+        }
+    }
+
+    /**
+     * Runs the script designated on the sign
+     *
+     * @author jazzyjake
+     * @param location          Location of the sign
+     */
+    private void runScriptOnSign(Location location) {
+        Sign sign = (Sign) location.getBlock().getState();
+        String line;
+        if (location.getBlock().getState() instanceof Sign) {
+            line = sign.getLine(0).trim();
+        } else if (location.getBlock().getState() instanceof WallSign) {
+            line = sign.getLine(0).trim();
+        } else return;
+
+        // Checks if the sign is a "script" sign
+        if (line.startsWith("[script]")) {
+            String scriptName = line.substring(line.indexOf(']') + 1).trim();
+
+            // Gets the file using the script name on the sign
+            Path scriptFile = Path.of(plugin.getDataFolder() + "/scripts/" + scriptName + ".cscript");
+
+            // Checks if the script file exists and is a regular file
+            if (!Files.isRegularFile(scriptFile)) {
+                plugin.getLogger().warning("Script " + scriptName + " was not found in scripts folder!");
+                return;
+            }
+
+            // Runs all the commands found in the script file
+            try {
+                List<String> commands = Files.readAllLines(scriptFile);
+
+                for (String command : commands) {
+                    // Replace variables with values
+                    command = command.replace("{x}", Integer.toString(location.getBlockX()));
+                    command = command.replace("{y}", Integer.toString(location.getBlockY()));
+                    command = command.replace("{z}", Integer.toString(location.getBlockZ()));
+
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+
+                location.getBlock().setType(Material.AIR);
+
+                plugin.getLogger().info("Ran script file: " + scriptName);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
