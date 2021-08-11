@@ -127,6 +127,11 @@ public class CustomStructures extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (structureHandler == null) {
+            getLogger().severe("ERROR: The Structure Handler was never initialized during setup.");
+            return;
+        }
+
         structureHandler.cleanup();
     }
 
