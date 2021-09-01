@@ -2,6 +2,7 @@ package com.ryandw11.structure.loottables;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.exceptions.LootTableException;
+import com.ryandw11.structure.utils.NumberStylizer;
 import com.ryandw11.structure.utils.RandomCollection;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -15,23 +16,29 @@ import java.util.*;
 
 /**
  * Represents a LootTable file.
- *
- * @author Chusca
  */
 public class LootTable {
 
     private List<LootTableType> types;
     private int rolls;
     private RandomCollection<LootItem> randomCollection;
-    private String name;
+    private final String name;
 
     public FileConfiguration lootTablesFC;
 
+    /**
+     * Create a loot table with a certain name.
+     *
+     * <p>This will try to load the loot table file with the specified name.</p>
+     *
+     * @param name The name.
+     */
     public LootTable(String name) {
         this.LoadFile(name);
         this.name = name;
 
-        if(!lootTablesFC.contains("Rolls")) throw new LootTableException("Invalid loot table format! Cannot find global 'Rolls' setting.");
+        if (!lootTablesFC.contains("Rolls"))
+            throw new LootTableException("Invalid loot table format! Cannot find global 'Rolls' setting.");
 
         this.types = new ArrayList<>();
         this.rolls = this.lootTablesFC.getInt("Rolls");
@@ -52,8 +59,8 @@ public class LootTable {
             // This will throw an exception if the item is not valid.
             validateItem(itemID);
 
-            if (lootTablesFC.getString("Items." + itemID + ".Type").equalsIgnoreCase("CUSTOM")) {
-                int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+            if (Objects.requireNonNull(lootTablesFC.getString("Items." + itemID + ".Type")).equalsIgnoreCase("CUSTOM")) {
+                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
                 int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
                 ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
                 if (item == null) {
@@ -64,17 +71,17 @@ public class LootTable {
                 this.randomCollection.add(weight, new LootItem(item, amount, weight));
             } else {
                 String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-                String type = this.lootTablesFC.getString("Items." + itemID + ".Type");
-                int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+                String type = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Type"));
+                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
                 int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-                Map<String, Integer> enchants = new HashMap<>();
+                Map<String, String> enchants = new HashMap<>();
 
                 ConfigurationSection enchantMents = this.lootTablesFC
                         .getConfigurationSection("Items." + itemID + ".Enchantments");
 
                 if (enchantMents != null) {
                     for (String enchantName : enchantMents.getKeys(false)) {
-                        int level = this.lootTablesFC.getInt("Items." + itemID + ".Enchantments." + enchantName);
+                        String level = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Enchantments." + enchantName));
                         enchants.put(enchantName, level);
                     }
                 }
@@ -99,10 +106,9 @@ public class LootTable {
                 "'Weight' setting for item: " + itemID);
         if (!item.contains("Type")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
                 "'Type' setting for item: " + itemID);
-        if(!item.isInt("Amount")) throw new LootTableException("Invalid file format for loot table! 'Amount' is not an " +
-                "integer for item: " + itemID);
-        if(!item.isInt("Weight")) throw new LootTableException("Invalid file format for loot table! 'Weight' is not an " +
-                "integer for item: " + itemID);
+        if (!item.isInt("Weight"))
+            throw new LootTableException("Invalid file format for loot table! 'Weight' is not an " +
+                    "integer for item: " + itemID);
     }
 
     /**
@@ -141,7 +147,12 @@ public class LootTable {
         this.types = types;
     }
 
-    public void addType(LootTableType type){
+    /**
+     * Add a type to the loot table.
+     *
+     * @param type The type to add.
+     */
+    public void addType(LootTableType type) {
         this.types.add(type);
     }
 
@@ -187,17 +198,17 @@ public class LootTable {
             this.validateItem(itemID);
 
             String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-            String type = this.lootTablesFC.getString("Items." + itemID + ".Type");
-            int amount = this.lootTablesFC.getInt("Items." + itemID + ".Amount");
+            String type = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Type"));
+            String amount = this.lootTablesFC.getString("Items." + itemID + ".Amount");
             int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-            Map<String, Integer> enchants = new HashMap<>();
+            Map<String, String> enchants = new HashMap<>();
 
             ConfigurationSection enchantMents = this.lootTablesFC
                     .getConfigurationSection("Items." + itemID + ".Enchantments");
 
             if (enchantMents != null) {
                 for (String enchantName : enchantMents.getKeys(false)) {
-                    int level = this.lootTablesFC.getInt("Items." + itemID + ".Enchantments." + enchantName);
+                    String level = this.lootTablesFC.getString("Items." + itemID + ".Enchantments." + enchantName);
                     enchants.put(enchantName, level);
                 }
             }

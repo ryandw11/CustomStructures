@@ -33,7 +33,7 @@ import java.util.*;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.6.0
+ * @version 1.6.1
  */
 
 public class CustomStructures extends JavaPlugin {

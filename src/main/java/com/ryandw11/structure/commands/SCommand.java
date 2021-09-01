@@ -58,42 +58,52 @@ public class SCommand implements CommandExecutor {
         }
 
         try{
-            if(args.length != 0)
+            if(args.length != 0 && !(args[0].equals("1") || args[0].equals("2")))
                 return commandHandler.handleCommand(sender, cmd, s, args);
         }catch (IllegalArgumentException ex){
             // Do nothing as this exception was triggered purposefully.
         }
 
+        String currentPage = args.length > 0 ? args[0] : "1";
+
         if (sender.hasPermission("customstructures.info")) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3=============[&2CustomStructures&3]============="));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Created by: &2Ryandw11"));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3Version: &2" + plugin.getDescription().getVersion()));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3Github wiki:&2 https://github.com/ryandw11/CustomStructures/wiki"));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cstructure reload - &2Reload the plugin."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure test (name) - &2Paste the defined structure."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure testspawn (name) - &2Test the spawn conditions of a structure."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure nearby - &2Find nearby structures."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure list - &2List the currently active structures."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure addItem {key} - &2Add an item to the custom items list."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure checkKey - &2Get the key of an item you are holding in your hand."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure getItem {key} - &2Get the item of the key specified."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure createschem {name} [-options] - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3/cstructure addon - &2The list of addons."));
+            if(currentPage.equals("2")) {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3=============[&2CustomStructures Page 2&3]============="));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure list - &2List the currently active structures."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure addItem {key} - &2Add an item to the custom items list."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure checkKey - &2Get the key of an item you are holding in your hand."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure getItem {key} - &2Get the item of the key specified."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure createschem {name} [-options] - &2Create a schematic from the current worldedit selection (This is automatically save to the CustomStructures schematic folder)."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure addon - &2The list of addons."));
+            } else {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3=============[&2CustomStructures&3]============="));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Created by: &2Ryandw11"));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3Version: &2" + plugin.getDescription().getVersion()));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3Github wiki:&2 https://github.com/ryandw11/CustomStructures/wiki"));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cstructure reload - &2Reload the plugin."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure test (name) - &2Paste the defined structure."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure testspawn (name) - &2Test the spawn conditions of a structure."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure nearby - &2Find nearby structures."));
+                sender.sendMessage("");
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&2Use &3/cstructure 2 &2to view the second page of commands!"));
+            }
         } else {
             sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
         }

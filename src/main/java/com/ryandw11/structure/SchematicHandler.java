@@ -86,7 +86,7 @@ public class SchematicHandler {
         // Check to see if the schematic is a thing.
         if (!schematicFile.exists() && iteration == 0) {
             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&3[&2CustomStructures&3] &cA fatal error has occurred! Please check the console for errors."));
+                    "&b[&aCustomStructures&b] &cA fatal error has occurred! Please check the console for errors."));
             plugin.getLogger().warning("Error: The schematic " + filename + " does not exist!");
             plugin.getLogger().warning(
                     "If this is your first time using this plugin you need to put a schematic in the schematic folder.");
