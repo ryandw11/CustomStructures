@@ -227,8 +227,8 @@ public class CustomStructures extends JavaPlugin {
      * <p>This is for internal use only.</p>
      */
     public void reloadHandlers() {
-        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
         this.npcHandler.cleanUp();
+        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();

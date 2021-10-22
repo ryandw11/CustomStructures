@@ -1,5 +1,6 @@
 package com.ryandw11.structure;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -35,29 +36,50 @@ public class NpcHandler {
                     String alias = "?";
                     try {
                         NpcInfo npcInfo = new NpcInfo();
-                        alias = (String) npc.get("alias");
-                        npcInfo.name = (String) npc.get("name");
-                        npcInfo.skinUrl = (String) npc.get("skinUrl");
-                        npcInfo.movesAround = (Boolean) npc.get("movesAround");
-                        npcInfo.makesSounds = (Boolean) npc.get("makesSounds");
-                        npcInfo.looksAtPlayer = (Boolean) npc.get("looksAtPlayer");
-                        npcInfo.isProtected = (Boolean) npc.get("isProtected");
-                        npcInfo.entityType = (String)npc.get("entityType");
-                        List<String> commands = (List<String>)npc.get("commands");
-                        if(commands != null && !commands.isEmpty()) {
-                            npcInfo.commands = commands;
+                        alias = getStringValueWithDefault(npc, "alias", null);
+                        if(alias != null) {
+                            npcInfo.name = getStringValueWithDefault(npc, "name", "");
+                            npcInfo.skinUrl = getStringValueWithDefault(npc, "skinUrl", null);
+                            npcInfo.movesAround = getBooleanValueWithDefault(npc, "movesAround");
+                            npcInfo.makesSounds = getBooleanValueWithDefault(npc, "makesSounds");
+                            npcInfo.looksAtPlayer = getBooleanValueWithDefault(npc, "looksAtPlayer");
+                            npcInfo.isProtected = getBooleanValueWithDefault(npc, "isProtected");
+                            npcInfo.commandsSequential = getBooleanValueWithDefault(npc, "commandsSequential");
+                            npcInfo.entityType = getStringValueWithDefault(npc, "entityType", "VILLAGER");
+                            List<String> commands = (List<String>)npc.get("commands");
+                            if(commands != null && !commands.isEmpty()) {
+                                npcInfo.commands = commands;
+                            }
+                            npcInfoMap.put(alias, npcInfo);
+                            Bukkit.getLogger().info("> NPC '" + alias + "': " + npcInfo);
+                        } else {
+                            Bukkit.getLogger().info("> NPC configuration error, no 'alias' configured!");
                         }
-                        npcInfoMap.put(alias, npcInfo);
-                        Bukkit.getLogger().info("> NCP '" + alias + "': " + npcInfo);
                     } catch(Exception e) {
                         Bukkit.getLogger().warning("> Failed to process NPC '" + alias + "':" + e.toString());
+                        e.printStackTrace();
                     }
                 }
 
             } catch (Exception e) {
                 Bukkit.getLogger().severe("NPC configuration error: " + e.toString());
+                e.printStackTrace();
             }
         }
+    }
+
+    private String getStringValueWithDefault(Map<?, ?> npc, String attributeName, String defaultValue) {
+        if(npc.containsKey(attributeName)) {
+            return (String) npc.get(attributeName);
+        }
+        return defaultValue;
+    }
+
+    private Boolean getBooleanValueWithDefault(Map<?, ?> npc, String attributeName) {
+        if(npc.containsKey(attributeName)) {
+            return (Boolean) npc.get(attributeName);
+        }
+        return false;
     }
 
     public PluginManager getPluginManager() {
@@ -73,8 +95,10 @@ public class NpcHandler {
         return npcInfoMap.get(alias);
     }
 
+    /**
+     * NPC config information holder
+     */
     public class NpcInfo {
-
         public String name = "";
         public String skinUrl = "";
         public boolean movesAround = false;
@@ -82,13 +106,11 @@ public class NpcHandler {
         public boolean looksAtPlayer = false;
         public boolean isProtected = false;
         public String entityType = "VILLAGER";
-
         public List<String> commands = new ArrayList<>();
+        public boolean commandsSequential = false;
 
         public String toString() {
-            return "[name:" + name + "][isProtected:" + isProtected + "][movesAround:" + movesAround + "][makesSounds:" + makesSounds
-                    + "][looksAtPlayer:" + looksAtPlayer + "][skinUrl:" + skinUrl + "]";
+            return new ToStringBuilder(this).toString();
         }
-
     }
 }

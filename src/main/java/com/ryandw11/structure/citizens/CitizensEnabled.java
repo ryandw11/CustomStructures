@@ -5,6 +5,7 @@ import com.ryandw11.structure.NpcHandler;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.trait.CommandTrait;
 import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -52,14 +53,26 @@ public class CitizensEnabled implements CitizensNpcHook {
 					if(!npc.isSpawned()) {
 						npc.spawn(loc);
 					}
-					npc.setProtected(info.isProtected);
-					npc.setUseMinecraftAI(info.movesAround);
-					if(!info.commands.isEmpty()) {
 
+					// Should NPC be protected (invulnerable)
+					npc.setProtected(info.isProtected);
+
+					// Should NPC move around
+					npc.setUseMinecraftAI(info.movesAround);
+
+					if(!info.commands.isEmpty()) {
+						for(String command : info.commands) {
+							CommandTrait commandTrait = npc.getOrAddTrait(CommandTrait.class);
+							CommandTrait.NPCCommandBuilder cmdBuilder = new CommandTrait.NPCCommandBuilder(command, CommandTrait.Hand.RIGHT);
+							cmdBuilder.op(true);
+							commandTrait.addCommand(cmdBuilder);
+							commandTrait.setExecutionMode(info.commandsSequential ? CommandTrait.ExecutionMode.SEQUENTIAL : CommandTrait.ExecutionMode.LINEAR);
+							Bukkit.getLogger().info("> Set command for NPC: '" + command + "'");
+						}
 					}
-					///npc.addTrait(OgreProperties.class);
-					if(!info.skinUrl.isEmpty()) {
-						downloadSkin(npc, info.skinUrl);
+
+					if(info.skinUrl != null && !info.skinUrl.isEmpty()) {
+						changeSkin(npc, info.skinUrl);
 					}
 					npc.setBukkitEntityType(EntityType.valueOf(info.entityType));
 				} else {
@@ -73,10 +86,21 @@ public class CitizensEnabled implements CitizensNpcHook {
 		}
 	}
 
-	private static void downloadSkin(NPC npc, String url) {
+	/**
+	 * Attempts to change the skin of the given NPC. This may
+	 * fail if the skin download from the given URL fails. In
+	 * that case, the NPC will just remain unchanged.
+	 *
+	 * @param npc The NPC for which to change the skin.
+	 * @param url The skin download URL.
+	 */
+	private static void changeSkin(NPC npc, String url) {
 		Map<String, Object> skinData = skinDataCache.get(url);
 		if(skinData == null) {
-			skinData = readJsonSkinData("https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png");
+			skinData = downloadFromMineskinOrg(url);
+			if(skinData == null) {
+				skinData = downloadDirectly(url);
+			}
 		}
 		if(skinData != null) {
 			skinDataCache.put(url, skinData);
@@ -103,7 +127,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 	 * @param url The actual skin URL.
 	 * @return The skin information map (may be null!)
 	 */
-	private static Map<String, Object> readJsonSkinData(String url) {
+	private static Map<String, Object> downloadFromMineskinOrg(String url) {
 		DataOutputStream out = null;
 		BufferedReader reader = null;
 		try {
@@ -139,12 +163,61 @@ public class CitizensEnabled implements CitizensNpcHook {
 		return null;
 	}
 
+	/**
+	 * Downloads a Minecraft skin directly from the given URL.
+	 *
+	 * @param url The skin download URL.
+	 * @return The skin information map (may be null!)
+	 */
+	private static Map<String, Object> downloadDirectly(String url) {
+		DataOutputStream out = null;
+		BufferedReader reader = null;
+		try {
+			URL target = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) target.openConnection();
+			con.setRequestMethod("GET");
+			con.setRequestProperty("Connection", "keep-alive");
+			con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0");
+			con.setDoOutput(true);
+			con.setConnectTimeout(1000);
+			con.setReadTimeout(30000);
+			int responseCode = con.getResponseCode();
+			Map<String, Object> skinInfo = null;
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+				skinInfo = new Gson().fromJson(reader, Map.class);
+			} else {
+				Bukkit.getLogger().warning("> Failed to download skin directly: " + url + ", HTTP response code: " + responseCode);
+			}
+			con.disconnect();
+			return skinInfo;
+		} catch (Throwable t) {
+			Bukkit.getLogger().warning("> Failed to download skin: " + url + ", reason: " + t.toString());
+		} finally {
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+				}
+			}
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return null;
+
+	}
+/*
 	// FOR MANUAL TESTING ONLY - REMOVE LATER
 	public static void main(String[] args) {
-		Map<String, Object> stuff = readJsonSkinData("https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png");
+		Map<String, Object> stuff = downloadFromMineskinOrg("https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png");
 		System.out.println("Result map: " + stuff);
 
 		Map<String, Object> data = (Map<String, Object>)stuff.get("data");
 		System.out.println("Result data: " + data);
 	}
+ */
 }
