@@ -18,3 +18,4 @@ Custom Structures is a Minecraft server plugin that generates unique structures 
 - Restrict worlds
 - Spawn Vanilla Mobs
 - Spawn Mythical Mobs (Requires MythicalMobs)
+- Spawn Citizen NPCs with custom skins, commands etc.

@@ -1,6 +1,9 @@
 package com.ryandw11.structure;
 
 import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
+import com.ryandw11.structure.citizens.CitizensDisabled;
+import com.ryandw11.structure.citizens.CitizensEnabled;
+import com.ryandw11.structure.citizens.CitizensNpcHook;
 import com.ryandw11.structure.commands.SCommand;
 import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.ignoreblocks.*;
@@ -42,8 +45,13 @@ public class CustomStructures extends JavaPlugin {
     public File lootTableFile = new File(getDataFolder() + "/lootTables/lootTable.yml");
     public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTableFile);
 
-    public MythicalMobHook mmh;
+    public File npcsFile = new File(getDataFolder(), "npcs.yml");
+    public FileConfiguration npcsFC = YamlConfiguration.loadConfiguration(npcsFile);
 
+    public MythicalMobHook mythicalMobHook;
+    public CitizensNpcHook citizensNpcHook;
+
+    private NpcHandler npcHandler;
     private StructureHandler structureHandler;
     private LootTablesHandler lootTablesHandler;
     private CustomItemManager customItemManager;
@@ -51,6 +59,8 @@ public class CustomStructures extends JavaPlugin {
     private AddonHandler addonHandler;
 
     private Metrics metrics;
+
+    public final static String CITIZENS_PLUGIN = "Citizens";
 
     private boolean debugMode;
 
@@ -68,16 +78,23 @@ public class CustomStructures extends JavaPlugin {
         registerConfig();
         setupBlockIgnore();
 
+        if (getServer().getPluginManager().getPlugin(CITIZENS_PLUGIN) != null) {
+            citizensNpcHook = new CitizensEnabled();
+            getLogger().info("Citizens detected! Activating plugin hook!");
+        } else {
+            citizensNpcHook = new CitizensDisabled();
+        }
+
         if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
-            mmh = new MMEnabled();
+            mythicalMobHook = new MMEnabled();
             getLogger().info("MythicMobs detected! Activating plugin hook!");
         } else
-            mmh = new MMDisabled();
-        loadFile();
+            mythicalMobHook = new MMDisabled();
+        loadFiles();
         debugMode = getConfig().getBoolean("debug");
 
         if (getConfig().getInt("configversion") < CONFIG_VERSION) {
-            lootTablesHandler = new LootTablesHandler();
+            this.lootTablesHandler = new LootTablesHandler();
             updateConfig(getConfig().getInt("configversion"));
         }
 
@@ -85,6 +102,11 @@ public class CustomStructures extends JavaPlugin {
         if (!f.exists()) {
             saveResource("structures/demo.yml", false);
         }
+        f = new File(getDataFolder(), "npcs.yml");
+        if (!f.exists()) {
+            saveResource("npcs.yml", false);
+        }
+
         f = new File(getDataFolder() + File.separator + "schematics");
         if (!f.exists()) {
             saveResource("schematics/demo.schem", false);
@@ -94,7 +116,8 @@ public class CustomStructures extends JavaPlugin {
 
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
-        lootTablesHandler = new LootTablesHandler();
+        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
+        this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
         // Run this after the loading of all plugins.
         Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -204,6 +227,8 @@ public class CustomStructures extends JavaPlugin {
      * <p>This is for internal use only.</p>
      */
     public void reloadHandlers() {
+        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
+        this.npcHandler.cleanUp();
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();
@@ -229,18 +254,25 @@ public class CustomStructures extends JavaPlugin {
         saveDefaultConfig();
     }
 
-    public void loadFile() {
-
+    public void loadFiles() {
         if (lootTableFile.exists()) {
             try {
                 lootTablesFC.load(lootTableFile);
-
             } catch (IOException | InvalidConfigurationException e) {
-
                 e.printStackTrace();
             }
         } else {
             saveResource("lootTables/lootTable.yml", false);
+        }
+
+        if (npcsFile.exists()) {
+            try {
+                npcsFC.load(npcsFile);
+            } catch (IOException | InvalidConfigurationException e) {
+                e.printStackTrace();
+            }
+        } else {
+            saveResource("npcs.yml", false);
         }
     }
 
@@ -497,6 +529,13 @@ public class CustomStructures extends JavaPlugin {
      */
     public CustomItemManager getCustomItemManager() {
         return customItemManager;
+    }
+
+    /**
+     * @return The NPC config handler
+     */
+    public NpcHandler getNpcHandler() {
+        return npcHandler;
     }
 
     /**

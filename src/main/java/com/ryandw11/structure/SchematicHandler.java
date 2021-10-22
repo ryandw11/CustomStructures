@@ -601,10 +601,14 @@ public class SchematicHandler {
                 plugin.getLogger().warning("Invalid mob type on structure sign.");
             }
         }
+        if (firstLine.equalsIgnoreCase("[npc]")) {
+            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), secondLine, location);
+            location.getBlock().setType(Material.AIR);
+        }
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
             // Allow for the third line to have the level of the mob.
             if (thirdLine.isEmpty())
-                plugin.mmh.spawnMob(secondLine, location);
+                plugin.mythicalMobHook.spawnMob(secondLine, location);
             else {
                 int level;
                 try {
@@ -612,7 +616,7 @@ public class SchematicHandler {
                 } catch (NumberFormatException ex) {
                     level = 1;
                 }
-                plugin.mmh.spawnMob(secondLine, location, level);
+                plugin.mythicalMobHook.spawnMob(secondLine, location, level);
             }
             location.getBlock().setType(Material.AIR);
         }

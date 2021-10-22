@@ -1,0 +1,26 @@
+CitizenNPCs:
+  -
+    alias: Stan
+    # Supported entity types:
+    # VILLAGER (default) - NPC looks like a villager
+    # PLAYER - NPC looks like a player
+    entityType: VILLAGER
+    commands:
+      - "/say Hello, I am Harribo!"
+    looksAtPlayer: true
+    makesSounds: false
+    movesAround: false
+    isProtected: false
+    name: "Harribo Myer"
+    skinUrl: ~
+  -
+    alias: Ollie
+    entityType: PLAYER
+    commands:
+      - "/say What's up, Dude. I'm Jimbo!"
+    looksAtPlayer: true
+    makesSounds: true
+    movesAround: true
+    isProtected: true
+    name: "Jimbo Bimbo"
+    skinUrl: https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png
