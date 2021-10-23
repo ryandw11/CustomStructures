@@ -125,11 +125,6 @@ public class CitizensEnabled implements CitizensNpcHook {
 		Map<String, Object> skinData = skinDataCache.get(url);
 		if(skinData == null) {
 			skinData = downloadFromMineskinOrg(url);
-			/*
-			if(skinData == null) {
-				skinData = downloadDirectly(url);
-			}
-			 */
 			if(skinData == null) {
 				// Failed to download - mark as invalid to not try again
 				skinDataCache.put(url, INVALID);
@@ -195,64 +190,4 @@ public class CitizensEnabled implements CitizensNpcHook {
 		}
 		return null;
 	}
-
-	/**
-	 * Downloads a Minecraft skin directly from the given URL.
-	 *
-	 * @param url The skin download URL.
-	 * @return The skin information map (may be null!)
-	 */
-	/*
-	private static Map<String, Object> downloadDirectly(String url) {
-		DataOutputStream out = null;
-		BufferedReader reader = null;
-		try {
-			URL target = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) target.openConnection();
-			con.setRequestMethod("GET");
-			con.setRequestProperty("Connection", "keep-alive");
-			con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0");
-			con.setDoOutput(true);
-			con.setConnectTimeout(1000);
-			con.setReadTimeout(30000);
-			int responseCode = con.getResponseCode();
-			Map<String, Object> skinInfo = null;
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-				skinInfo = new Gson().fromJson(reader, Map.class);
-			} else {
-				Bukkit.getLogger().warning("> Failed to download skin directly: " + url + ", HTTP response code: " + responseCode);
-			}
-			con.disconnect();
-			return skinInfo;
-		} catch (Throwable t) {
-			Bukkit.getLogger().warning("> Failed to download skin: " + url + ", reason: " + t.toString());
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-				}
-			}
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-		return null;
-	}
-
-	 */
-/*
-	// FOR MANUAL TESTING ONLY - REMOVE LATER
-	public static void main(String[] args) {
-		Map<String, Object> stuff = downloadFromMineskinOrg("https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png");
-		System.out.println("Result map: " + stuff);
-
-		Map<String, Object> data = (Map<String, Object>)stuff.get("data");
-		System.out.println("Result data: " + data);
-	}
- */
 }
