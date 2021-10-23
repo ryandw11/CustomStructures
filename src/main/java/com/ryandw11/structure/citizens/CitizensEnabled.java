@@ -2,10 +2,10 @@ package com.ryandw11.structure.citizens;
 
 import com.google.gson.Gson;
 import com.ryandw11.structure.NpcHandler;
-import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.trait.CommandTrait;
+import net.citizensnpcs.trait.LookClose;
 import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,8 +21,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.ryandw11.structure.CustomStructures.CITIZENS_PLUGIN;
-
 /**
  * Spawns a Citizen NPC at the location of the sign.
  *
@@ -33,85 +31,85 @@ public class CitizensEnabled implements CitizensNpcHook {
 	// Use in-memory cache to avoid downloading the same skin data again and again
 	private static Map<String, Map<String, Object>> skinDataCache = new HashMap<>();
 
+	// Marker for failed skin downloads to not attempt again (could lag server)
+	private static final Map<String, Object> INVALID = new HashMap<>();
+
 	@Override
 	public void spawnNpc(NpcHandler npcHandler, String alias, Location loc) {
-		Object pluginObj = npcHandler.getPluginManager().getPlugin(CITIZENS_PLUGIN);
-		if(pluginObj != null && pluginObj instanceof Citizens) {
-			Citizens citizensPlugin = (Citizens)pluginObj;
-
-			NpcHandler.NpcInfo info = npcHandler.getNpcInfoByAlias(alias);
-			if (info != null) {
-				EntityType type = EntityType.VILLAGER;
-				try {
-					type = EntityType.valueOf(info.entityType);
-				} catch(Exception ex) {
-					Bukkit.getLogger().warning("> UNSUPPORTED ENTITY TYPE '" + info.entityType + "'! Spawning a villager instead.");
+		NpcHandler.NpcInfo info = npcHandler.getNpcInfoByAlias(alias);
+		if (info != null) {
+			EntityType type = EntityType.VILLAGER;
+			try {
+				type = EntityType.valueOf(info.entityType);
+			} catch(Exception ex) {
+				Bukkit.getLogger().warning("> UNSUPPORTED ENTITY TYPE '" + info.entityType + "'! Spawning a villager instead.");
+			}
+			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, info.name);
+			int npcId = npc.getId();
+			if(npc != null) {
+				if(!npc.isSpawned()) {
+					npc.spawn(loc);
 				}
-				NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, info.name);
-				int npcId = npc.getId();
-				if(npc != null) {
-					if(!npc.isSpawned()) {
-						npc.spawn(loc);
-					}
 
-					// Should NPC be protected (invulnerable)
-					npc.setProtected(info.isProtected);
+				// Should NPC be protected (invulnerable)
+				npc.setProtected(info.isProtected);
 
-					// Should NPC move around
-					npc.setUseMinecraftAI(info.movesAround);
+				// Should NPC move around
+				npc.setUseMinecraftAI(info.movesAround);
 
-					// Run commands to be executed when NPC is created
-					if(!info.commandsOnCreate.isEmpty()) {
-						Bukkit.getLogger().info("> Executing " + info.commandsOnCreate.size() + " commands now...");
-						for(String command : info.commandsOnCreate) {
-							command = command.trim();
-							command = command.replace("<npcid>", String.valueOf(npcId));
-							// The [PLAYER] prefix is not supported here for obvious reasons
-							if(command.toUpperCase().startsWith("[PLAYER]")) {
-								// cut off the [PLAYER] prefix
-								command = command.substring(8);
-								Bukkit.getLogger().warning("> Ignoring [PLAYER] prefix for 'commandsOnCreate' commands!");
-							}
-							Bukkit.getLogger().info("> Executing command for newly created NPC: '" + command + "'");
-							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+				// Make NPC look at player when they come close
+				LookClose lookClose = npc.getOrAddTrait(LookClose.class);
+				lookClose.lookClose(info.looksAtPlayer);
+
+				// Run commands to be executed when NPC is created
+				if(!info.commandsOnCreate.isEmpty()) {
+					Bukkit.getLogger().info("> Executing " + info.commandsOnCreate.size() + " commands now...");
+					for(String command : info.commandsOnCreate) {
+						command = command.trim();
+						command = command.replace("<npcid>", String.valueOf(npcId));
+						// The [PLAYER] prefix is not supported here for obvious reasons
+						if(command.toUpperCase().startsWith("[PLAYER]")) {
+							// cut off the [PLAYER] prefix
+							command = command.substring(8);
+							Bukkit.getLogger().warning("> Ignoring [PLAYER] prefix for 'commandsOnCreate' commands!");
 						}
+						Bukkit.getLogger().info("> Executing command for newly created NPC: '" + command + "'");
+						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
 					}
-
-					// Add commands to be executed when player clicks NPC
-					if(!info.commandsOnClick.isEmpty()) {
-						for(String command : info.commandsOnClick) {
-							command = command.trim();
-							command = command.replace("<npcid>", String.valueOf(npcId));
-							boolean isPlayerCommand = command.toUpperCase().startsWith("[PLAYER]");
-							if(isPlayerCommand) {
-								// cut off the [PLAYER] prefix
-								command = command.substring(8);
-							}
-							CommandTrait commandTrait = npc.getOrAddTrait(CommandTrait.class);
-							CommandTrait.NPCCommandBuilder cmdBuilder = new CommandTrait.NPCCommandBuilder(command, CommandTrait.Hand.RIGHT);
-							cmdBuilder.op(true);
-							if(isPlayerCommand) {
-								cmdBuilder.player(true);
-							}
-							commandTrait.addCommand(cmdBuilder);
-							commandTrait.setExecutionMode(info.commandsSequential ? CommandTrait.ExecutionMode.SEQUENTIAL : CommandTrait.ExecutionMode.LINEAR);
-							Bukkit.getLogger().info("> Set command for NPC: '" + command + "'");
-						}
-					}
-
-					// Change skin of NPC
-					if(info.skinUrl != null && !info.skinUrl.isEmpty()) {
-						changeSkin(npc, info.skinUrl);
-					}
-					npc.setBukkitEntityType(EntityType.valueOf(info.entityType));
-				} else {
-					Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', reason unknown / no errors detected.");
 				}
+
+				// Add commands to be executed when player clicks NPC
+				if(!info.commandsOnClick.isEmpty()) {
+					for(String command : info.commandsOnClick) {
+						command = command.trim();
+						command = command.replace("<npcid>", String.valueOf(npcId));
+						boolean isPlayerCommand = command.toUpperCase().startsWith("[PLAYER]");
+						if(isPlayerCommand) {
+							// cut off the [PLAYER] prefix
+							command = command.substring(8);
+						}
+						CommandTrait commandTrait = npc.getOrAddTrait(CommandTrait.class);
+						CommandTrait.NPCCommandBuilder cmdBuilder = new CommandTrait.NPCCommandBuilder(command, CommandTrait.Hand.RIGHT);
+						cmdBuilder.op(true);
+						if(isPlayerCommand) {
+							cmdBuilder.player(true);
+						}
+						commandTrait.addCommand(cmdBuilder);
+						commandTrait.setExecutionMode(info.commandsSequential ? CommandTrait.ExecutionMode.SEQUENTIAL : CommandTrait.ExecutionMode.LINEAR);
+						Bukkit.getLogger().info("> Set command for NPC: '" + command + "'");
+					}
+				}
+
+				// Change skin of NPC
+				if(type == EntityType.PLAYER && info.skinUrl != null && !info.skinUrl.isEmpty()) {
+					changeSkin(npc, info.skinUrl);
+				}
+				npc.setBukkitEntityType(EntityType.valueOf(info.entityType));
 			} else {
-				Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', no configuration found.");
+				Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', reason unknown / no errors detected.");
 			}
 		} else {
-			Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', unable to use Citizens plugin.");
+			Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', no configuration found.");
 		}
 	}
 
@@ -127,11 +125,17 @@ public class CitizensEnabled implements CitizensNpcHook {
 		Map<String, Object> skinData = skinDataCache.get(url);
 		if(skinData == null) {
 			skinData = downloadFromMineskinOrg(url);
+			/*
 			if(skinData == null) {
 				skinData = downloadDirectly(url);
 			}
+			 */
+			if(skinData == null) {
+				// Failed to download - mark as invalid to not try again
+				skinDataCache.put(url, INVALID);
+			}
 		}
-		if(skinData != null) {
+		if(skinData != null && skinData != INVALID) {
 			skinDataCache.put(url, skinData);
 			try {
 				Map<String, Object> data = (Map<String, Object>) skinData.get("data");
@@ -198,6 +202,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 	 * @param url The skin download URL.
 	 * @return The skin information map (may be null!)
 	 */
+	/*
 	private static Map<String, Object> downloadDirectly(String url) {
 		DataOutputStream out = null;
 		BufferedReader reader = null;
@@ -237,8 +242,9 @@ public class CitizensEnabled implements CitizensNpcHook {
 			}
 		}
 		return null;
-
 	}
+
+	 */
 /*
 	// FOR MANUAL TESTING ONLY - REMOVE LATER
 	public static void main(String[] args) {

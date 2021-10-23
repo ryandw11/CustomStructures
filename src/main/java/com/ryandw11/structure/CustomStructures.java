@@ -116,7 +116,7 @@ public class CustomStructures extends JavaPlugin {
 
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
-        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
+        this.npcHandler = new NpcHandler(getDataFolder());
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
         // Run this after the loading of all plugins.
@@ -228,7 +228,7 @@ public class CustomStructures extends JavaPlugin {
      */
     public void reloadHandlers() {
         this.npcHandler.cleanUp();
-        this.npcHandler = new NpcHandler(getDataFolder(), getServer().getPluginManager());
+        this.npcHandler = new NpcHandler(getDataFolder());
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();

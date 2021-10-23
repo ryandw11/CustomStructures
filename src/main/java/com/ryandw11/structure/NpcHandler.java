@@ -3,7 +3,6 @@ package com.ryandw11.structure;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -19,10 +18,13 @@ import java.util.Map;
 public class NpcHandler {
 
     private Map<String, NpcInfo> npcInfoMap = new HashMap<>();
-    private PluginManager pluginManager;
 
-    public NpcHandler(File dataFolder, PluginManager pluginManager) {
-        this.pluginManager = pluginManager;
+    /**
+     * Processes the NPC configuration
+     *
+     * @param dataFolder The base plugin data folder.
+     */
+    public NpcHandler(File dataFolder) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File npcFile = new File(dataFolder, "npcs.yml");
         if(npcFile.exists()) {
@@ -41,7 +43,6 @@ public class NpcHandler {
                             npcInfo.name = getStringValueWithDefault(npc, "name", "");
                             npcInfo.skinUrl = getStringValueWithDefault(npc, "skinUrl", null);
                             npcInfo.movesAround = getBooleanValueWithDefault(npc, "movesAround");
-                            npcInfo.makesSounds = getBooleanValueWithDefault(npc, "makesSounds");
                             npcInfo.looksAtPlayer = getBooleanValueWithDefault(npc, "looksAtPlayer");
                             npcInfo.isProtected = getBooleanValueWithDefault(npc, "isProtected");
                             npcInfo.commandsSequential = getBooleanValueWithDefault(npc, "commandsSequential");
@@ -86,10 +87,9 @@ public class NpcHandler {
         return false;
     }
 
-    public PluginManager getPluginManager() {
-        return this.pluginManager;
-    }
-
+    /**
+     * Cleans up the NPC data.
+     */
     public void cleanUp() {
         Bukkit.getLogger().info("Clear NPC table.");
         npcInfoMap.clear();
@@ -106,7 +106,6 @@ public class NpcHandler {
         public String name = "";
         public String skinUrl = "";
         public boolean movesAround = false;
-        public boolean makesSounds = false;
         public boolean looksAtPlayer = false;
         public boolean isProtected = false;
         public String entityType = "VILLAGER";
