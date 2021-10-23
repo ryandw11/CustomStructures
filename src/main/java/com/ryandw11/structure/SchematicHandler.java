@@ -192,7 +192,9 @@ public class SchematicHandler {
                     replaceContainerContent(structure, location);
                 }
                 if (location.getBlock().getState() instanceof Sign) {
-                    replaceSignWithMob(location);
+                    Location minLoc = getMinimumLocation(clipboard, loc, finalRotY);
+                    Location maxLoc = getMaximumLocation(clipboard, loc, finalRotY);
+                    processAndReplaceSign(location, minLoc, maxLoc);
                 }
                 // This is separate so that if the block doesn't exist anymore than it will not error out.
                 if (location.getBlock().getState() instanceof Sign) {
@@ -570,15 +572,16 @@ public class SchematicHandler {
     }
 
     /**
-     * Spawn a mob with the signs.
+     * Process a sign and spawn mobs, execute commands etc.
      *
      * @param location The location of the sign.
      */
-    private void replaceSignWithMob(Location location) {
+    private void processAndReplaceSign(Location location, Location minLoc, Location maxLoc) {
         Sign sign = (Sign) location.getBlock().getState();
         String firstLine;
         String secondLine;
         String thirdLine;
+
         if (location.getBlock().getState() instanceof Sign) {
             firstLine = sign.getLine(0).trim();
             secondLine = sign.getLine(1).trim();
@@ -605,6 +608,20 @@ public class SchematicHandler {
             plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), secondLine, location);
             location.getBlock().setType(Material.AIR);
         }
+        if (firstLine.equalsIgnoreCase("[commands]")) {
+            String alias = secondLine;
+            SignCommandsHandler.CommandGroupInfo info = plugin.getSignCommandsHandler().getCommandGroupInfoByAlias(alias);
+            if(info != null) {
+                for(String command : info.commands) {
+                    command = replacePlaceHolders(command, location, minLoc, maxLoc);
+                    Bukkit.getLogger().info("Executing console command: '" + command + "'");
+                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+            } else {
+                Bukkit.getLogger().info("> Unable to execute commands with alias: '" + alias + "', no configuration found!");
+            }
+            location.getBlock().setType(Material.AIR);
+        }
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
             // Allow for the third line to have the level of the mob.
             if (thirdLine.isEmpty())
@@ -620,7 +637,22 @@ public class SchematicHandler {
             }
             location.getBlock().setType(Material.AIR);
         }
+    }
 
+    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc) {
+        command = command.replace("<signX>", "" + location.getBlockX());
+        command = command.replace("<signY>", "" + location.getBlockY());
+        command = command.replace("<signZ>", "" + location.getBlockZ());
+
+        command = command.replace("<structX1>", "" + minLoc.getBlockX());
+        command = command.replace("<structY1>", "" + minLoc.getBlockY());
+        command = command.replace("<structZ1>", "" + minLoc.getBlockZ());
+
+        command = command.replace("<structX2>", "" + maxLoc.getBlockX());
+        command = command.replace("<structY2>", "" + maxLoc.getBlockY());
+        command = command.replace("<structZ2>", "" + maxLoc.getBlockZ());
+
+        return command;
     }
 
     /**

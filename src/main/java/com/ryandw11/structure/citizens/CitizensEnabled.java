@@ -42,7 +42,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 			try {
 				type = EntityType.valueOf(info.entityType);
 			} catch(Exception ex) {
-				Bukkit.getLogger().warning("> UNSUPPORTED ENTITY TYPE '" + info.entityType + "'! Spawning a villager instead.");
+				Bukkit.getLogger().warning("Unsupported NPC entity-type '" + info.entityType + "'! Spawning a villager instead.");
 			}
 			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, info.name);
 			int npcId = npc.getId();
@@ -63,7 +63,6 @@ public class CitizensEnabled implements CitizensNpcHook {
 
 				// Run commands to be executed when NPC is created
 				if(!info.commandsOnCreate.isEmpty()) {
-					Bukkit.getLogger().info("> Executing " + info.commandsOnCreate.size() + " commands now...");
 					for(String command : info.commandsOnCreate) {
 						command = command.trim();
 						command = command.replace("<npcid>", String.valueOf(npcId));
@@ -71,9 +70,9 @@ public class CitizensEnabled implements CitizensNpcHook {
 						if(command.toUpperCase().startsWith("[PLAYER]")) {
 							// cut off the [PLAYER] prefix
 							command = command.substring(8);
-							Bukkit.getLogger().warning("> Ignoring [PLAYER] prefix for 'commandsOnCreate' commands!");
+							Bukkit.getLogger().warning("Ignoring [PLAYER] prefix for 'commandsOnCreate' commands!");
 						}
-						Bukkit.getLogger().info("> Executing command for newly created NPC: '" + command + "'");
+						Bukkit.getLogger().info("Executing command for newly created NPC: '" + command + "'");
 						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
 					}
 				}
@@ -96,7 +95,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 						}
 						commandTrait.addCommand(cmdBuilder);
 						commandTrait.setExecutionMode(info.commandsSequential ? CommandTrait.ExecutionMode.SEQUENTIAL : CommandTrait.ExecutionMode.LINEAR);
-						Bukkit.getLogger().info("> Set command for NPC: '" + command + "'");
+						Bukkit.getLogger().info("Set on-click command for NPC: '" + command + "'");
 					}
 				}
 
@@ -106,10 +105,10 @@ public class CitizensEnabled implements CitizensNpcHook {
 				}
 				npc.setBukkitEntityType(EntityType.valueOf(info.entityType));
 			} else {
-				Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', reason unknown / no errors detected.");
+				Bukkit.getLogger().warning("Failed to spawn NPC '" + alias + "', reason unknown / no errors detected.");
 			}
 		} else {
-			Bukkit.getLogger().warning("> Failed to spawn NPC '" + alias + "', no configuration found.");
+			Bukkit.getLogger().warning("Failed to spawn NPC '" + alias + "', no configuration found.");
 		}
 	}
 
@@ -173,7 +172,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 			con.disconnect();
 			return skinInfo;
 		} catch (Throwable t) {
-			Bukkit.getLogger().warning("> Failed to download skin: " + url + ", reason: " + t.toString());
+			Bukkit.getLogger().warning("Failed to download NPC skin: " + url + ", reason: " + t.toString());
 		} finally {
 			if (out != null) {
 				try {

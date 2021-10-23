@@ -51,6 +51,7 @@ public class CustomStructures extends JavaPlugin {
     public MythicalMobHook mythicalMobHook;
     public CitizensNpcHook citizensNpcHook;
 
+    private SignCommandsHandler signCommandsHandler;
     private NpcHandler npcHandler;
     private StructureHandler structureHandler;
     private LootTablesHandler lootTablesHandler;
@@ -106,6 +107,10 @@ public class CustomStructures extends JavaPlugin {
         if (!f.exists()) {
             saveResource("npcs.yml", false);
         }
+        f = new File(getDataFolder(), "signcommands.yml");
+        if (!f.exists()) {
+            saveResource("signcommands.yml", false);
+        }
 
         f = new File(getDataFolder() + File.separator + "schematics");
         if (!f.exists()) {
@@ -116,6 +121,7 @@ public class CustomStructures extends JavaPlugin {
 
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder());
         this.npcHandler = new NpcHandler(getDataFolder());
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
@@ -227,6 +233,8 @@ public class CustomStructures extends JavaPlugin {
      * <p>This is for internal use only.</p>
      */
     public void reloadHandlers() {
+        this.signCommandsHandler.cleanUp();
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder());
         this.npcHandler.cleanUp();
         this.npcHandler = new NpcHandler(getDataFolder());
         this.structureHandler.cleanup();
@@ -529,6 +537,13 @@ public class CustomStructures extends JavaPlugin {
      */
     public CustomItemManager getCustomItemManager() {
         return customItemManager;
+    }
+
+    /**
+     * @return The commands config handler
+     */
+    public SignCommandsHandler getSignCommandsHandler() {
+        return signCommandsHandler;
     }
 
     /**

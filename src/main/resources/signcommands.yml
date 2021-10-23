@@ -1,0 +1,19 @@
+# All commands are executed when the structure is created,
+# as server/console commands (with OP permissions).
+#
+# The following placeholders can be used in a command:
+#
+# <signX>, <signY> and <signZ> - The x, y and z coordinate of the sign itself.
+# <structX1>,<structY1>,<structZ1> - The x, y and z coordinates of the lower corner of the placed structure.
+# <structX2>,<structY2>,<structZ2> - The x, y and z coordinates of the opposite, higher corner of the placed structure.
+SignCommands:
+  -
+    # Alias used as reference on sign (2nd line). So for these
+    # commands, create a sign in your structure with these 2 lines:
+    # [command]
+    # SaySomething
+    alias: SaySomething
+    commands:
+      - "say Sign coordinate: <signX>,<signY>,<signZ>"
+      - "say Structure coordinate one: <structX1>,<structY1>,<structZ1>"
+      - "say Structure coordinate two: <structX2>,<structY2>,<structZ2>"
