@@ -1,7 +1,10 @@
 # NOTE - for all boolean (true|false) fields, the default is 'false'.
 CitizenNPCs:
   -
-    # Alias used as reference on sign (2nd line)
+    # Alias used as reference on sign (2nd line). So for this
+    # NPC, create a sign in your structure with these 2 lines:
+    # [npc]
+    # Stan
     alias: Stan
 
     # Visible name of NPC
@@ -11,25 +14,28 @@ CitizenNPCs:
     # VILLAGER (default) - NPC looks like a villager
     # PLAYER - NPC looks like a player
     # For other types see "Citizens" documentation.
-    # NOTE: If you use 'PLAYER' and then see a health label below
-    # the NPC name, you may have the TAB plugin active, and need
-    # to disable the feature 'classic-vanilla-belowname' in it.
+    # NOTE 1: Some of the following options only work with either
+    #         PLAYER or VILLAGER.
+    # NOTE 2: If you use 'PLAYER' and then see a health label below
+    #         the NPC name, you may have the TAB plugin active, and need
+    #         to disable the feature 'classic-vanilla-belowname' in it.
     entityType: VILLAGER
 
-    # URL of a player skin - WORKS ONLY WITH 'PLAYER' entity type!
+    # URL of a player skin.
+    # Works only with PLAYER entity type.
     skinUrl: ""
 
     # Commands to be executed when the NPC is created.
     # NOTE: These commands are ALWAYS console/server commands,
-    # as there is no player context at this moment.
+    #       as there is no player context at this moment.
     # Use the <npcid> placeholder for the ID of the new NPC.
     # These commands can be used to run "npc" commands on the
     # new NPC, to register traits etc. Example:
     # - "npc select <npcid>"
-    # - "npc command add \"ncp speak Damn, I'm good! --target <p> --id <npcid>\""
+    # - "npc command add \"ncp speak How are you? --target <p> --id <npcid>\""
     commandsOnCreate:
 
-    # Commands to be executed when the player clicks the NPCs.
+    # Commands to be executed when the player clicks the NPC.
     # By default, these are executed as console/server commands.
     # To execute a command as the player, add the [PLAYER] prefix
     # to the command string.
@@ -51,7 +57,7 @@ CitizenNPCs:
 
     # Set to 'true' to have the NPC look at the player whenever
     # the player comes near him.
-    # Works only with PLAYER entity type (VILLAGE will always look at player).
+    # Works only with PLAYER entity type (VILLAGER will always look at player).
     looksAtPlayer: true
   -
     alias: Ollie
