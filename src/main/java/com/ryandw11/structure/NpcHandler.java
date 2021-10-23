@@ -46,9 +46,13 @@ public class NpcHandler {
                             npcInfo.isProtected = getBooleanValueWithDefault(npc, "isProtected");
                             npcInfo.commandsSequential = getBooleanValueWithDefault(npc, "commandsSequential");
                             npcInfo.entityType = getStringValueWithDefault(npc, "entityType", "VILLAGER");
-                            List<String> commands = (List<String>)npc.get("commands");
-                            if(commands != null && !commands.isEmpty()) {
-                                npcInfo.commands = commands;
+                            List<String> commandsOnCreate = (List<String>)npc.get("commandsOnCreate");
+                            if(commandsOnCreate != null && !commandsOnCreate.isEmpty()) {
+                                npcInfo.commandsOnCreate = commandsOnCreate;
+                            }
+                            List<String> commandsOnClick = (List<String>)npc.get("commandsOnClick");
+                            if(commandsOnClick != null && !commandsOnClick.isEmpty()) {
+                                npcInfo.commandsOnClick = commandsOnClick;
                             }
                             npcInfoMap.put(alias, npcInfo);
                             Bukkit.getLogger().info("> NPC '" + alias + "': " + npcInfo);
@@ -106,7 +110,8 @@ public class NpcHandler {
         public boolean looksAtPlayer = false;
         public boolean isProtected = false;
         public String entityType = "VILLAGER";
-        public List<String> commands = new ArrayList<>();
+        public List<String> commandsOnCreate = new ArrayList<>();
+        public List<String> commandsOnClick = new ArrayList<>();
         public boolean commandsSequential = false;
 
         public String toString() {

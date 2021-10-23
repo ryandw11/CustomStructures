@@ -60,17 +60,46 @@ public class CitizensEnabled implements CitizensNpcHook {
 					// Should NPC move around
 					npc.setUseMinecraftAI(info.movesAround);
 
-					if(!info.commands.isEmpty()) {
-						for(String command : info.commands) {
+					// Run commands to be executed when NPC is created
+					if(!info.commandsOnCreate.isEmpty()) {
+						Bukkit.getLogger().info("> Executing " + info.commandsOnCreate.size() + " commands now...");
+						for(String command : info.commandsOnCreate) {
+							command = command.trim();
+							command = command.replace("<npcid>", String.valueOf(npcId));
+							// The [PLAYER] prefix is not supported here for obvious reasons
+							if(command.toUpperCase().startsWith("[PLAYER]")) {
+								// cut off the [PLAYER] prefix
+								command = command.substring(8);
+								Bukkit.getLogger().warning("> Ignoring [PLAYER] prefix for 'commandsOnCreate' commands!");
+							}
+							Bukkit.getLogger().info("> Executing command for newly created NPC: '" + command + "'");
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+						}
+					}
+
+					// Add commands to be executed when player clicks NPC
+					if(!info.commandsOnClick.isEmpty()) {
+						for(String command : info.commandsOnClick) {
+							command = command.trim();
+							command = command.replace("<npcid>", String.valueOf(npcId));
+							boolean isPlayerCommand = command.toUpperCase().startsWith("[PLAYER]");
+							if(isPlayerCommand) {
+								// cut off the [PLAYER] prefix
+								command = command.substring(8);
+							}
 							CommandTrait commandTrait = npc.getOrAddTrait(CommandTrait.class);
 							CommandTrait.NPCCommandBuilder cmdBuilder = new CommandTrait.NPCCommandBuilder(command, CommandTrait.Hand.RIGHT);
 							cmdBuilder.op(true);
+							if(isPlayerCommand) {
+								cmdBuilder.player(true);
+							}
 							commandTrait.addCommand(cmdBuilder);
 							commandTrait.setExecutionMode(info.commandsSequential ? CommandTrait.ExecutionMode.SEQUENTIAL : CommandTrait.ExecutionMode.LINEAR);
 							Bukkit.getLogger().info("> Set command for NPC: '" + command + "'");
 						}
 					}
 
+					// Change skin of NPC
 					if(info.skinUrl != null && !info.skinUrl.isEmpty()) {
 						changeSkin(npc, info.skinUrl);
 					}

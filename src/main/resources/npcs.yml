@@ -1,26 +1,56 @@
 CitizenNPCs:
   -
-    alias: Stan
+    # Alias used as reference on sign (2nd line)
+    alias: Example
+
+    # Visible name of NPC
+    name: "Village Idiot"
+
     # Supported entity types:
     # VILLAGER (default) - NPC looks like a villager
     # PLAYER - NPC looks like a player
     entityType: VILLAGER
-    commands:
-      - "/say Hello, I am Harribo!"
+
+    # URL of a player skin - WORKS ONLY WITH 'PLAYER' entity type!
+    skinUrl: ""
+
+    # Commands to be executed when the NPC is created.
+    # NOTE: These commands are ALWAYS console/server commands,
+    # as there is no player context at this moment.
+    # Use the <npcid> placeholder for the ID of the new NPC.
+    # These commands can be used to run "npc" commands on the
+    # new NPC, to register traits etc. Example:
+    # - "npc select <npcid>"
+    # - "npc command add \"npc speak Damn, I'm good! --target <p> --id <id>\""
+    commandsOnCreate:
+
+    # Commands to be executed when the player clicks the NPCs.
+    # By default, these are executed as console/server commands.
+    # To execute a command as the player, add the [PLAYER] prefix
+    # to the command string.
+    # Use the <npcid> placeholder for the ID of the new NPC.
+    commandsOnClick:
+      - "[PLAYER]cpanel quests"
+
+    # Should the "commandsOnClick" commands be executed sequentially,
+    # when the player clicks the NPC, in the given order (true)
+    # or all at once (false - default)
+    commandsSequential: true
+
+    looksAtPlayer: true
+    makesSounds: false
+    movesAround: true
+    isProtected: false
+  -
+    alias: Example2
+    entityType: PLAYER
+    skinUrl: "http://deadly-realms.apexmc.co:8899/blue-hoodie-gamer.png"
+    name: "John Doe"
+    commandsOnCreate:
+      - "npc select <npcid>"
+      - "npc command add \"npc speak Damn, I'm good! --target <p> --id <npcid>\""
+    commandsOnClick:
     looksAtPlayer: true
     makesSounds: false
     movesAround: false
-    isProtected: false
-    name: "Harribo Myer"
-    skinUrl: ~
-  -
-    alias: Ollie
-    entityType: PLAYER
-    commands:
-      - "/say What's up, Dude. I'm Jimbo!"
-    looksAtPlayer: true
-    makesSounds: true
-    movesAround: true
     isProtected: true
-    name: "Jimbo Bimbo"
-    skinUrl: https://gamepedia.cursecdn.com/minecraft_gamepedia/3/37/Steve_skin.png
