@@ -1,0 +1,48 @@
+-waa +c
+-boo +c
+-gar
+-bar
+-dar
+-jar
+-var
+-kra
+-gra
+-dra
+-zra
+-gob
+-dob
+-rob
+-fob
+-zob
+-rag
+-nag
+-dag
+bra
+ga
+da
+do
+go
+ze
+sha
+naz
+zub
+zu
+na
+gor
+boo +c
++byr
++gyr
++dyr
++vyr
++zyr
++yr -c
++zog
++rog
++gog
++og -c
++gul
++dul
++bul
++rul
++ul -c
++rgh -v

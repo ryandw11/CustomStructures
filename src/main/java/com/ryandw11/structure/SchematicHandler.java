@@ -605,7 +605,7 @@ public class SchematicHandler {
             }
         }
         if (firstLine.equalsIgnoreCase("[npc]")) {
-            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), secondLine, location);
+            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), plugin.getNamesHandler(),  secondLine, location);
             location.getBlock().setType(Material.AIR);
         }
         if (firstLine.equalsIgnoreCase("[commands]")) {

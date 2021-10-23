@@ -52,6 +52,7 @@ public class CustomStructures extends JavaPlugin {
     public CitizensNpcHook citizensNpcHook;
 
     private SignCommandsHandler signCommandsHandler;
+    private NamesHandler namesHandler;
     private NpcHandler npcHandler;
     private StructureHandler structureHandler;
     private LootTablesHandler lootTablesHandler;
@@ -99,29 +100,25 @@ public class CustomStructures extends JavaPlugin {
             updateConfig(getConfig().getInt("configversion"));
         }
 
-        File f = new File(getDataFolder() + File.separator + "structures");
+        File f = new File(getDataFolder() + File.separator + "schematics");
         if (!f.exists()) {
-            saveResource("structures/demo.yml", false);
-        }
-        f = new File(getDataFolder(), "npcs.yml");
-        if (!f.exists()) {
-            saveResource("npcs.yml", false);
-        }
-        f = new File(getDataFolder(), "signcommands.yml");
-        if (!f.exists()) {
-            saveResource("signcommands.yml", false);
+            getLogger().info("Loading the plugin for the first time.");
+            getLogger().info("A demo structure will be added! Please make sure to test out this plugin in a test world!");
         }
 
-        f = new File(getDataFolder() + File.separator + "schematics");
-        if (!f.exists()) {
-            saveResource("schematics/demo.schem", false);
-            getLogger().info("Loading the plugin for the first time.");
-            getLogger().info("A demo structure was added! Please make sure to test out this plugin in a test world!");
-        }
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "schematics"), "demo.schem", "schematics/");
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "structures"), "demo.yml", "structures/");
+        exportResourceIfFileDoesNotExist(getDataFolder(), "npcs.yml", "/");
+        exportResourceIfFileDoesNotExist(getDataFolder(), "signcommands.yml", "/");
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "elven.txt", "names/");
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "fantasy.txt", "names/");
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "goblin.txt", "names/");
+        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "roman.txt", "names/");
 
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
         this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
+        this.namesHandler = new NamesHandler(getDataFolder(), isDebug());
         this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
@@ -154,6 +151,16 @@ public class CustomStructures extends JavaPlugin {
         }
     }
 
+    private void exportResourceIfFileDoesNotExist(File targetDirectory, String filename, String resourcePath) {
+        if(!targetDirectory.exists()) {
+            targetDirectory.mkdirs();
+        }
+        File targetFile = new File(targetDirectory, filename);
+        if (!targetFile.exists()) {
+            saveResource(resourcePath + filename, false);
+        }
+    }
+
     @Override
     public void onDisable() {
         if (structureHandler == null) {
@@ -162,6 +169,9 @@ public class CustomStructures extends JavaPlugin {
         }
 
         structureHandler.cleanup();
+        npcHandler.cleanUp();
+        namesHandler.cleanUp();
+        signCommandsHandler.cleanUp();
     }
 
     /**
@@ -235,6 +245,8 @@ public class CustomStructures extends JavaPlugin {
     public void reloadHandlers() {
         this.signCommandsHandler.cleanUp();
         this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
+        this.namesHandler.cleanUp();
+        this.namesHandler = new NamesHandler(getDataFolder(), isDebug());
         this.npcHandler.cleanUp();
         this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.structureHandler.cleanup();
@@ -551,6 +563,13 @@ public class CustomStructures extends JavaPlugin {
      */
     public NpcHandler getNpcHandler() {
         return npcHandler;
+    }
+
+    /**
+     * @return The names generator handler
+     */
+    public NamesHandler getNamesHandler() {
+        return namesHandler;
     }
 
     /**
