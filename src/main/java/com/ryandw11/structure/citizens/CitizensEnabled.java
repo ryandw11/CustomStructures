@@ -128,10 +128,11 @@ public class CitizensEnabled implements CitizensNpcHook {
 			if(skinData == null) {
 				// Failed to download - mark as invalid to not try again
 				skinDataCache.put(url, INVALID);
+			} else {
+				skinDataCache.put(url, skinData);
 			}
 		}
 		if(skinData != null && skinData != INVALID) {
-			skinDataCache.put(url, skinData);
 			try {
 				Map<String, Object> data = (Map<String, Object>) skinData.get("data");
 				String uuid = (String) data.get("uuid");
@@ -142,10 +143,10 @@ public class CitizensEnabled implements CitizensNpcHook {
 				trait.setSkinPersistent(uuid, signature, textureEncoded);
 			} catch(Exception ex) {
 				// In case of any NPE's caused by invalid data
-				Bukkit.getLogger().warning("> Failed to set skin, probably invalid / corrupt skin data. Reason: " + ex.toString());
+				Bukkit.getLogger().warning("Failed to set skin, probably invalid / corrupt skin data. Reason: " + ex.toString());
 			}
 		} else {
-			Bukkit.getLogger().warning("> Failed to retrieve skin.");
+			Bukkit.getLogger().warning("Failed to retrieve skin.");
 		}
 	}
 
@@ -159,6 +160,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 		DataOutputStream out = null;
 		BufferedReader reader = null;
 		try {
+			Bukkit.getLogger().info("Downloading NPC skin: " + url);
 			URL target = new URL("https://api.mineskin.org/generate/url");
 			HttpURLConnection con = (HttpURLConnection) target.openConnection();
 			con.setRequestMethod("POST");
