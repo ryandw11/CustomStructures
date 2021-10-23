@@ -51,7 +51,7 @@ CitizenNPCs:
 
     # Set to 'true' to have the NPC look at the player whenever
     # the player comes near him.
-    # DOES NOT WORK YET
+    # Works only with PLAYER entity type (VILLAGE will always look at player).
     looksAtPlayer: true
   -
     alias: Ollie
@@ -60,7 +60,7 @@ CitizenNPCs:
     name: "John Doe"
     commandsOnCreate:
       - "npc select <npcid>"
-      - "npc command add \"npc speak Damn, I'm good! --target <p> --id <npcid>\""
+      - "npc command add \"npc speak I'm feeling blue today! --target <p> --id <npcid>\""
     commandsOnClick:
     looksAtPlayer: true
     movesAround: false
