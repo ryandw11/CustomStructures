@@ -121,8 +121,8 @@ public class CustomStructures extends JavaPlugin {
 
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
-        this.signCommandsHandler = new SignCommandsHandler(getDataFolder());
-        this.npcHandler = new NpcHandler(getDataFolder());
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
+        this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
         // Run this after the loading of all plugins.
@@ -234,9 +234,9 @@ public class CustomStructures extends JavaPlugin {
      */
     public void reloadHandlers() {
         this.signCommandsHandler.cleanUp();
-        this.signCommandsHandler = new SignCommandsHandler(getDataFolder());
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
         this.npcHandler.cleanUp();
-        this.npcHandler = new NpcHandler(getDataFolder());
+        this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();

@@ -1,6 +1,6 @@
 package com.ryandw11.structure;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -23,8 +23,9 @@ public class NpcHandler {
      * Processes the NPC configuration
      *
      * @param dataFolder The base plugin data folder.
+     * @param isDebug True if debug output is enabled.
      */
-    public NpcHandler(File dataFolder) {
+    public NpcHandler(File dataFolder, boolean isDebug) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File npcFile = new File(dataFolder, "npcs.yml");
         if(npcFile.exists()) {
@@ -32,7 +33,7 @@ public class NpcHandler {
                 yamlConfiguration.load(new File(dataFolder, "npcs.yml"));
 
                 List<Map<?, ?>> npcs = yamlConfiguration.getMapList("CitizenNPCs");
-                Bukkit.getLogger().info("Number of NPCs configured: " + npcs.size());
+                if(isDebug) Bukkit.getLogger().info("Number of NPCs configured: " + npcs.size());
 
                 for(Map<?, ?> npc : npcs) {
                     String alias = "?";
@@ -56,12 +57,12 @@ public class NpcHandler {
                                 npcInfo.commandsOnClick = commandsOnClick;
                             }
                             npcInfoMap.put(alias, npcInfo);
-                            Bukkit.getLogger().info("> NPC '" + alias + "': " + npcInfo);
+                            if(isDebug) Bukkit.getLogger().info("NPC '" + alias + "': " + npcInfo);
                         } else {
-                            Bukkit.getLogger().info("> NPC configuration error, no 'alias' configured!");
+                            Bukkit.getLogger().info("NPC configuration error, no 'alias' configured!");
                         }
                     } catch(Exception e) {
-                        Bukkit.getLogger().warning("> Failed to process NPC '" + alias + "':" + e.toString());
+                        Bukkit.getLogger().warning("Failed to process NPC '" + alias + "':" + e.toString());
                         e.printStackTrace();
                     }
                 }
@@ -91,7 +92,6 @@ public class NpcHandler {
      * Cleans up the NPC data.
      */
     public void cleanUp() {
-        Bukkit.getLogger().info("Clear NPC table.");
         npcInfoMap.clear();
     }
 
@@ -114,7 +114,7 @@ public class NpcHandler {
         public boolean commandsSequential = false;
 
         public String toString() {
-            return new ToStringBuilder(this).toString();
+            return ReflectionToStringBuilder.toString(this);
         }
     }
 }

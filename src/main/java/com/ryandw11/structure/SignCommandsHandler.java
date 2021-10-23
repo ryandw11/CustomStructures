@@ -1,6 +1,6 @@
 package com.ryandw11.structure;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -23,8 +23,9 @@ public class SignCommandsHandler {
      * Processes the sign commands configuration
      *
      * @param dataFolder The base plugin data folder.
+     * @param isDebug True if debug output is enabled.
      */
-    public SignCommandsHandler(File dataFolder) {
+    public SignCommandsHandler(File dataFolder, boolean isDebug) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File signCommandsFile = new File(dataFolder, "signcommands.yml");
         if(signCommandsFile.exists()) {
@@ -32,7 +33,7 @@ public class SignCommandsHandler {
                 yamlConfiguration.load(signCommandsFile);
 
                 List<Map<?, ?>> commandGroups = yamlConfiguration.getMapList("SignCommands");
-                Bukkit.getLogger().info("Number of command groups configured: " + commandGroups.size());
+                if(isDebug) Bukkit.getLogger().info("Number of command groups configured: " + commandGroups.size());
 
                 for(Map<?, ?> commandGroup : commandGroups) {
                     String alias = "?";
@@ -45,18 +46,18 @@ public class SignCommandsHandler {
                                 commandGroupInfo.commands = commands;
                             }
                             signCommandsInfoMap.put(alias, commandGroupInfo);
-                            Bukkit.getLogger().info("> Command group '" + alias + "': " + commandGroupInfo);
+                            if(isDebug) Bukkit.getLogger().info("Sign command group '" + alias + "': " + commandGroupInfo);
                         } else {
-                            Bukkit.getLogger().info("> Command group configuration error, no 'alias' configured!");
+                            Bukkit.getLogger().info("Sign command group configuration error, no 'alias' configured!");
                         }
                     } catch(Exception e) {
-                        Bukkit.getLogger().warning("> Failed to process command group '" + alias + "':" + e.toString());
+                        Bukkit.getLogger().warning("Failed to process sign command group '" + alias + "':" + e.toString());
                         e.printStackTrace();
                     }
                 }
 
             } catch (Exception e) {
-                Bukkit.getLogger().severe("Command group configuration error: " + e.toString());
+                Bukkit.getLogger().severe("Sign command group configuration error: " + e.toString());
                 e.printStackTrace();
             }
         }
@@ -66,12 +67,7 @@ public class SignCommandsHandler {
      * Cleans up the NPC data.
      */
     public void cleanUp() {
-        Bukkit.getLogger().info("Clear commands groups table.");
         signCommandsInfoMap.clear();
-    }
-
-    public CommandGroupInfo getNpcInfoByAlias(String alias) {
-        return signCommandsInfoMap.get(alias);
     }
 
     public SignCommandsHandler.CommandGroupInfo getCommandGroupInfoByAlias(String alias) {
@@ -85,7 +81,7 @@ public class SignCommandsHandler {
         public List<String> commands = new ArrayList<>();
 
         public String toString() {
-            return new ToStringBuilder(this).toString();
+            return ReflectionToStringBuilder.toString(this);
         }
     }
 }
