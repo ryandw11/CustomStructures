@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Handles configuration of name generator data.
@@ -16,6 +17,7 @@ import java.util.Map;
  */
 public class NamesHandler {
 
+    private static Random random = new Random();
     private Map<String, NameGenerator> nameGeneratorMap = new HashMap<>();
 
     /**
@@ -43,14 +45,38 @@ public class NamesHandler {
         }
     }
 
-    public String replaceNamePlaceholders(String name, int numberOfSyllables) {
-        for(String alias : nameGeneratorMap.keySet()) {
-            String placeholder = "<name-" + alias + ">";
-            if(name.contains(placeholder)) {
-                name = name.replace(placeholder, getName(alias, numberOfSyllables));
+    public String replaceNamePlaceholders(String text) {
+        while(text.contains("<name-")) {
+            String prePart = text.substring(0, text.indexOf("<name-"));
+            String namePart = text.substring(text.indexOf("<name-"), text.indexOf(">") + 1);
+            String postPart = text.substring(text.indexOf(">") + 1);
+
+            text = prePart + generateName(namePart) + postPart;
+        }
+        return text;
+    }
+
+    private String generateName(String nameValue) {
+        String alias = nameValue.substring(nameValue.indexOf("-") + 1, nameValue.length() - 1);
+        if(alias.contains(":")) {
+            alias = alias.substring(0, alias.indexOf(":"));
+        }
+        int minNumberOfSyllables = 2;
+        int maxNumberOfSyllables = 0;
+        if(nameValue.contains(":")) {
+            String numberArgument = nameValue.substring(nameValue.indexOf(":") + 1, nameValue.length() - 1);
+            if(numberArgument.contains("-")) {
+                minNumberOfSyllables = Integer.parseInt(numberArgument.substring(0, numberArgument.indexOf("-")));
+                maxNumberOfSyllables = Integer.parseInt(numberArgument.substring(numberArgument.indexOf("-") + 1));
+            } else {
+                minNumberOfSyllables = Integer.parseInt(numberArgument);
             }
         }
-        return name;
+        int numberOfSyllables = minNumberOfSyllables;
+        if(maxNumberOfSyllables > minNumberOfSyllables) {
+            numberOfSyllables = random.nextInt(maxNumberOfSyllables - minNumberOfSyllables) + minNumberOfSyllables;
+        }
+        return getName(alias, numberOfSyllables);
     }
 
     private String getName(String alias, int numberOfSyllables) {

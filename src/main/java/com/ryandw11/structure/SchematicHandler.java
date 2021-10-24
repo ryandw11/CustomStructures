@@ -613,7 +613,7 @@ public class SchematicHandler {
             SignCommandsHandler.CommandGroupInfo info = plugin.getSignCommandsHandler().getCommandGroupInfoByAlias(alias);
             if(info != null) {
                 for(String command : info.commands) {
-                    command = replacePlaceHolders(command, location, minLoc, maxLoc);
+                    command = replacePlaceHolders(command, location, minLoc, maxLoc, plugin.getNamesHandler());
                     Bukkit.getLogger().info("Executing console command: '" + command + "'");
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                 }
@@ -639,7 +639,7 @@ public class SchematicHandler {
         }
     }
 
-    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc) {
+    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc, NamesHandler namesHandler) {
         command = command.replace("<signX>", "" + location.getBlockX());
         command = command.replace("<signY>", "" + location.getBlockY());
         command = command.replace("<signZ>", "" + location.getBlockZ());
@@ -651,6 +651,8 @@ public class SchematicHandler {
         command = command.replace("<structX2>", "" + maxLoc.getBlockX());
         command = command.replace("<structY2>", "" + maxLoc.getBlockY());
         command = command.replace("<structZ2>", "" + maxLoc.getBlockZ());
+
+        command = namesHandler.replaceNamePlaceholders(command);
 
         return command;
     }

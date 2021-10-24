@@ -45,7 +45,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 			} catch(Exception ex) {
 				Bukkit.getLogger().warning("Unsupported NPC entity-type '" + info.entityType + "'! Spawning a villager instead.");
 			}
-			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, namesHandler.replaceNamePlaceholders(info.name, 2));
+			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, namesHandler.replaceNamePlaceholders(info.name));
 			int npcId = npc.getId();
 			if(npc != null) {
 				if(!npc.isSpawned()) {

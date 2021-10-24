@@ -6,6 +6,10 @@
 # <signX>, <signY> and <signZ> - The x, y and z coordinate of the sign itself.
 # <structX1>,<structY1>,<structZ1> - The x, y and z coordinates of the lower corner of the placed structure.
 # <structX2>,<structY2>,<structZ2> - The x, y and z coordinates of the opposite, higher corner of the placed structure.
+# <name-[type][:no][:no1-no2]> :
+# <name-fantasy> - Generates a random name with the syllables and rules defined in "names/fantasy.txt", with 2 syllables
+# <name-fantasy:3> - Same, but generates a name with 3 syllables
+# <name-fantasy:2-4> - Same, but generates a name with 2, 3 or 4 syllabes (random value within the range of 2-4).
 SignCommands:
   -
     # Alias used as reference on sign (2nd line). So for these
