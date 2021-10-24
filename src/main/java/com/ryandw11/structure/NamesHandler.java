@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -17,19 +18,26 @@ import java.util.Random;
  */
 public class NamesHandler {
 
+    public static final String PREFIX_NAME = "<name-";
+    public static final String PREFIX_LAST_NAME = "<lastName";
+    public static final String PREFIX_UNIQUE_NAME = "<uniqueName-";
     private static Random random = new Random();
     private Map<String, NameGenerator> nameGeneratorMap = new HashMap<>();
+    private File namesFolder = null;
 
     /**
      * Processes the name generator configuration
      *
      * @param dataFolder The base plugin data folder.
-     * @param isDebug True if debug output is enabled.
      */
-    public NamesHandler(File dataFolder, boolean isDebug) {
+    public NamesHandler(File dataFolder) {
+        this.namesFolder = new File(dataFolder, "names/existing");
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File namesDirectory = new File(dataFolder, "names");
         if(namesDirectory.exists()) {
+            if(!this.namesFolder.exists()) {
+                this.namesFolder.mkdirs();
+            }
             String[] nameFileEntries = namesDirectory.list(new WildcardFileFilter("*.txt"));
             for(String nameFileEntry : nameFileEntries) {
                 File nameFile = new File(namesDirectory, nameFileEntry);
@@ -45,18 +53,43 @@ public class NamesHandler {
         }
     }
 
-    public String replaceNamePlaceholders(String text) {
-        while(text.contains("<name-")) {
-            String prePart = text.substring(0, text.indexOf("<name-"));
-            String namePart = text.substring(text.indexOf("<name-"), text.indexOf(">") + 1);
+    public String replaceNamePlaceholders(String text, List<String> lastName) {
+        text = replaceNamePlaceholdersWithPrefix(PREFIX_LAST_NAME, text, lastName, false);
+        text = replaceNamePlaceholdersWithPrefix(PREFIX_NAME, text, lastName, false);
+        text = replaceNamePlaceholdersWithPrefix(PREFIX_UNIQUE_NAME, text, lastName, true);
+        return text;
+    }
+
+    public String replaceNamePlaceholdersWithPrefix(String prefix, String text, List<String> lastName, boolean mustBeUnique) {
+        while(text.contains(prefix)) {
+            boolean reUseLastName = prefix == PREFIX_LAST_NAME;
+            String prePart = text.substring(0, text.indexOf(prefix));
+            String namePart = text.substring(text.indexOf(prefix), text.indexOf(">") + 1);
             String postPart = text.substring(text.indexOf(">") + 1);
 
-            text = prePart + generateName(namePart) + postPart;
+            String generatedName = "undefined";
+            if(reUseLastName) {
+                if(lastName != null && !lastName.isEmpty()) {
+                    generatedName = lastName.get(0);
+                }
+                Bukkit.getLogger().warning("Unable to use last name, as there is none yet. Use <lastName> placeholder only after one of the <name-*> placeholders!");
+            } else {
+                generatedName = generateName(namePart, mustBeUnique);
+            }
+            if(lastName != null) {
+                if(lastName.isEmpty()) {
+                    lastName.add(generatedName);
+                } else {
+                    lastName.set(0, generatedName);
+                }
+            }
+
+            text = prePart + generatedName + postPart;
         }
         return text;
     }
 
-    private String generateName(String nameValue) {
+    private String generateName(String nameValue, boolean mustBeUnique) {
         String alias = nameValue.substring(nameValue.indexOf("-") + 1, nameValue.length() - 1);
         if(alias.contains(":")) {
             alias = alias.substring(0, alias.indexOf(":"));
@@ -76,7 +109,27 @@ public class NamesHandler {
         if(maxNumberOfSyllables > minNumberOfSyllables) {
             numberOfSyllables = random.nextInt(maxNumberOfSyllables - minNumberOfSyllables) + minNumberOfSyllables;
         }
-        return getName(alias, numberOfSyllables);
+
+        String generatedName = getName(alias, numberOfSyllables);
+        if(mustBeUnique) {
+            int ct = 0;
+            boolean alreadyExists = new File(namesFolder, generatedName + ".txt").exists();
+            while(alreadyExists && ct++ < 100) {
+                generatedName = getName(alias, numberOfSyllables);
+                if(ct == 25 || ct == 50 || ct == 75) {
+                    numberOfSyllables++;
+                }
+                alreadyExists = new File(namesFolder, generatedName + ".txt").exists();
+            }
+            try {
+                new File(namesFolder, generatedName + ".txt").createNewFile();
+            } catch(IOException e) {
+                Bukkit.getLogger().warning("Failed to create name file to ensure unique names, for name: " + generatedName + ", Reason: " + e.toString());
+                e.printStackTrace();
+            }
+        }
+
+        return generatedName;
     }
 
     private String getName(String alias, int numberOfSyllables) {
