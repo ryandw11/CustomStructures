@@ -10,6 +10,10 @@
 # <name-fantasy> - Generates a random name with the syllables and rules defined in "names/fantasy.txt", with 2 syllables
 # <name-fantasy:3> - Same, but generates a name with 3 syllables
 # <name-fantasy:2-4> - Same, but generates a name with 2, 3 or 4 syllabes (random value within the range of 2-4).
+# <lastName> - Can only be used AFTER a the placeholder "<name-*>" was used at least once. In that case, <lastName>
+#              will just return the same name again. This is useful in cases where in a series of commands the first
+#              one needs to generate a new name, and the following commands need to use the same name (e.g. when creating
+#              and configuring a WorldGuard region).
 SignCommands:
   -
     # Alias used as reference on sign (2nd line). So for these
@@ -21,3 +25,38 @@ SignCommands:
       - "say Sign coordinate: <signX>,<signY>,<signZ>"
       - "say Structure coordinate one: <structX1>,<structY1>,<structZ1>"
       - "say Structure coordinate two: <structX2>,<structY2>,<structZ2>"
+  -
+    # The following command group creates a WorldGuard region, so that
+    # the structure is protected and nobody can build there.
+    alias: "WorldGuard"
+    commands:
+      # First select world and region with WorldEdit commands
+      - "/world deadlyrealms"
+      - "/pos1 <structX1>,<structY1>,<structZ1>"
+      - "/pos2 <structX2>,<structY2>,<structZ2>"
+      # Then create region with WorldGuard command
+      - "rg define <uniqueName-fantasy:2-4>"
+      # Allow people to open doors, use levers, buttons and trapdoors
+      - "rg flag <lastName> use allow"
+      # Allow people to use containers like chests, furnaces etc.
+      - "rg flag <lastName> chest-access allow"
+      # Allow people to sleep in beds
+      - "rg flag <lastName> sleep allow"
+      # Allow people to use anvils
+      - "rg flag <lastName> use-anvil allow"
+      # Allow mushrooms to grow
+      - "rg flag <lastName> mushroom-growth allow"
+      # Allow grass to grow
+      - "rg flag <lastName> grass-growth allow"
+      # Allow leafs to decay
+      - "rg flag <lastName> leaf-decay allow"
+      # Allow vines to grow
+      - "rg flag <lastName> vine-growth allow"
+      # Allow crops to grow
+      - "rg flag <lastName> crop-growth allow"
+      # Allow people to pick up items
+      - "rg flag <lastName> item-pickup allow"
+      # Allow people to drop items
+      - "rg flag <lastName> item-drop allow"
+      # Allow people to receive fall damage
+      - "rg flag <lastName> fall-damage allow"
