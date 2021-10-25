@@ -52,7 +52,6 @@ public class CustomStructures extends JavaPlugin {
     public CitizensNpcHook citizensNpcHook;
 
     private SignCommandsHandler signCommandsHandler;
-    private NamesHandler namesHandler;
     private NpcHandler npcHandler;
     private StructureHandler structureHandler;
     private LootTablesHandler lootTablesHandler;
@@ -118,7 +117,6 @@ public class CustomStructures extends JavaPlugin {
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
 
         this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
-        this.namesHandler = new NamesHandler(getDataFolder());
         this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
@@ -170,7 +168,6 @@ public class CustomStructures extends JavaPlugin {
 
         structureHandler.cleanup();
         npcHandler.cleanUp();
-        namesHandler.cleanUp();
         signCommandsHandler.cleanUp();
     }
 
@@ -245,8 +242,6 @@ public class CustomStructures extends JavaPlugin {
     public void reloadHandlers() {
         this.signCommandsHandler.cleanUp();
         this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
-        this.namesHandler.cleanUp();
-        this.namesHandler = new NamesHandler(getDataFolder());
         this.npcHandler.cleanUp();
         this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
         this.structureHandler.cleanup();
@@ -563,13 +558,6 @@ public class CustomStructures extends JavaPlugin {
      */
     public NpcHandler getNpcHandler() {
         return npcHandler;
-    }
-
-    /**
-     * @return The names generator handler
-     */
-    public NamesHandler getNamesHandler() {
-        return namesHandler;
     }
 
     /**

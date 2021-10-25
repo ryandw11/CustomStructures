@@ -605,7 +605,7 @@ public class SchematicHandler {
             }
         }
         if (firstLine.equalsIgnoreCase("[npc]")) {
-            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), plugin.getNamesHandler(),  secondLine, location);
+            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), secondLine, location);
             location.getBlock().setType(Material.AIR);
         }
         if (firstLine.equalsIgnoreCase("[commands]")) {
@@ -614,7 +614,7 @@ public class SchematicHandler {
             if(info != null) {
                 List<String> lastName = new ArrayList<>();
                 for(String command : info.commands) {
-                    command = replacePlaceHolders(command, location, minLoc, maxLoc, plugin.getNamesHandler(), lastName);
+                    command = replacePlaceHolders(command, location, minLoc, maxLoc, lastName);
                     Bukkit.getLogger().info("Executing console command: '" + command + "'");
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                 }
@@ -640,7 +640,7 @@ public class SchematicHandler {
         }
     }
 
-    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc, NamesHandler namesHandler, List<String> lastName) {
+    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc, List<String> lastName) {
         command = command.replace("<signX>", "" + location.getBlockX());
         command = command.replace("<signY>", "" + location.getBlockY());
         command = command.replace("<signZ>", "" + location.getBlockZ());
@@ -652,8 +652,6 @@ public class SchematicHandler {
         command = command.replace("<structX2>", "" + maxLoc.getBlockX());
         command = command.replace("<structY2>", "" + maxLoc.getBlockY());
         command = command.replace("<structZ2>", "" + maxLoc.getBlockZ());
-
-        command = namesHandler.replaceNamePlaceholders(command, lastName);
 
         return command;
     }

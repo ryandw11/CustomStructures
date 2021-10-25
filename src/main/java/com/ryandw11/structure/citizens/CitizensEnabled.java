@@ -1,7 +1,6 @@
 package com.ryandw11.structure.citizens;
 
 import com.google.gson.Gson;
-import com.ryandw11.structure.NamesHandler;
 import com.ryandw11.structure.NpcHandler;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -36,7 +35,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 	private static final Map<String, Object> INVALID = new HashMap<>();
 
 	@Override
-	public void spawnNpc(NpcHandler npcHandler, NamesHandler namesHandler, String alias, Location loc) {
+	public void spawnNpc(NpcHandler npcHandler, String alias, Location loc) {
 		NpcHandler.NpcInfo info = npcHandler.getNpcInfoByAlias(alias);
 		if (info != null) {
 			EntityType type = EntityType.VILLAGER;
@@ -45,7 +44,7 @@ public class CitizensEnabled implements CitizensNpcHook {
 			} catch(Exception ex) {
 				Bukkit.getLogger().warning("Unsupported NPC entity-type '" + info.entityType + "'! Spawning a villager instead.");
 			}
-			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, namesHandler.replaceNamePlaceholders(info.name, null));
+			NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, info.name);
 			int npcId = npc.getId();
 			if(npc != null) {
 				if(!npc.isSpawned()) {
