@@ -7,7 +7,7 @@
 
     <groupId>com.ryandw11</groupId>
     <artifactId>CustomStructures</artifactId>
-    <version>1.6.1</version>
+    <version>1.7.0-SNAPSHOT</version>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -96,6 +96,10 @@
 
     <repositories>
         <repository>
+            <id>everything</id>
+            <url>http://repo.citizensnpcs.co/</url>
+        </repository>
+        <repository>
             <id>MythicMobs</id>
             <url>https://mvn.lumine.io/repository/maven-public/</url>
         </repository>
@@ -166,6 +170,13 @@
                     <artifactId>bukkit</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.citizensnpcs</groupId>
+            <artifactId>citizens-main</artifactId>
+            <version>2.0.28-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.lumine.xikage</groupId>
