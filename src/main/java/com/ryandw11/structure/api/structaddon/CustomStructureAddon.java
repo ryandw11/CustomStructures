@@ -3,8 +3,7 @@ package com.ryandw11.structure.api.structaddon;
 import com.ryandw11.structure.CustomStructures;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is responsible for extending CustomStructure functionality.
@@ -19,6 +18,7 @@ import java.util.List;
 public final class CustomStructureAddon {
     private final String name;
     private final List<String> authors;
+    private final Set<StructureSectionProvider> providerSet = new HashSet<>();
     private final List<Class<? extends StructureSection>> structureSections;
 
     /**
@@ -69,11 +69,35 @@ public final class CustomStructureAddon {
     }
 
     /**
+     * Register StructureSectionProvider to the addon.
+     * @param provider The provider to register.
+     */
+    public void registerStructureSectionProvider(StructureSectionProvider provider) {
+        this.providerSet.add(provider);
+    }
+
+    /**
+     * Unregister StructureSectionProvider from the addon.
+     * @param provider
+     */
+    public void unregisterStructureSectionProvider(StructureSectionProvider provider) {
+        this.providerSet.remove(provider);
+    }
+
+    /**
      * Get the list of structure sections.
      *
      * @return The list of structure sections.
      */
     public List<Class<? extends StructureSection>> getStructureSections() {
         return this.structureSections;
+    }
+
+    /**
+     * Get all provider registered on this addon
+     * @return a set of provider
+     */
+    public Set<StructureSectionProvider> getProviderSet() {
+        return Collections.unmodifiableSet(this.providerSet);
     }
 }

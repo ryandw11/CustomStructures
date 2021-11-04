@@ -3,6 +3,7 @@ package com.ryandw11.structure.structure;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
 import com.ryandw11.structure.api.structaddon.StructureSection;
+import com.ryandw11.structure.api.structaddon.StructureSectionProvider;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -148,6 +149,29 @@ public class StructureBuilder {
 
         // Go through and setup the sections for the addons.
         for (CustomStructureAddon addon : CustomStructures.getInstance().getAddonHandler().getCustomStructureAddons()) {
+            for (StructureSectionProvider provider : addon.getProviderSet()) {
+                try {
+                    StructureSection section = provider.createSection();
+                    if (!config.contains(section.getName())) {
+                        section.setupSection(null);
+                    } else {
+                        section.setupSection(config.getConfigurationSection(section.getName()));
+                    }
+                    this.structureSections.add(section);
+                } catch (StructureConfigurationException ex) {
+                    // Handle the structureConfigurationException.
+                    throw new StructureConfigurationException(String.format("[%s Addon] %s. This is not" +
+                            "an issue with the CustomStructures plugin.", addon.getName(), ex.getMessage()));
+                } catch (Throwable ex) {
+                    // Inform the user of errors.
+                    plugin.getLogger().severe(String.format("An error was encountered in the %s addon! Enable debug for more information.", addon.getName()));
+                    plugin.getLogger().severe(ex.getMessage());
+                    plugin.getLogger().severe("This is not an issue with CustomStructures! Please contact the addon developer.");
+                    if (plugin.isDebug())
+                        ex.printStackTrace();
+                }
+            }
+
             for (Class<? extends StructureSection> section : addon.getStructureSections()) {
                 try {
                     StructureSection constructedSection = section.getConstructor().newInstance();
