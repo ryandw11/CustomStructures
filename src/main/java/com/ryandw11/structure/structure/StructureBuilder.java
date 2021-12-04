@@ -385,7 +385,7 @@ public class StructureBuilder {
 
         config.set("StructureLocation.Worlds", structureLocation.getWorlds());
         config.set("StructureLocation.SpawnY", structureLocation.getSpawnSettings().getValue());
-        config.set("StructureLocation.SpawnYHeightMap", structureLocation.getSpawnSettings().getHeightMap());
+        config.set("StructureLocation.SpawnYHeightMap", structureLocation.getSpawnSettings().getHeightMap().toString());
         config.set("StructureLocation.Biome", structureLocation.getBiomes());
 
         config.set("StructureProperties.PlaceAir", structureProperties.canPlaceAir());
