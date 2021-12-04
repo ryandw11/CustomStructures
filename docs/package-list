@@ -3,6 +3,7 @@ com.ryandw11.structure.api
 com.ryandw11.structure.api.holder
 com.ryandw11.structure.api.structaddon
 com.ryandw11.structure.bstats
+com.ryandw11.structure.citizens
 com.ryandw11.structure.commands
 com.ryandw11.structure.commands.cstruct
 com.ryandw11.structure.exceptions
