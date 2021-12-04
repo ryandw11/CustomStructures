@@ -1,87 +1,66 @@
 package com.ryandw11.structure;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Handles configuration of sign commands.
- *
- * @author Marcel Schoen
  */
 public class SignCommandsHandler {
 
-    private Map<String, CommandGroupInfo> signCommandsInfoMap = new HashMap<>();
+    private final Map<String, List<String>> signCommands = new HashMap<>();
 
     /**
      * Processes the sign commands configuration
      *
      * @param dataFolder The base plugin data folder.
-     * @param isDebug True if debug output is enabled.
+     * @param plugin     The instance of the Custom Structures plugin.
      */
-    public SignCommandsHandler(File dataFolder, boolean isDebug) {
+    public SignCommandsHandler(File dataFolder, CustomStructures plugin) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File signCommandsFile = new File(dataFolder, "signcommands.yml");
-        if(signCommandsFile.exists()) {
-            try {
-                yamlConfiguration.load(signCommandsFile);
+        if (!signCommandsFile.exists()) {
+            plugin.getLogger().warning("Warning: Cannot find signcommands.yml. This might be a configuration error.");
+            return;
+        }
+        try {
+            yamlConfiguration.load(signCommandsFile);
+        } catch (IOException | InvalidConfigurationException ex) {
+            plugin.getLogger().severe("Error: Unable to load signcommands.yml file.");
+            plugin.getLogger().severe("Please make sure signcommands.yml is configured correctly.");
+            if (plugin.isDebug())
+                ex.printStackTrace();
+        }
 
-                List<Map<?, ?>> commandGroups = yamlConfiguration.getMapList("SignCommands");
-                if(isDebug) Bukkit.getLogger().info("Number of command groups configured: " + commandGroups.size());
-
-                for(Map<?, ?> commandGroup : commandGroups) {
-                    String alias = "?";
-                    try {
-                        CommandGroupInfo commandGroupInfo = new CommandGroupInfo();
-                        alias = (String) commandGroup.get("alias");
-                        if(alias != null) {
-                            List<String> commands = (List<String>)commandGroup.get("commands");
-                            if(commands != null && !commands.isEmpty()) {
-                                commandGroupInfo.commands = commands;
-                            }
-                            signCommandsInfoMap.put(alias, commandGroupInfo);
-                            if(isDebug) Bukkit.getLogger().info("Sign command group '" + alias + "': " + commandGroupInfo);
-                        } else {
-                            Bukkit.getLogger().info("Sign command group configuration error, no 'alias' configured!");
-                        }
-                    } catch(Exception e) {
-                        Bukkit.getLogger().warning("Failed to process sign command group '" + alias + "':" + e.toString());
-                        e.printStackTrace();
-                    }
-                }
-
-            } catch (Exception e) {
-                Bukkit.getLogger().severe("Sign command group configuration error: " + e.toString());
-                e.printStackTrace();
+        for (String sectionKey : yamlConfiguration.getKeys(false)) {
+            List<String> commands = yamlConfiguration.getStringList(sectionKey);
+            if (commands.isEmpty()) {
+                plugin.getLogger().warning("Sign command " + sectionKey + " has no commands! This may be a configuration error.");
             }
+            signCommands.put(sectionKey, commands);
         }
     }
 
     /**
-     * Cleans up the NPC data.
+     * Cleans up the command sign data.
      */
     public void cleanUp() {
-        signCommandsInfoMap.clear();
-    }
-
-    public SignCommandsHandler.CommandGroupInfo getCommandGroupInfoByAlias(String alias) {
-        return signCommandsInfoMap.get(alias);
+        signCommands.clear();
     }
 
     /**
-     * Commands group config information holder
+     * Get a command group from the command map.
+     *
+     * @param name The name of the command group.
+     * @return The list of commands from the group.
      */
-    public class CommandGroupInfo {
-        public List<String> commands = new ArrayList<>();
-
-        public String toString() {
-            return ReflectionToStringBuilder.toString(this);
-        }
+    public List<String> getCommands(String name) {
+        return signCommands.get(name);
     }
 }

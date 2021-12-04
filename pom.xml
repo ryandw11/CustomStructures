@@ -96,8 +96,8 @@
 
     <repositories>
         <repository>
-            <id>everything</id>
-            <url>http://repo.citizensnpcs.co/</url>
+            <id>CitizensNPC</id>
+            <url>https://repo.citizensnpcs.co/</url>
         </repository>
         <repository>
             <id>MythicMobs</id>

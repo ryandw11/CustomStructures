@@ -1,73 +1,68 @@
-# NOTE - for all boolean (true|false) fields, the default is 'false'.
-CitizenNPCs:
-  -
-    # Alias used as reference on sign (2nd line). So for this
-    # NPC, create a sign in your structure with these 2 lines:
-    # [npc]
-    # Stan
-    alias: Stan
+# NPC, create a sign in your structure with these 2 lines:
+# [npc]
+# Stan
+Stan:
+  # Visible name of NPC
+  name: "Example Villager"
 
-    # Visible name of NPC
-    name: "Village Idiot"
+  # NPC entity type.
+  # VILLAGER (default) - NPC looks like a villager
+  # PLAYER - NPC looks like a player
+  # For other types see "Citizens" documentation.
+  # NOTE 1: Some of the following options only work with either
+  #         PLAYER or VILLAGER.
+  # NOTE 2: If you use 'PLAYER' and then see a health label below
+  #         the NPC name, you may have the TAB plugin active, and need
+  #         to disable the feature 'classic-vanilla-belowname' in it.
+  entityType: VILLAGER
 
-    # NPC entity type.
-    # VILLAGER (default) - NPC looks like a villager
-    # PLAYER - NPC looks like a player
-    # For other types see "Citizens" documentation.
-    # NOTE 1: Some of the following options only work with either
-    #         PLAYER or VILLAGER.
-    # NOTE 2: If you use 'PLAYER' and then see a health label below
-    #         the NPC name, you may have the TAB plugin active, and need
-    #         to disable the feature 'classic-vanilla-belowname' in it.
-    entityType: VILLAGER
+  # URL of a player skin.
+  # Works only with PLAYER entity type.
+  skinUrl: ""
 
-    # URL of a player skin.
-    # Works only with PLAYER entity type.
-    skinUrl: ""
+  # Commands to be executed when the NPC is created.
+  # NOTE: These commands are ALWAYS console/server commands,
+  #       as there is no player context at this moment.
+  # Use the <npcid> placeholder for the ID of the new NPC.
+  # These commands can be used to run "npc" commands on the
+  # new NPC, to register traits etc. Example:
+  # - "npc select <npcid>"
+  # - "npc command add \"ncp speak How are you? --target <p> --id <npcid>\""
+  commandsOnCreate: []
 
-    # Commands to be executed when the NPC is created.
-    # NOTE: These commands are ALWAYS console/server commands,
-    #       as there is no player context at this moment.
-    # Use the <npcid> placeholder for the ID of the new NPC.
-    # These commands can be used to run "npc" commands on the
-    # new NPC, to register traits etc. Example:
-    # - "npc select <npcid>"
-    # - "npc command add \"ncp speak How are you? --target <p> --id <npcid>\""
-    commandsOnCreate:
+  # Commands to be executed when the player clicks the NPC.
+  # By default, these are executed as console/server commands.
+  # To execute a command as the player, add the [PLAYER] prefix
+  # to the command string.
+  # Use the <npcid> placeholder for the ID of the new NPC.
+  commandsOnClick:
+    - "[PLAYER]cpanel quests"
 
-    # Commands to be executed when the player clicks the NPC.
-    # By default, these are executed as console/server commands.
-    # To execute a command as the player, add the [PLAYER] prefix
-    # to the command string.
-    # Use the <npcid> placeholder for the ID of the new NPC.
-    commandsOnClick:
-      - "[PLAYER]cpanel quests"
+  # Should the "commandsOnClick" commands be executed sequentially,
+  # when the player clicks the NPC, in the given order (true)
+  # or all at once (false - default)
+  commandsSequential: true
 
-    # Should the "commandsOnClick" commands be executed sequentially,
-    # when the player clicks the NPC, in the given order (true)
-    # or all at once (false - default)
-    commandsSequential: true
+  # Set to 'true' if the NPC should walk around.
+  # Works only with VILLAGER entity type.
+  movesAround: true
 
-    # Set to 'true' if the NPC should walk around.
-    # Works only with VILLAGER entity type.
-    movesAround: true
+  # Set to 'true' to make the NPC invulnerable.
+  isProtected: false
 
-    # Set to 'true' to make the NPC invulnerable.
-    isProtected: false
+  # Set to 'true' to have the NPC look at the player whenever
+  # the player comes near him.
+  # Works only with PLAYER entity type (VILLAGER will always look at player).
+  looksAtPlayer: true
 
-    # Set to 'true' to have the NPC look at the player whenever
-    # the player comes near him.
-    # Works only with PLAYER entity type (VILLAGER will always look at player).
-    looksAtPlayer: true
-  -
-    alias: Ollie
-    entityType: PLAYER
-    skinUrl: "http://deadly-realms.apexmc.co:8899/blue-hoodie-gamer.png"
-    name: "John Doe"
-    commandsOnCreate:
-      - "npc select <npcid>"
-      - "npc command add \"npc speak I'm feeling blue today! --target <p> --id <npcid>\""
-    commandsOnClick:
-    looksAtPlayer: true
-    movesAround: false
-    isProtected: true
+Ollie:
+  entityType: PLAYER
+  skinUrl: ""
+  name: "John Doe"
+  commandsOnCreate:
+    - "npc select <npcid>"
+    - "npc command add \"npc speak I'm feeling blue today! --target <p> --id <npcid>\""
+  commandsOnClick: []
+  looksAtPlayer: true
+  movesAround: false
+  isProtected: true

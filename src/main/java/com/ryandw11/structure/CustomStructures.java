@@ -36,7 +36,7 @@ import java.util.*;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.6.1
+ * @version 1.7.0
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -45,11 +45,8 @@ public class CustomStructures extends JavaPlugin {
     public File lootTableFile = new File(getDataFolder() + "/lootTables/lootTable.yml");
     public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTableFile);
 
-    public File npcsFile = new File(getDataFolder(), "npcs.yml");
-    public FileConfiguration npcsFC = YamlConfiguration.loadConfiguration(npcsFile);
-
-    public MythicalMobHook mythicalMobHook;
-    public CitizensNpcHook citizensNpcHook;
+    private MythicalMobHook mythicalMobHook;
+    private CitizensNpcHook citizensNpcHook;
 
     private SignCommandsHandler signCommandsHandler;
     private NpcHandler npcHandler;
@@ -60,8 +57,6 @@ public class CustomStructures extends JavaPlugin {
     private AddonHandler addonHandler;
 
     private Metrics metrics;
-
-    public final static String CITIZENS_PLUGIN = "Citizens";
 
     private boolean debugMode;
 
@@ -79,18 +74,21 @@ public class CustomStructures extends JavaPlugin {
         registerConfig();
         setupBlockIgnore();
 
-        if (getServer().getPluginManager().getPlugin(CITIZENS_PLUGIN) != null) {
-            citizensNpcHook = new CitizensEnabled();
+        // Setup Citizens dependency.
+        if (getServer().getPluginManager().getPlugin("Citizens") != null) {
+            citizensNpcHook = new CitizensEnabled(this);
             getLogger().info("Citizens detected! Activating plugin hook!");
         } else {
             citizensNpcHook = new CitizensDisabled();
         }
-
+        // Setup Mythic Mobs dependency.
         if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
             mythicalMobHook = new MMEnabled();
             getLogger().info("MythicMobs detected! Activating plugin hook!");
-        } else
+        } else {
             mythicalMobHook = new MMDisabled();
+        }
+
         loadFiles();
         debugMode = getConfig().getBoolean("debug");
 
@@ -105,21 +103,18 @@ public class CustomStructures extends JavaPlugin {
             getLogger().info("A demo structure will be added! Please make sure to test out this plugin in a test world!");
         }
 
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "schematics"), "demo.schem", "schematics/");
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "structures"), "demo.yml", "structures/");
-        exportResourceIfFileDoesNotExist(getDataFolder(), "npcs.yml", "/");
-        exportResourceIfFileDoesNotExist(getDataFolder(), "signcommands.yml", "/");
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "elven.txt", "names/");
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "fantasy.txt", "names/");
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "goblin.txt", "names/");
-        exportResourceIfFileDoesNotExist(new File(getDataFolder(), "names"), "roman.txt", "names/");
+        exportResource(new File(getDataFolder(), "schematics"), "demo.schem", "schematics/");
+        exportResource(new File(getDataFolder(), "structures"), "demo.yml", "structures/");
+        exportResource(getDataFolder(), "npcs.yml", "");
+        exportResource(getDataFolder(), "signcommands.yml", "");
 
+        // Configure the handlers and managers.
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
-
-        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
-        this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), this);
+        this.npcHandler = new NpcHandler(getDataFolder(), plugin);
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
+
         // Run this after the loading of all plugins.
         Bukkit.getScheduler().runTaskLater(this, () -> {
             this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
@@ -149,8 +144,15 @@ public class CustomStructures extends JavaPlugin {
         }
     }
 
-    private void exportResourceIfFileDoesNotExist(File targetDirectory, String filename, String resourcePath) {
-        if(!targetDirectory.exists()) {
+    /**
+     * Export resources.
+     *
+     * @param targetDirectory The target directory.
+     * @param filename        The file name.
+     * @param resourcePath    The path to find the resource.
+     */
+    private void exportResource(File targetDirectory, String filename, String resourcePath) {
+        if (!targetDirectory.exists()) {
             targetDirectory.mkdirs();
         }
         File targetFile = new File(targetDirectory, filename);
@@ -241,9 +243,9 @@ public class CustomStructures extends JavaPlugin {
      */
     public void reloadHandlers() {
         this.signCommandsHandler.cleanUp();
-        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), isDebug());
+        this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), this);
         this.npcHandler.cleanUp();
-        this.npcHandler = new NpcHandler(getDataFolder(), isDebug());
+        this.npcHandler = new NpcHandler(getDataFolder(), plugin);
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();
@@ -258,6 +260,9 @@ public class CustomStructures extends JavaPlugin {
         return plugin;
     }
 
+    /**
+     * Load commands and listeners.
+     */
     private void loadManager() {
         Bukkit.getServer().getPluginManager().registerEvents(new ChunkLoad(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
@@ -265,10 +270,16 @@ public class CustomStructures extends JavaPlugin {
         Objects.requireNonNull(getCommand("customstructure")).setTabCompleter(new SCommandTab(this));
     }
 
+    /**
+     * Register the default config.
+     */
     private void registerConfig() {
         saveDefaultConfig();
     }
 
+    /**
+     * Loaded needed files.
+     */
     public void loadFiles() {
         if (lootTableFile.exists()) {
             try {
@@ -278,16 +289,6 @@ public class CustomStructures extends JavaPlugin {
             }
         } else {
             saveResource("lootTables/lootTable.yml", false);
-        }
-
-        if (npcsFile.exists()) {
-            try {
-                npcsFC.load(npcsFile);
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-        } else {
-            saveResource("npcs.yml", false);
         }
     }
 
@@ -567,5 +568,23 @@ public class CustomStructures extends JavaPlugin {
      */
     public AddonHandler getAddonHandler() {
         return addonHandler;
+    }
+
+    /**
+     * Get the hook for mythical mobs.
+     *
+     * @return The hook for mythical mobs.
+     */
+    public MythicalMobHook getMythicalMobHook() {
+        return mythicalMobHook;
+    }
+
+    /**
+     * Get the hook for citizens.
+     *
+     * @return The hook for citizens.
+     */
+    public CitizensNpcHook getCitizensNpcHook() {
+        return citizensNpcHook;
     }
 }

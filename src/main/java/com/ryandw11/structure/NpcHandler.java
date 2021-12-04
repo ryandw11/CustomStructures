@@ -1,7 +1,6 @@
 package com.ryandw11.structure;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -12,80 +11,67 @@ import java.util.Map;
 
 /**
  * Handles configuration of NPCs.
- *
- * @author Marcel Schoen
  */
 public class NpcHandler {
 
-    private Map<String, NpcInfo> npcInfoMap = new HashMap<>();
+    private final Map<String, NpcInfo> npcInfoMap = new HashMap<>();
 
     /**
      * Processes the NPC configuration
      *
      * @param dataFolder The base plugin data folder.
-     * @param isDebug True if debug output is enabled.
+     * @param plugin     The instance to the Custom Structures plugin.
      */
-    public NpcHandler(File dataFolder, boolean isDebug) {
+    public NpcHandler(File dataFolder, CustomStructures plugin) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         File npcFile = new File(dataFolder, "npcs.yml");
-        if(npcFile.exists()) {
-            try {
-                yamlConfiguration.load(new File(dataFolder, "npcs.yml"));
+        if (!npcFile.exists()) {
+            return;
+        }
 
-                List<Map<?, ?>> npcs = yamlConfiguration.getMapList("CitizenNPCs");
-                if(isDebug) Bukkit.getLogger().info("Number of NPCs configured: " + npcs.size());
-
-                for(Map<?, ?> npc : npcs) {
-                    String alias = "?";
-                    try {
-                        NpcInfo npcInfo = new NpcInfo();
-                        alias = getStringValueWithDefault(npc, "alias", null);
-                        if(alias != null) {
-                            npcInfo.name = getStringValueWithDefault(npc, "name", "");
-                            npcInfo.skinUrl = getStringValueWithDefault(npc, "skinUrl", null);
-                            npcInfo.movesAround = getBooleanValueWithDefault(npc, "movesAround");
-                            npcInfo.looksAtPlayer = getBooleanValueWithDefault(npc, "looksAtPlayer");
-                            npcInfo.isProtected = getBooleanValueWithDefault(npc, "isProtected");
-                            npcInfo.commandsSequential = getBooleanValueWithDefault(npc, "commandsSequential");
-                            npcInfo.entityType = getStringValueWithDefault(npc, "entityType", "VILLAGER");
-                            List<String> commandsOnCreate = (List<String>)npc.get("commandsOnCreate");
-                            if(commandsOnCreate != null && !commandsOnCreate.isEmpty()) {
-                                npcInfo.commandsOnCreate = commandsOnCreate;
-                            }
-                            List<String> commandsOnClick = (List<String>)npc.get("commandsOnClick");
-                            if(commandsOnClick != null && !commandsOnClick.isEmpty()) {
-                                npcInfo.commandsOnClick = commandsOnClick;
-                            }
-                            npcInfoMap.put(alias, npcInfo);
-                            if(isDebug) Bukkit.getLogger().info("NPC '" + alias + "': " + npcInfo);
-                        } else {
-                            Bukkit.getLogger().info("NPC configuration error, no 'alias' configured!");
-                        }
-                    } catch(Exception e) {
-                        Bukkit.getLogger().warning("Failed to process NPC '" + alias + "':" + e.toString());
-                        e.printStackTrace();
-                    }
-                }
-
-            } catch (Exception e) {
-                Bukkit.getLogger().severe("NPC configuration error: " + e.toString());
+        try {
+            yamlConfiguration.load(new File(dataFolder, "npcs.yml"));
+        } catch (Exception e) {
+            plugin.getLogger().severe("There is a configuration error with: npcs.yml.");
+            if (plugin.isDebug()) {
                 e.printStackTrace();
             }
         }
+
+        for (String npcKey : yamlConfiguration.getKeys(false)) {
+            ConfigurationSection section = yamlConfiguration.getConfigurationSection(npcKey);
+            if (section == null) continue;
+
+            NpcInfo npcInfo = new NpcInfo();
+            npcInfo.name = getValueWithDefault(section, "name", "");
+            npcInfo.skinUrl = getValueWithDefault(section, "skinUrl", null);
+            npcInfo.movesAround = getValueWithDefault(section, "movesAround", false);
+            npcInfo.looksAtPlayer = getValueWithDefault(section, "looksAtPlayer", false);
+            npcInfo.isProtected = getValueWithDefault(section, "isProtected", false);
+            npcInfo.commandsSequential = getValueWithDefault(section, "commandsSequential", false);
+            npcInfo.entityType = getValueWithDefault(section, "entityType", "VILLAGER");
+            List<String> commandsOnCreate = section.getStringList("commandsOnCreate");
+            if (!commandsOnCreate.isEmpty()) {
+                npcInfo.commandsOnCreate = commandsOnCreate;
+            }
+            List<String> commandsOnClick = section.getStringList("commandsOnClick");
+            if (!commandsOnClick.isEmpty()) {
+                npcInfo.commandsOnClick = commandsOnClick;
+            }
+            npcInfoMap.put(npcKey, npcInfo);
+        }
     }
 
-    private String getStringValueWithDefault(Map<?, ?> npc, String attributeName, String defaultValue) {
-        if(npc.containsKey(attributeName)) {
-            return (String) npc.get(attributeName);
-        }
-        return defaultValue;
-    }
-
-    private Boolean getBooleanValueWithDefault(Map<?, ?> npc, String attributeName) {
-        if(npc.containsKey(attributeName)) {
-            return (Boolean) npc.get(attributeName);
-        }
-        return false;
+    /**
+     * Get a string value with a possible default.
+     *
+     * @param npc           The configuration section.
+     * @param attributeName The name of the attribute.
+     * @param defaultValue  The default value.
+     * @return The desired attribute.
+     */
+    private <T> T getValueWithDefault(ConfigurationSection npc, String attributeName, T defaultValue) {
+        return npc.contains(attributeName) ? (T) npc.get(attributeName) : defaultValue;
     }
 
     /**
@@ -95,14 +81,20 @@ public class NpcHandler {
         npcInfoMap.clear();
     }
 
-    public NpcInfo getNpcInfoByAlias(String alias) {
-        return npcInfoMap.get(alias);
+    /**
+     * Get the NPC by its name.
+     *
+     * @param name The name of the NPC.
+     * @return The NPC Info.
+     */
+    public NpcInfo getNPCByName(String name) {
+        return npcInfoMap.get(name);
     }
 
     /**
      * NPC config information holder
      */
-    public class NpcInfo {
+    public static class NpcInfo {
         public String name = "";
         public String skinUrl = "";
         public boolean movesAround = false;
@@ -112,9 +104,5 @@ public class NpcHandler {
         public List<String> commandsOnCreate = new ArrayList<>();
         public List<String> commandsOnClick = new ArrayList<>();
         public boolean commandsSequential = false;
-
-        public String toString() {
-            return ReflectionToStringBuilder.toString(this);
-        }
     }
 }

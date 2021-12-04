@@ -10,6 +10,7 @@ import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
+import com.ryandw11.structure.utils.CSUtils;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -592,6 +593,8 @@ public class SchematicHandler {
             thirdLine = sign.getLine(2).trim();
         } else return;
 
+        // Process the type of sign.
+        // Normal Mob Sign
         if (firstLine.equalsIgnoreCase("[mob]")) {
             try {
                 Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
@@ -604,29 +607,32 @@ public class SchematicHandler {
                 plugin.getLogger().warning("Invalid mob type on structure sign.");
             }
         }
+        // NPC Sign
         if (firstLine.equalsIgnoreCase("[npc]")) {
-            plugin.citizensNpcHook.spawnNpc(plugin.getNpcHandler(), secondLine, location);
+            plugin.getCitizensNpcHook().spawnNpc(plugin.getNpcHandler(), secondLine, location);
             location.getBlock().setType(Material.AIR);
         }
-        if (firstLine.equalsIgnoreCase("[commands]")) {
-            String alias = secondLine;
-            SignCommandsHandler.CommandGroupInfo info = plugin.getSignCommandsHandler().getCommandGroupInfoByAlias(alias);
-            if(info != null) {
-                List<String> lastName = new ArrayList<>();
-                for(String command : info.commands) {
-                    command = replacePlaceHolders(command, location, minLoc, maxLoc, lastName);
-                    Bukkit.getLogger().info("Executing console command: '" + command + "'");
+        // Command Sign.
+        if (firstLine.equalsIgnoreCase("[command]") || firstLine.equalsIgnoreCase("[commands]")) {
+            List<String> commands = plugin.getSignCommandsHandler().getCommands(secondLine);
+            if (commands != null) {
+                for (String command : commands) {
+                    command = CSUtils.replacePlaceHolders(command, location, minLoc, maxLoc);
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                    if (plugin.isDebug()) {
+                        plugin.getLogger().info("Executing console command: '" + command + "'");
+                    }
                 }
             } else {
-                Bukkit.getLogger().info("> Unable to execute commands with alias: '" + alias + "', no configuration found!");
+                plugin.getLogger().warning("Unable to execute command group '" + secondLine + "', no configuration found!");
             }
             location.getBlock().setType(Material.AIR);
         }
+        // Mythical Mob Sign
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
             // Allow for the third line to have the level of the mob.
             if (thirdLine.isEmpty())
-                plugin.mythicalMobHook.spawnMob(secondLine, location);
+                plugin.getMythicalMobHook().spawnMob(secondLine, location);
             else {
                 int level;
                 try {
@@ -634,26 +640,10 @@ public class SchematicHandler {
                 } catch (NumberFormatException ex) {
                     level = 1;
                 }
-                plugin.mythicalMobHook.spawnMob(secondLine, location, level);
+                plugin.getMythicalMobHook().spawnMob(secondLine, location, level);
             }
             location.getBlock().setType(Material.AIR);
         }
-    }
-
-    private String replacePlaceHolders(String command, Location location, Location minLoc, Location maxLoc, List<String> lastName) {
-        command = command.replace("<signX>", "" + location.getBlockX());
-        command = command.replace("<signY>", "" + location.getBlockY());
-        command = command.replace("<signZ>", "" + location.getBlockZ());
-
-        command = command.replace("<structX1>", "" + minLoc.getBlockX());
-        command = command.replace("<structY1>", "" + minLoc.getBlockY());
-        command = command.replace("<structZ1>", "" + minLoc.getBlockZ());
-
-        command = command.replace("<structX2>", "" + maxLoc.getBlockX());
-        command = command.replace("<structY2>", "" + maxLoc.getBlockY());
-        command = command.replace("<structZ2>", "" + maxLoc.getBlockZ());
-
-        return command;
     }
 
     /**

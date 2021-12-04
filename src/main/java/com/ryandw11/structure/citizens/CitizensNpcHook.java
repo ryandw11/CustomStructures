@@ -5,8 +5,6 @@ import org.bukkit.Location;
 
 /**
  * Interface for "Citizen" integration.
- *
- * @author Marcel Schoen
  */
 public interface CitizensNpcHook {
 
