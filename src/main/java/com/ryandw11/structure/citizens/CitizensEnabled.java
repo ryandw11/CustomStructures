@@ -57,7 +57,10 @@ public class CitizensEnabled implements CitizensNpcHook {
             plugin.getLogger().warning("Unsupported NPC entity-type '" + info.entityType + "'! Spawning a villager instead.");
         }
 
-        NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, info.name);
+        // Support PAPI for NPC names to be able to generate unique random names
+        String npcName = CustomStructures.replacePAPIPlaceholders(info.name);
+
+        NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, npcName);
         int npcId = npc.getId();
 
         if (!npc.isSpawned()) {
@@ -79,6 +82,7 @@ public class CitizensEnabled implements CitizensNpcHook {
             for (String command : info.commandsOnCreate) {
                 command = command.trim();
                 command = command.replace("<npcid>", String.valueOf(npcId));
+                command = CustomStructures.replacePAPIPlaceholders(command);
                 // The [PLAYER] prefix is not supported here for obvious reasons
                 if (command.toUpperCase().startsWith("[PLAYER]")) {
                     // cut off the [PLAYER] prefix

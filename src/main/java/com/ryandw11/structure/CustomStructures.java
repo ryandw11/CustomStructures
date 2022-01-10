@@ -18,6 +18,7 @@ import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.utils.Pair;
 import com.ryandw11.structure.utils.SpawnYConversion;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.apache.commons.io.FileUtils;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
@@ -65,6 +66,8 @@ public class CustomStructures extends JavaPlugin {
     public static final int COMPILED_STRUCT_VER = 1;
     public static final int CONFIG_VERSION = 7;
 
+    private static boolean papiEnabled = false;
+
     @Override
     public void onEnable() {
         enabled = true;
@@ -73,6 +76,15 @@ public class CustomStructures extends JavaPlugin {
         loadManager();
         registerConfig();
         setupBlockIgnore();
+
+        // Small check to make sure that PlaceholderAPI is installed
+        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            this.getLogger().info("Placeholder API found, placeholders supported.");
+            CustomStructures.papiEnabled = true;
+        } else {
+            this.getLogger().info("PlaceholderAPI not found.");
+        }
+
 
         // Setup Citizens dependency.
         if (getServer().getPluginManager().getPlugin("Citizens") != null) {
@@ -142,6 +154,19 @@ public class CustomStructures extends JavaPlugin {
         } else {
             getLogger().info("Bstat metrics is disabled for this plugin.");
         }
+    }
+
+    /**
+     * Resolves PAPI placeholders.
+     *
+     * @param text The text which may contain placeholders.
+     * @return The final text.
+     */
+    public static String replacePAPIPlaceholders(String text) {
+        if(papiEnabled) {
+            return PlaceholderAPI.setPlaceholders(null, text);
+        }
+        return text;
     }
 
     /**

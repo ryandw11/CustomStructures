@@ -618,6 +618,7 @@ public class SchematicHandler {
             if (commands != null) {
                 for (String command : commands) {
                     command = CSUtils.replacePlaceHolders(command, location, minLoc, maxLoc);
+                    command = CustomStructures.replacePAPIPlaceholders(command);
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                     if (plugin.isDebug()) {
                         plugin.getLogger().info("Executing console command: '" + command + "'");
