@@ -148,7 +148,7 @@ public class StructureLocation {
         if (biomes.isEmpty())
             return true;
         for (String biome : biomes) {
-            if (b.toString().equalsIgnoreCase(biome))
+            if (b.toString().equalsIgnoreCase(biome.replace("minecraft:", "")))
                 return true;
         }
         return false;
