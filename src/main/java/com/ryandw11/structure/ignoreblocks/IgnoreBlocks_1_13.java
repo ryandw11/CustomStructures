@@ -10,6 +10,8 @@ import java.util.List;
 public class IgnoreBlocks_1_13 implements IgnoreBlocks{
 
     private final List<Material> plantBlocks = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
+            // General BLocks
+            Material.SNOW,
             // Grasses
             Material.GRASS,
             Material.TALL_GRASS,
