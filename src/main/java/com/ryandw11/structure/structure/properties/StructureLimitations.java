@@ -105,7 +105,7 @@ public class StructureLimitations {
      */
     public boolean hasBlacklistBlock(Block b) {
         if (blacklistSpawnBlocks.isEmpty()) return false;
-        for (String block : whitelistSpawnBlocks) {
+        for (String block : blacklistSpawnBlocks) {
             if (block.equalsIgnoreCase(b.getType().toString()))
                 return true;
         }
