@@ -77,7 +77,7 @@ public class CreateCommand implements SubCommand {
             }
             builder.setStructureProperties(new StructureProperties());
             builder.setStructureLocation(new StructureLocation());
-            builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
+            builder.setStructureLimitations(new StructureLimitations(new ArrayList<>(), new ArrayList<>(), new BlockLevelLimit(), new HashMap<>()));
             try {
                 builder.save(f);
             } catch (IOException e) {

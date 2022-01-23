@@ -129,7 +129,10 @@ public class StructurePicker extends BukkitRunnable {
                 structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
-            if (!structure.getStructureLimitations().hasBlock(structureBlock))
+            if (!structure.getStructureLimitations().hasWhitelistBlock(structureBlock))
+                return;
+
+            if(structure.getStructureLimitations().hasBlacklistBlock(structureBlock))
                 return;
 
             // If it can spawn in water

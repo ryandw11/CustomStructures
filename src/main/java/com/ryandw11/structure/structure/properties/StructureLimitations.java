@@ -12,6 +12,7 @@ import java.util.*;
 public class StructureLimitations {
 
     private final List<String> whitelistSpawnBlocks;
+    private final List<String> blacklistSpawnBlocks;
     private final BlockLevelLimit blockLevelLimit;
     private final Map<Material, Material> blockReplacement;
     private double replacementBlocksDelay;
@@ -27,6 +28,11 @@ public class StructureLimitations {
             whitelistSpawnBlocks = new ArrayList<>();
         else
             whitelistSpawnBlocks = configuration.getStringList("StructureLimitations.whitelistSpawnBlocks");
+
+        if (!configuration.contains("StructureLimitations.blacklistSpawnBlocks"))
+            blacklistSpawnBlocks = new ArrayList<>();
+        else
+            blacklistSpawnBlocks = configuration.getStringList("StructureLimitations.blacklistSpawnBlocks");
 
         this.blockLevelLimit = new BlockLevelLimit(configuration);
 
@@ -47,11 +53,13 @@ public class StructureLimitations {
      * Create structure limitations without a config.
      *
      * @param whitelistSpawnBlocks The list of whitelisted spawn blocks.
+     * @param blacklistSpawnBlocks The list of blacklisted spawn blocks.
      * @param blockLevelLimit      The block level limit.
      * @param blockReplacement     The block replacement map.
      */
-    public StructureLimitations(List<String> whitelistSpawnBlocks, BlockLevelLimit blockLevelLimit, Map<Material, Material> blockReplacement) {
+    public StructureLimitations(List<String> whitelistSpawnBlocks, List<String> blacklistSpawnBlocks, BlockLevelLimit blockLevelLimit, Map<Material, Material> blockReplacement) {
         this.whitelistSpawnBlocks = whitelistSpawnBlocks;
+        this.blacklistSpawnBlocks = blacklistSpawnBlocks;
         this.blockLevelLimit = blockLevelLimit;
         this.blockReplacement = blockReplacement;
     }
@@ -66,13 +74,37 @@ public class StructureLimitations {
     }
 
     /**
+     * Get the blacklisted blocks.
+     *
+     * @return The blacklisted blocks.
+     */
+    public List<String> getBlacklistBlocks() {
+        return blacklistSpawnBlocks;
+    }
+
+    /**
      * Check to see if the whitelist has a block.
      *
      * @param b The block to check
-     * @return If the whitelist has the block. (Returns true if there is not whitelist)
+     * @return If the whitelist has the block. (Returns true if there is no whitelist)
      */
-    public boolean hasBlock(Block b) {
+    public boolean hasWhitelistBlock(Block b) {
         if (whitelistSpawnBlocks.isEmpty()) return true;
+        for (String block : whitelistSpawnBlocks) {
+            if (block.equalsIgnoreCase(b.getType().toString()))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check to see if the blacklist has a block.
+     *
+     * @param b The block to check.
+     * @return If the blacklist has the block. (Returns false if there is no blacklist)
+     */
+    public boolean hasBlacklistBlock(Block b) {
+        if (blacklistSpawnBlocks.isEmpty()) return false;
         for (String block : whitelistSpawnBlocks) {
             if (block.equalsIgnoreCase(b.getType().toString()))
                 return true;

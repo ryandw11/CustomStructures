@@ -11,12 +11,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Represents an Item within a loot table.
- *
- * @author Chusca
  */
 public class LootItem {
 
@@ -32,9 +33,10 @@ public class LootItem {
      * @param type       The type.
      * @param amount     The amount.
      * @param weight     The weight.
+     * @param lore       The lore.
      * @param enchants   The enchants.
      */
-    public LootItem(String customName, String type, int amount, int weight, Map<String, String> enchants) {
+    public LootItem(String customName, String type, int amount, int weight, List<String> lore, Map<String, String> enchants) {
         this.weight = weight;
         try {
             this.item = new ItemStack(Material.valueOf(type.toUpperCase()));
@@ -45,10 +47,14 @@ public class LootItem {
         this.item.setAmount(amount);
 
         if (customName != null) { //Catch for people who do not want different names
-            ItemMeta meta = this.item.getItemMeta();
-            assert meta != null;
+            ItemMeta meta = Objects.requireNonNull(this.item.getItemMeta());
             meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', customName));
             this.item.setItemMeta(meta);
+        }
+
+        if (!lore.isEmpty()) {
+            lore = lore.stream().map(s -> ChatColor.translateAlternateColorCodes('&', s)).collect(Collectors.toList());
+            Objects.requireNonNull(this.item.getItemMeta()).setLore(lore);
         }
 
         this.enchants = enchants;
@@ -61,9 +67,10 @@ public class LootItem {
      * @param type       The type.
      * @param amount     The amount (in stylized form).
      * @param weight     The weight.
+     * @param lore       The lore.
      * @param enchants   The enchants.
      */
-    public LootItem(String customName, String type, String amount, int weight, Map<String, String> enchants) {
+    public LootItem(String customName, String type, String amount, int weight, List<String> lore, Map<String, String> enchants) {
         this.weight = weight;
         try {
             this.item = new ItemStack(Material.valueOf(type.toUpperCase()));
@@ -72,14 +79,18 @@ public class LootItem {
         }
         this.amount = amount;
         this.item.setAmount(NumberStylizer.getStylizedInt(amount));
-
+        ItemMeta meta = Objects.requireNonNull(this.item.getItemMeta());
         if (customName != null) { //Catch for people who do not want different names
-            ItemMeta meta = this.item.getItemMeta();
-            assert meta != null;
             meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', customName));
-            this.item.setItemMeta(meta);
+
         }
 
+        if (!lore.isEmpty()) {
+            lore = lore.stream().map(s -> ChatColor.translateAlternateColorCodes('&', s)).collect(Collectors.toList());
+            meta.setLore(lore);
+        }
+
+        this.item.setItemMeta(meta);
         this.enchants = enchants;
     }
 

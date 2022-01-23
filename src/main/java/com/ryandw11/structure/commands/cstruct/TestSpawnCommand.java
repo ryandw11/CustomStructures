@@ -90,8 +90,13 @@ public class TestSpawnCommand implements SubCommand {
             quickSendMessage(p, "&aSpawn Y Value: " + bl.getY());
         }
 
-        if (!structure.getStructureLimitations().hasBlock(bl)) {
-            quickSendMessage(p, String.format("&cFailed Block Limitation! Cannot spawn on %s!", bl.getType()));
+        if (!structure.getStructureLimitations().hasWhitelistBlock(bl)) {
+            quickSendMessage(p, String.format("&cFailed Block Limitation! Cannot spawn on %s! (Whitelist Defined)", bl.getType()));
+            return;
+        }
+
+        if(structure.getStructureLimitations().hasBlacklistBlock(bl)) {
+            quickSendMessage(p, String.format("&cFailed Block Limitation! Cannot spawn on %s! (Blacklist Defined)", bl.getType()));
             return;
         }
 
