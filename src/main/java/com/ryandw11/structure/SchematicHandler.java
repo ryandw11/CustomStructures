@@ -54,6 +54,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * This class handles all schematic operations for the plugin.
+ */
 public class SchematicHandler {
 
     private final CustomStructures plugin;
@@ -321,10 +324,9 @@ public class SchematicHandler {
                     BlockState blockState = location.getBlock().getState();
 
                     if (blockState instanceof Container) {
-                        if (blockState instanceof Chest) {
-                            InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
-                            if (holder instanceof DoubleChest) {
-                                DoubleChest doubleChest = ((DoubleChest) holder);
+                        if (blockState instanceof Chest chestBlockState) {
+                            InventoryHolder holder = chestBlockState.getInventory().getHolder();
+                            if (holder instanceof DoubleChest doubleChest) {
                                 Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
                                 Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
 
@@ -473,8 +475,7 @@ public class SchematicHandler {
                     if (blockState instanceof Container) {
                         if (blockState instanceof Chest) {
                             InventoryHolder holder = ((Chest) blockState).getInventory().getHolder();
-                            if (holder instanceof DoubleChest) {
-                                DoubleChest doubleChest = ((DoubleChest) holder);
+                            if (holder instanceof DoubleChest doubleChest) {
                                 Location leftSideLocation = ((Chest) doubleChest.getLeftSide()).getLocation();
                                 Location rightSideLocation = ((Chest) doubleChest.getRightSide()).getLocation();
 
@@ -582,36 +583,47 @@ public class SchematicHandler {
         String firstLine;
         String secondLine;
         String thirdLine;
+        String fourthLine;
 
-        if (location.getBlock().getState() instanceof Sign) {
+        if (location.getBlock().getState() instanceof Sign || location.getBlock().getState() instanceof WallSign) {
             firstLine = sign.getLine(0).trim();
             secondLine = sign.getLine(1).trim();
             thirdLine = sign.getLine(2).trim();
-        } else if (location.getBlock().getState() instanceof WallSign) {
-            firstLine = sign.getLine(0).trim();
-            secondLine = sign.getLine(1).trim();
-            thirdLine = sign.getLine(2).trim();
+            fourthLine = sign.getLine(3).trim();
         } else return;
 
         // Process the type of sign.
         // Normal Mob Sign
         if (firstLine.equalsIgnoreCase("[mob]")) {
-            try {
-                Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
-                if (ent instanceof LivingEntity) {
-                    LivingEntity livingEntity = (LivingEntity) ent;
-                    livingEntity.setRemoveWhenFarAway(false);
+            int count = 1;
+            if (!thirdLine.isEmpty()) {
+                try {
+                    // Impose a maximum limit of 40 mobs.
+                    count = Math.min(Integer.parseInt(thirdLine), 40);
+                } catch (NumberFormatException ex) {
+                    // Ignore, keep count as 1.
                 }
+            }
+            try {
+                for (int i = 0; i < count; i++) {
+                    Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
+                    if (ent instanceof LivingEntity livingEntity) {
+                        livingEntity.setRemoveWhenFarAway(false);
+                    }
+                }
+
                 location.getBlock().setType(Material.AIR);
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Invalid mob type on structure sign.");
             }
         }
+
         // NPC Sign
         if (firstLine.equalsIgnoreCase("[npc]")) {
             plugin.getCitizensNpcHook().spawnNpc(plugin.getNpcHandler(), secondLine, location);
             location.getBlock().setType(Material.AIR);
         }
+
         // Command Sign.
         if (firstLine.equalsIgnoreCase("[command]") || firstLine.equalsIgnoreCase("[commands]")) {
             List<String> commands = plugin.getSignCommandsHandler().getCommands(secondLine);
@@ -631,17 +643,26 @@ public class SchematicHandler {
         }
         // Mythical Mob Sign
         if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
+            int count = 1;
+            if (!fourthLine.isEmpty()) {
+                try {
+                    // Impose a maximum limit of 40 mobs.
+                    count = Math.min(Integer.parseInt(fourthLine), 40);
+                } catch (NumberFormatException ex) {
+                    // Ignore, keep count as 1.
+                }
+            }
             // Allow for the third line to have the level of the mob.
             if (thirdLine.isEmpty())
-                plugin.getMythicalMobHook().spawnMob(secondLine, location);
+                plugin.getMythicalMobHook().spawnMob(secondLine, location, count);
             else {
-                int level;
+                double level;
                 try {
-                    level = Integer.parseInt(thirdLine);
+                    level = Double.parseDouble(thirdLine);
                 } catch (NumberFormatException ex) {
                     level = 1;
                 }
-                plugin.getMythicalMobHook().spawnMob(secondLine, location, level);
+                plugin.getMythicalMobHook().spawnMob(secondLine, location, level, count);
             }
             location.getBlock().setType(Material.AIR);
         }
@@ -661,8 +682,7 @@ public class SchematicHandler {
         String secondLine = sign.getLine(1).trim();
 
         // Allow this to work with both wall signs and normal signs.
-        if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign) {
-            org.bukkit.block.data.type.Sign signData = (org.bukkit.block.data.type.Sign) location.getBlock().getBlockData();
+        if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign signData) {
 
             Vector direction = signData.getRotation().getDirection();
             double rotation = Math.atan2(direction.getZ(), direction.getX());
@@ -672,8 +692,7 @@ public class SchematicHandler {
                 rotation += (Math.PI / 2);
             }
             parentStructure.setSubSchemRotation(rotation);
-        } else if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.WallSign) {
-            org.bukkit.block.data.type.WallSign signData = (org.bukkit.block.data.type.WallSign) location.getBlock().getBlockData();
+        } else if (location.getBlock().getBlockData() instanceof WallSign signData) {
             Vector direction = signData.getFacing().getDirection();
             double rotation = Math.atan2(direction.getZ(), direction.getX());
             if (direction.getX() != 0) {
