@@ -15,10 +15,9 @@ public class MMEnabled implements MythicalMobHook {
     public void spawnMob(String name, Location loc, int count) {
         Optional<MythicMob> mob = MythicProvider.get().getMobManager().getMythicMob(name);
         if (mob.isPresent()) {
-			for(int i = 0; i < count; i++)
-				mob.get().spawn(BukkitAdapter.adapt(loc), 1);
-		}
-        else
+            for (int i = 0; i < count; i++)
+                mob.get().spawn(BukkitAdapter.adapt(loc), 1);
+        } else
             Bukkit.getLogger().warning("Unknown Mythical Mob: " + name);
     }
 
@@ -26,10 +25,9 @@ public class MMEnabled implements MythicalMobHook {
     public void spawnMob(String name, Location loc, double level, int count) {
         Optional<MythicMob> mob = MythicProvider.get().getMobManager().getMythicMob(name);
         if (mob.isPresent()) {
-			for(int i = 0; i < count; i++)
-				mob.get().spawn(BukkitAdapter.adapt(loc), level);
-		}
-        else
+            for (int i = 0; i < count; i++)
+                mob.get().spawn(BukkitAdapter.adapt(loc), level);
+        } else
             Bukkit.getLogger().warning("Unknown Mythical Mob: " + name);
     }
 
