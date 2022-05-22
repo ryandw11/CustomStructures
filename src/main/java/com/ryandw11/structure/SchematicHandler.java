@@ -80,7 +80,7 @@ public class SchematicHandler {
     public void schemHandle(Location loc, String filename, boolean useAir, Structure structure, int iteration)
             throws IOException, WorldEditException {
 
-        if (iteration > 2) {
+        if (iteration > structure.getStructureLimitations().getIterationLimit()) {
             plugin.getLogger().severe("Critical Error: StackOverflow detected. Automatically terminating the spawning of the structure.");
             plugin.getLogger().severe("The structure '" + structure.getName() + "' has spawned too many sub structure via recursion.");
             return;

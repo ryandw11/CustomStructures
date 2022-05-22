@@ -11,6 +11,7 @@ import java.util.*;
  */
 public class StructureLimitations {
 
+    private int iterationLimit;
     private final List<String> whitelistSpawnBlocks;
     private final List<String> blacklistSpawnBlocks;
     private final BlockLevelLimit blockLevelLimit;
@@ -24,6 +25,11 @@ public class StructureLimitations {
      * @param configuration The configuration to create from.
      */
     public StructureLimitations(FileConfiguration configuration) {
+        if (!configuration.contains("StructureLimitations.iterationLimit"))
+            iterationLimit = 2;
+        else
+            iterationLimit = configuration.getInt("StructureLimitations.iterationLimit");
+
         if (!configuration.contains("StructureLimitations.whitelistSpawnBlocks"))
             whitelistSpawnBlocks = new ArrayList<>();
         else
@@ -58,10 +64,29 @@ public class StructureLimitations {
      * @param blockReplacement     The block replacement map.
      */
     public StructureLimitations(List<String> whitelistSpawnBlocks, List<String> blacklistSpawnBlocks, BlockLevelLimit blockLevelLimit, Map<Material, Material> blockReplacement) {
+        this.iterationLimit = 2;
         this.whitelistSpawnBlocks = whitelistSpawnBlocks;
         this.blacklistSpawnBlocks = blacklistSpawnBlocks;
         this.blockLevelLimit = blockLevelLimit;
         this.blockReplacement = blockReplacement;
+    }
+
+    /**
+     * Set the iteration limit for the structure.
+     *
+     * @param iterationLimit The iteration limit.
+     */
+    public void setIterationLimit(int iterationLimit) {
+        this.iterationLimit = iterationLimit;
+    }
+
+    /**
+     * Get the iteration limit for the structure.
+     *
+     * @return The iteration limit.
+     */
+    public int getIterationLimit() {
+        return this.iterationLimit;
     }
 
     /**
