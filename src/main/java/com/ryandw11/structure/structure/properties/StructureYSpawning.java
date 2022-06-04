@@ -73,6 +73,7 @@ public class StructureYSpawning {
 
     /**
      * Get the SpawnY Height Map.
+     *
      * @return The SpawnY Height Map.
      */
     public HeightMap getHeightMap() {
@@ -159,10 +160,11 @@ public class StructureYSpawning {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
 
-                    Random r = new Random();
+                    if (num1 > num2)
+                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
 
-                    int a = r.nextInt(num2) + (num1 + 1);
-                    return currentHeight + a;
+                    int randomValue = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
+                    return currentHeight + randomValue;
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                     return currentHeight;
@@ -176,10 +178,11 @@ public class StructureYSpawning {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
 
-                    Random r = new Random();
+                    if (num1 > num2)
+                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
 
-                    int a = r.nextInt(num2) + (num1 + 1);
-                    return currentHeight - a;
+                    int randomValue = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
+                    return currentHeight - randomValue;
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                     return currentHeight;
@@ -192,6 +195,9 @@ public class StructureYSpawning {
                 try {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
+
+                    if (num1 > num2)
+                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
 
                     return ThreadLocalRandom.current().nextInt(num1, num2 + 1);
 
