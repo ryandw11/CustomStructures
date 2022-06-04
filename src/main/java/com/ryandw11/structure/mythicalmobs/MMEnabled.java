@@ -2,20 +2,20 @@ package com.ryandw11.structure.mythicalmobs;
 
 import org.bukkit.Location;
 
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.mobs.MobManager;
+import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.core.mobs.MobExecutor;
 
 public class MMEnabled implements MythicalMobHook {
 
 	@Override
 	public void spawnMob(String name, Location loc) {
-		MobManager mobManager = MythicMobs.inst().getMobManager();
+		MobExecutor mobManager = MythicBukkit.inst().getMobManager();
 		mobManager.spawnMob(name, loc);
 	}
 
 	@Override
 	public void spawnMob(String name, Location loc, int level) {
-		MobManager mobManager = MythicMobs.inst().getMobManager();
+		MobExecutor mobManager = MythicBukkit.inst().getMobManager();
 		mobManager.spawnMob(name, loc, level);
 	}
 
