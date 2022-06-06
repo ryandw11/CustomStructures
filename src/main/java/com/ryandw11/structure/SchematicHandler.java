@@ -3,6 +3,7 @@ package com.ryandw11.structure;
 import com.ryandw11.structure.api.LootPopulateEvent;
 import com.ryandw11.structure.api.StructureSpawnEvent;
 import com.ryandw11.structure.api.holder.StructureSpawnHolder;
+import com.ryandw11.structure.bottomfill.BottomFillProvider;
 import com.ryandw11.structure.io.BlockTag;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
@@ -156,6 +157,13 @@ public class SchematicHandler {
             if (plugin.getConfig().getBoolean("debug")) {
                 plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s, %s, %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
             }
+        }
+
+        // If enabled, perform a bottom space fill.
+        if(structure.getBottomSpaceFill().isEnabled()) {
+            Location minLoc = getMinimumLocation(clipboard, loc, rotY);
+            Location maxLoc = getMaximumLocation(clipboard, loc, rotY);
+            BottomFillProvider.provide().performFill(structure, loc, minLoc, maxLoc);
         }
 
         //Schedule the signs & containers replacement task

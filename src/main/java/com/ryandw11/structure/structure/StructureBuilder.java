@@ -51,6 +51,7 @@ public class StructureBuilder {
     protected StructureLimitations structureLimitations;
     protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
+    protected BottomSpaceFill bottomSpaceFill;
     protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
     protected List<StructureSection> structureSections;
     // Base Rotation in Radians.
@@ -124,6 +125,8 @@ public class StructureBuilder {
         structureLimitations = new StructureLimitations(config);
         maskProperty = new MaskProperty(config);
         subSchematics = new SubSchematics(config, CustomStructures.getInstance());
+        bottomSpaceFill = new BottomSpaceFill(config);
+
         lootTables = new HashMap<>();
         if (config.contains("LootTables")) {
             ConfigurationSection lootableConfig = config.getConfigurationSection("LootTables");
@@ -283,6 +286,15 @@ public class StructureBuilder {
      */
     public void setMaskProperty(MaskProperty mask) {
         this.maskProperty = mask;
+    }
+
+    /**
+     * Set the bottom space fill property.
+     *
+     * @param bottomSpaceFill The bottom space fill property.
+     */
+    public void setBottomSpaceFill(BottomSpaceFill bottomSpaceFill) {
+        this.bottomSpaceFill = bottomSpaceFill;
     }
 
     /**

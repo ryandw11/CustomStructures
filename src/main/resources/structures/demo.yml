@@ -69,6 +69,11 @@ Masks:
   NegatedBlockMask:
     - WHITE_WOOL
 
+BottomSpaceFill:
+  'SNOWY_TAIGA,SNOWY_PLAINS': SNOW_BLOCK
+  'DESERT': SANDSTONE
+  'default': DIRT
+
 
 #List of lootTables for this Schematic, name and weight
 #Weight determines how often it will be chosen out of all the entries in the list.
