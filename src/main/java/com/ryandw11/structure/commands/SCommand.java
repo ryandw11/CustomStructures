@@ -46,6 +46,7 @@ public class SCommand implements CommandExecutor {
         this.commandHandler.registerCommand("create", new CreateCommand(plugin));
         this.commandHandler.registerCommand("testspawn", new TestSpawnCommand(plugin));
         this.commandHandler.registerCommand(new AddonsCommand(plugin), "addon", "addons");
+        this.commandHandler.registerCommand(new SetLoottableCommand(plugin), "setloottable", "setloot", "setlt");
     }
 
     @Override
@@ -84,6 +85,8 @@ public class SCommand implements CommandExecutor {
                         "&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3/cstructure addon - &2The list of addons."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure setLootTable - &2Easily specify a loot table for a container."));
             } else {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3=============[&2CustomStructures&3]============="));

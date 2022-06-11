@@ -4,9 +4,7 @@ import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.exceptions.LootTableException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This handles the loot tables.
@@ -50,5 +48,14 @@ public class LootTablesHandler {
      */
     public Map<String, LootTable> getLootTables() {
         return Collections.unmodifiableMap(lootTables);
+    }
+
+    /**
+     * Get a list with the names of all loot tables.
+     *
+     * @return The list with names of all loot tables.
+     */
+    public List<String> getLootTablesNames() {
+        return new ArrayList<>(this.lootTables.keySet());
     }
 }

@@ -3,6 +3,7 @@ package com.ryandw11.structure.bottomfill;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.structure.Structure;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -38,11 +39,19 @@ public class DefaultBottomFill extends BukkitRunnable implements BottomFillImpl 
     @Override
     public void run() {
         // TODO:: Make it so that if there is not block at the bottom of the structure, then there will not be ground placed.
-        for(int i = 0; i < 40; i++) {
+        for (int i = 0; i < 40; i++) {
 
-            if (!location.getWorld().getBlockAt(currentX, currentY, currentZ).isEmpty()
-                    && !CustomStructures.getInstance().getBlockIgnoreManager().getBlocks()
-                    .contains(location.getWorld().getBlockAt(currentX, currentY, currentZ).getType())) {
+            if (
+                // If the block is not empty
+                    !location.getWorld().getBlockAt(currentX, currentY, currentZ).isEmpty()
+                            // and the block is not in the list of ignore blocks.
+                            && !CustomStructures.getInstance().getBlockIgnoreManager().getBlocks()
+                            .contains(location.getWorld().getBlockAt(currentX, currentY, currentZ).getType())
+                            // And not water (if it is set to be ignored)
+                            && !(structure.getStructureProperties().shouldIgnoreWater()
+                            && location.getWorld().getBlockAt(currentX, currentY, currentZ).getType() == Material.WATER)
+            ) {
+                // Then move on.
                 currentY = minLoc.getBlockY();
                 currentX++;
             }

@@ -35,7 +35,11 @@ public class ChunkLoad implements Listener {
          * Schematic handler
          * This activity is done async to prevent the server from lagging.
          */
-        StructurePicker s = new StructurePicker(b, e.getChunk(), CustomStructures.getInstance());
-        s.runTaskTimer(CustomStructures.plugin, 1, 10);
+        try {
+            StructurePicker s = new StructurePicker(b, e.getChunk(), CustomStructures.getInstance());
+            s.runTaskTimer(CustomStructures.plugin, 1, 10);
+        } catch (RuntimeException ex) {
+            // ignore, error already logged.
+        }
     }
 }

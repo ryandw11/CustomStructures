@@ -160,10 +160,16 @@ public class SchematicHandler {
         }
 
         // If enabled, perform a bottom space fill.
-        if(structure.getBottomSpaceFill().isEnabled()) {
+        if (structure.getBottomSpaceFill().isEnabled()) {
             Location minLoc = getMinimumLocation(clipboard, loc, rotY);
             Location maxLoc = getMaximumLocation(clipboard, loc, rotY);
-            BottomFillProvider.provide().performFill(structure, loc, minLoc, maxLoc);
+            int lowX = Math.min(minLoc.getBlockX(), maxLoc.getBlockX());
+            int lowY = Math.min(minLoc.getBlockY(), maxLoc.getBlockY());
+            int lowZ = Math.min(minLoc.getBlockZ(), maxLoc.getBlockZ());
+            int highX = Math.max(minLoc.getBlockX(), maxLoc.getBlockX());
+            int highY = Math.max(minLoc.getBlockY(), maxLoc.getBlockY());
+            int highz = Math.max(minLoc.getBlockZ(), maxLoc.getBlockZ());
+            BottomFillProvider.provide().performFill(structure, loc, new Location(minLoc.getWorld(), lowX, lowY, lowZ), new Location(minLoc.getWorld(), highX, highY, highz));
         }
 
         //Schedule the signs & containers replacement task
@@ -549,7 +555,6 @@ public class SchematicHandler {
      * @param location  The location of the container.
      */
     private void replaceContainerContent(Structure structure, Location location) {
-        if (structure.getLootTables().isEmpty()) return;
 
         BlockState blockState = location.getBlock().getState();
         Container container = (Container) blockState;
@@ -557,10 +562,34 @@ public class SchematicHandler {
         Block block = location.getBlock();
         LootTableType blockType = LootTableType.valueOf(block.getType());
 
-        RandomCollection<LootTable> tables = structure.getLootTables(blockType);
-        if (tables == null) return;
+        boolean explictLoottableDefined = false;
+        LootTable lootTable = null;
 
-        LootTable lootTable = tables.next();
+        if (containerInventory.getItem(0) != null) {
+            ItemStack paper = containerInventory.getItem(0);
+            if (paper.getType() == Material.PAPER &&
+                    paper.hasItemMeta() &&
+                    paper.getItemMeta().hasDisplayName() &&
+                    paper.getItemMeta().getDisplayName().contains("%${") &&
+                    paper.getItemMeta().getDisplayName().contains("}$%")) {
+                String name = paper.getItemMeta().getDisplayName()
+                        .replace("%${", "")
+                        .replace("}$%", "");
+                lootTable = plugin.getLootTableHandler().getLootTableByName(name);
+                containerInventory.clear();
+                explictLoottableDefined = true;
+            }
+        }
+
+        if (lootTable == null) {
+            if (structure.getLootTables().isEmpty()) return;
+
+            RandomCollection<LootTable> tables = structure.getLootTables(blockType);
+            if (tables == null) return;
+
+            lootTable = tables.next();
+        }
+
         Random random = new Random();
 
         // Trigger the loot populate event.
@@ -569,12 +598,13 @@ public class SchematicHandler {
 
         if (event.isCanceled()) return;
 
+        // TODO: This is not a good method, should try to pick another loot table if failed.
         for (int i = 0; i < lootTable.getRolls(); i++) {
-            if (lootTable.getTypes().contains(blockType) && containerInventory instanceof FurnaceInventory) {
+            if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
                 this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
-            } else if (lootTable.getTypes().contains(blockType) && containerInventory instanceof BrewerInventory) {
+            } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
                 this.replaceBrewerContent(lootTable, random, (BrewerInventory) containerInventory);
-            } else if (lootTable.getTypes().contains(blockType)) {
+            } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
                 this.replaceChestContent(lootTable, random, containerInventory);
             }
         }

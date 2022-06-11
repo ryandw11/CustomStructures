@@ -7,8 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,9 +26,7 @@ public class AddonsCommand implements SubCommand {
         this.plugin = plugin;
     }
 
-    private static final List<String> officialAddons = new ArrayList<>(Arrays.asList(
-            "CSCustomBiomes"
-    ));
+    private static final List<String> officialAddons = List.of("CSCustomBiomes", "CSFastFill");
 
     @Override
     public boolean subCommand(CommandSender sender, Command cmd, String s, String[] args) {

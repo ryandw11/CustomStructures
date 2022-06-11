@@ -14,6 +14,7 @@ public class StructureProperties {
     private boolean spawnInWater;
     private boolean spawnInLavaLakes;
     private boolean spawnInVoid;
+    private boolean ignoreWater;
 
     /**
      * Create StructureProperties from a config file.
@@ -37,6 +38,7 @@ public class StructureProperties {
         this.spawnInWater = cs.contains("spawnInWater") && cs.getBoolean("spawnInWater");
         this.spawnInLavaLakes = cs.contains("spawnInLavaLakes") && cs.getBoolean("spawnInLavaLakes");
         this.spawnInVoid = cs.contains("spawnInVoid") && cs.getBoolean("spawnInVoid");
+        this.ignoreWater = cs.contains("ignoreWater") && cs.getBoolean("ignoreWater");
     }
 
     /**
@@ -49,6 +51,7 @@ public class StructureProperties {
         this.spawnInWater = true;
         this.spawnInLavaLakes = true;
         this.spawnInVoid = false;
+        this.ignoreWater = false;
     }
 
     /**
@@ -159,5 +162,23 @@ public class StructureProperties {
      */
     public void setSpawnInVoid(boolean spawnInVoid) {
         this.spawnInVoid = spawnInVoid;
+    }
+
+    /**
+     * Get if the structure should ignore water.
+     *
+     * @return If the structure should ignore water.
+     */
+    public boolean shouldIgnoreWater() {
+        return ignoreWater;
+    }
+
+    /**
+     * Set if the structure should ignore water.
+     *
+     * @param ignoreWater If the structure should ignore water.
+     */
+    public void setIgnoreWater(boolean ignoreWater) {
+        this.ignoreWater = ignoreWater;
     }
 }

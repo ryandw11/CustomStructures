@@ -78,7 +78,7 @@ public class CustomStructures extends JavaPlugin {
         setupBlockIgnore();
 
         // Small check to make sure that PlaceholderAPI is installed
-        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             this.getLogger().info("Placeholder API found, placeholders supported.");
             CustomStructures.papiEnabled = true;
         } else {
@@ -128,7 +128,7 @@ public class CustomStructures extends JavaPlugin {
         this.addonHandler = new AddonHandler();
 
         // Run this after the loading of all plugins.
-        Bukkit.getScheduler().runTaskLater(this, () -> {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
             this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
             getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
             getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
@@ -144,7 +144,7 @@ public class CustomStructures extends JavaPlugin {
                 }));
             }
 
-        }, 20);
+        }, 30);
 
 
         if (getConfig().getBoolean("bstats")) {
@@ -163,7 +163,7 @@ public class CustomStructures extends JavaPlugin {
      * @return The final text.
      */
     public static String replacePAPIPlaceholders(String text) {
-        if(papiEnabled) {
+        if (papiEnabled) {
             return PlaceholderAPI.setPlaceholders(null, text);
         }
         return text;

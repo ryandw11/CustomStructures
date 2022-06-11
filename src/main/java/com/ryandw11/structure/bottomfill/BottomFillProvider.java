@@ -22,7 +22,7 @@ public final class BottomFillProvider {
      * Get a bottom fill implementation.
      * <p>Note: Currently only the first implementation registered will be provided. This may change in the future.</p>
      *
-     * @return THe first implementation specified. (Or the default if no custom ones were added).
+     * @return The first implementation specified. (Or the default if no custom ones were added).
      */
     public static BottomFillImpl provide() {
         if (!providers.isEmpty())

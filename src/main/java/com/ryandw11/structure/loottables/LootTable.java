@@ -3,6 +3,7 @@ package com.ryandw11.structure.loottables;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.exceptions.LootTableException;
 import com.ryandw11.structure.utils.RandomCollection;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
