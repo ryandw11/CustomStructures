@@ -38,7 +38,7 @@ import java.util.*;
 public class StructureBuilder {
 
     private FileConfiguration config;
-    private CustomStructures plugin;
+    private final CustomStructures plugin;
 
     protected String name;
     protected String schematic;

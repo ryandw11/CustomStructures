@@ -37,7 +37,7 @@ import java.util.*;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.7.0
+ * @version 1.8.0
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -213,23 +213,12 @@ public class CustomStructures extends JavaPlugin {
 
         // Initialize blockIgnoreManager with the proper class for the version.
         switch (version) {
-            case "v1_16_R3":
-            case "v1_16_R2":
-            case "v1_16_R1":
-                blockIgnoreManager = new IgnoreBlocks_1_16();
-                break;
-            case "v1_15_R1":
-                blockIgnoreManager = new IgnoreBlocks_1_15();
-                break;
-            case "v1_14_R1":
-                blockIgnoreManager = new IgnoreBlocks_1_14();
-                break;
-            case "v1_13_R1":
-                blockIgnoreManager = new IgnoreBlocks_1_13();
-                break;
-            default:
-                blockIgnoreManager = new IgnoreBlocks_1_17();
-                break;
+            case "v1_18_R2", "v1_18_R1", "v1_17_R1" -> blockIgnoreManager = new IgnoreBlocks_1_17();
+            case "v1_16_R3", "v1_16_R2", "v1_16_R1" -> blockIgnoreManager = new IgnoreBlocks_1_16();
+            case "v1_15_R1" -> blockIgnoreManager = new IgnoreBlocks_1_15();
+            case "v1_14_R1" -> blockIgnoreManager = new IgnoreBlocks_1_14();
+            case "v1_13_R1" -> blockIgnoreManager = new IgnoreBlocks_1_13();
+            default -> blockIgnoreManager = new IgnoreBlocks_1_19();
         }
     }
 
