@@ -183,9 +183,9 @@ public class StructurePicker extends BukkitRunnable {
                 try {
                     if (!section.checkStructureConditions(structure, structureBlock, ch)) return;
                 } catch (Exception ex) {
-                    plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn" +
+                    plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn " +
                             "the structure %s with the custom property %s!", structure.getName(), section.getName()));
-                    plugin.getLogger().severe("This is not a CustomStructures error! Please report" +
+                    plugin.getLogger().severe("This is not a CustomStructures error! Please report " +
                             "this to the developer of the addon.");
                     if (plugin.isDebug()) {
                         ex.printStackTrace();

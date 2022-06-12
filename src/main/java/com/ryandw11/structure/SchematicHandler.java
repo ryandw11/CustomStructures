@@ -12,6 +12,7 @@ import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
 import com.ryandw11.structure.utils.CSUtils;
+import com.ryandw11.structure.utils.NumberStylizer;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -637,7 +638,7 @@ public class SchematicHandler {
             if (!thirdLine.isEmpty()) {
                 try {
                     // Impose a maximum limit of 40 mobs.
-                    count = Math.min(Integer.parseInt(thirdLine), 40);
+                    count = Math.min(NumberStylizer.getStylizedInt(thirdLine), 40);
                 } catch (NumberFormatException ex) {
                     // Ignore, keep count as 1.
                 }
@@ -685,7 +686,7 @@ public class SchematicHandler {
             if (!fourthLine.isEmpty()) {
                 try {
                     // Impose a maximum limit of 40 mobs.
-                    count = Math.min(Integer.parseInt(fourthLine), 40);
+                    count = Math.min(NumberStylizer.getStylizedInt(fourthLine), 40);
                 } catch (NumberFormatException ex) {
                     // Ignore, keep count as 1.
                 }
@@ -746,6 +747,8 @@ public class SchematicHandler {
             if (secondLine.startsWith("[")) {
                 String v = secondLine.replace("[", "").replace("]", "");
                 String[] out = v.split("-");
+                if (out.length == 1)
+                    out = v.split(";");
                 try {
                     int num1 = Integer.parseInt(out[0]);
                     int num2 = Integer.parseInt(out[1]);
