@@ -88,8 +88,8 @@ public class StructureFileReader extends BukkitRunnable {
      *
      * <p>The completed future completes exceptionally with {@link StructureNotFoundException} if a structure
      * at the specified location cannot be found.</p>
-     *
-     * <h2>Usage</h2>
+     * <p></p>
+     * Usage
      * <code>
      * fileReader.getStructure(myLocation)<br>
      * .thenAccept(structure -&#62; {<br>

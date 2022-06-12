@@ -78,7 +78,7 @@ public final class CustomStructureAddon {
 
     /**
      * Unregister StructureSectionProvider from the addon.
-     * @param provider
+     * @param provider The provider to remove.
      */
     public void unregisterStructureSectionProvider(StructureSectionProvider provider) {
         this.providerSet.remove(provider);

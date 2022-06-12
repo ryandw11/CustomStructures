@@ -17,6 +17,7 @@ import java.util.TreeMap;
  * 33% chance of being selected while the second item has a 66% of spawning. If a third item is added with a weight
  * of 5, these would be the probability table:</p>
  * <table>
+ *     <caption></caption>
  *     <tr>
  *         <th>Item One</th>
  *         <th>Item Two</th>
