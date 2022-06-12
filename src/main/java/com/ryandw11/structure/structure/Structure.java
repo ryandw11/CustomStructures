@@ -41,6 +41,7 @@ public class Structure {
     private final StructureLimitations structureLimitations;
     private final MaskProperty maskProperty;
     private final SubSchematics subSchematics;
+    private final BottomSpaceFill bottomSpaceFill;
     private final Map<LootTableType, RandomCollection<LootTable>> lootTables;
     private final List<StructureSection> structureSections;
     private final double baseRotation;
@@ -64,6 +65,7 @@ public class Structure {
         this.structureLimitations = builder.structureLimitations;
         this.maskProperty = builder.maskProperty;
         this.subSchematics = builder.subSchematics;
+        this.bottomSpaceFill = builder.bottomSpaceFill;
         this.lootTables = builder.lootTables;
         this.structureSections = builder.structureSections;
         this.baseRotation = builder.baseRotation;
@@ -169,6 +171,15 @@ public class Structure {
      */
     public SubSchematics getSubSchematics() {
         return subSchematics;
+    }
+
+    /**
+     * Get the bottom space fill configuration section.
+     *
+     * @return The bottom space fill section.
+     */
+    public BottomSpaceFill getBottomSpaceFill() {
+        return bottomSpaceFill;
     }
 
     /**

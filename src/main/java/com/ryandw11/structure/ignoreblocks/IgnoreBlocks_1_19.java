@@ -2,17 +2,16 @@ package com.ryandw11.structure.ignoreblocks;
 
 import org.bukkit.Material;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Ignore blocks for 1.17 - 1.18
+ * Ignore blocks for 1.19
+ * <p>
+ * TODO Maybe use built in list defined by data packs? Or have the option
  */
-public class IgnoreBlocks_1_17 implements IgnoreBlocks {
+public class IgnoreBlocks_1_19 implements IgnoreBlocks {
 
-    private final List<Material> plantBlocks = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
+    private final List<Material> ignoreBlocks = List.of(
             // General BLocks
             Material.SNOW,
             // Grasses
@@ -106,11 +105,18 @@ public class IgnoreBlocks_1_17 implements IgnoreBlocks {
             Material.SMALL_AMETHYST_BUD,
             Material.MEDIUM_AMETHYST_BUD,
             Material.LARGE_AMETHYST_BUD,
-            Material.AMETHYST_CLUSTER
-    )));
+            Material.AMETHYST_CLUSTER,
+            // New 1.19 Materials
+            Material.MANGROVE_ROOTS,
+            Material.MUDDY_MANGROVE_ROOTS,
+            Material.MANGROVE_LOG,
+            Material.MANGROVE_LEAVES,
+            Material.MANGROVE_PROPAGULE,
+            Material.SCULK_VEIN
+    );
 
     @Override
     public List<Material> getBlocks() {
-        return plantBlocks;
+        return ignoreBlocks;
     }
 }
