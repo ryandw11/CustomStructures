@@ -24,6 +24,7 @@ StructureProperties:
   spawnInWater: true
   spawnInLavaLakes: true
   spawnInVoid: false
+  ignoreWater: false
 
 SubSchematics:
   Enabled: false
