@@ -51,6 +51,7 @@ public class StructureBuilder {
     protected StructureLimitations structureLimitations;
     protected MaskProperty maskProperty;
     protected SubSchematics subSchematics;
+    protected AdvancedSubSchematics advancedSubSchematics;
     protected BottomSpaceFill bottomSpaceFill;
     protected Map<LootTableType, RandomCollection<LootTable>> lootTables;
     protected List<StructureSection> structureSections;
@@ -125,6 +126,7 @@ public class StructureBuilder {
         structureLimitations = new StructureLimitations(config);
         maskProperty = new MaskProperty(config);
         subSchematics = new SubSchematics(config, CustomStructures.getInstance());
+        advancedSubSchematics = new AdvancedSubSchematics(config, CustomStructures.getInstance());
         bottomSpaceFill = new BottomSpaceFill(config);
 
         lootTables = new HashMap<>();
@@ -298,6 +300,24 @@ public class StructureBuilder {
     }
 
     /**
+     * Set the (simple) sub-schematic property.
+     *
+     * @param subSchematics The sub-schematic property.
+     */
+    public void setSubSchematics(SubSchematics subSchematics) {
+        this.subSchematics = subSchematics;
+    }
+
+    /**
+     * Set the advanced sub-schematic property.
+     *
+     * @param advancedSubSchematics The advanced sub-schematic property.
+     */
+    public void setAdvancedSubSchematics(AdvancedSubSchematics advancedSubSchematics) {
+        this.advancedSubSchematics = advancedSubSchematics;
+    }
+
+    /**
      * Set the loot tables from a configuration section.
      *
      * @param lootableConfig The loot table configuration section.
@@ -378,6 +398,17 @@ public class StructureBuilder {
      * @return The structure.
      */
     public Structure build() {
+        Objects.requireNonNull(name, "The structure name cannot be null.");
+        Objects.requireNonNull(schematic, "The structure schematic cannot be null.");
+        Objects.requireNonNull(structureLocation, "The structure location cannot be null.");
+        Objects.requireNonNull(structureProperties, "The structure property cannot be null.");
+        Objects.requireNonNull(structureLimitations, "The structure limitations cannot be null.");
+        Objects.requireNonNull(maskProperty, "The structure mask property cannot be null.");
+        Objects.requireNonNull(subSchematics, "The structure sub-schematic property cannot be null.");
+        Objects.requireNonNull(advancedSubSchematics, "The structure advanced sub-schematic property cannot be null.");
+        Objects.requireNonNull(bottomSpaceFill, "The structure bottom space fill property cannot be null.");
+        Objects.requireNonNull(lootTables, "The structure loot tables cannot be null.");
+        Objects.requireNonNull(structureSections, "The structure sections list cannot be null.");
         return new Structure(this);
     }
 

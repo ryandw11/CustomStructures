@@ -1,12 +1,14 @@
 package com.ryandw11.structure.structure.properties.schematics;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * This class holds a single SubSchematic.
+ * This class holds a single SubSchematic (both simple and advanced).
  */
 public class SubSchematic {
 
+    private final double weight;
     private String file;
     private boolean placeAir = false;
     private boolean useRotation = false;
@@ -14,12 +16,16 @@ public class SubSchematic {
     /**
      * Create a sub schematic from a configuration section.
      *
-     * @param section The configuration section.
+     * @param section  The configuration section.
+     * @param advanced If the sub schematic is under the advanced sub-schematic section.
      */
-    public SubSchematic(ConfigurationSection section) {
-        if (!section.contains("file"))
+    public SubSchematic(@NotNull ConfigurationSection section, boolean advanced) {
+        if (!section.contains("Weight") && advanced)
+            throw new RuntimeException("Format Error: " + section.getName() + " does not contain a weight!");
+        weight = advanced ? section.getDouble("Weight") : 0;
+        if (!section.contains("File"))
             throw new RuntimeException("Format Error: " + section.getName() + " does not contain a file!");
-        file = section.getString("file");
+        file = section.getString("File");
         if (section.contains("PlaceAir"))
             placeAir = section.getBoolean("PlaceAir");
         if (section.contains("UseRotation"))
@@ -33,10 +39,13 @@ public class SubSchematic {
      *                    <p>Note: The plugin does not check to make sure this file is valid!</p>
      * @param placeAir    If the structure should place air.
      * @param useRotation If you want the structure to use the rotation of the sign.
+     * @param weight      The weight of the sub-schematic.
      */
-    public SubSchematic(String file, boolean placeAir, boolean useRotation) {
+    public SubSchematic(String file, boolean placeAir, boolean useRotation, int weight) {
         this.file = file;
         this.placeAir = placeAir;
+        this.useRotation = useRotation;
+        this.weight = weight;
     }
 
     /**
@@ -87,9 +96,19 @@ public class SubSchematic {
     /**
      * Get the file of the sub schematic.
      *
-     * @return THe file of the sub schematic.
+     * @return The file of the sub schematic.
      */
     public String getFile() {
         return file;
+    }
+
+    /**
+     * The weight for the schematic.
+     * <p>This is 0 if it belongs to a simple sub-schematic configuration.</p>
+     *
+     * @return The weight of the schematic.
+     */
+    public double getWeight() {
+        return weight;
     }
 }

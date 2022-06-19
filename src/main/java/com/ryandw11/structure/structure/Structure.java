@@ -41,6 +41,7 @@ public class Structure {
     private final StructureLimitations structureLimitations;
     private final MaskProperty maskProperty;
     private final SubSchematics subSchematics;
+    private final AdvancedSubSchematics advancedSubSchematics;
     private final BottomSpaceFill bottomSpaceFill;
     private final Map<LootTableType, RandomCollection<LootTable>> lootTables;
     private final List<StructureSection> structureSections;
@@ -65,6 +66,7 @@ public class Structure {
         this.structureLimitations = builder.structureLimitations;
         this.maskProperty = builder.maskProperty;
         this.subSchematics = builder.subSchematics;
+        this.advancedSubSchematics = builder.advancedSubSchematics;
         this.bottomSpaceFill = builder.bottomSpaceFill;
         this.lootTables = builder.lootTables;
         this.structureSections = builder.structureSections;
@@ -165,12 +167,21 @@ public class Structure {
     }
 
     /**
-     * Get the sub schematics.
+     * Get the (simple) sub schematics.
      *
      * @return The sub schematics.
      */
     public SubSchematics getSubSchematics() {
         return subSchematics;
+    }
+
+    /**
+     * Get the advanced schematics.
+     *
+     * @return The advanced schematics.
+     */
+    public AdvancedSubSchematics getAdvancedSubSchematics() {
+        return advancedSubSchematics;
     }
 
     /**

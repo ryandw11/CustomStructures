@@ -4,13 +4,14 @@ import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Handles the sub schematics of the structure.
+ * The simple SubSchematic feature.
  */
 public class SubSchematics {
 
@@ -23,7 +24,7 @@ public class SubSchematics {
      * @param configuration The configuration file.
      * @param plugin        The instance of custom structures. (CustomStructures.getInstance()).
      */
-    public SubSchematics(FileConfiguration configuration, CustomStructures plugin) {
+    public SubSchematics(@NotNull FileConfiguration configuration, @NotNull CustomStructures plugin) {
         schematics = new ArrayList<>();
         if (!configuration.contains("SubSchematics")) {
             enabled = false;
@@ -33,19 +34,13 @@ public class SubSchematics {
         ConfigurationSection section = configuration.getConfigurationSection("SubSchematics");
         assert section != null;
 
-        if (!section.contains("Enabled")) {
-            enabled = false;
-            return;
-        }
-        enabled = section.getBoolean("Enabled");
-
         if (!section.contains("Schematics")) {
             enabled = false;
             return;
         }
         try {
             for (String s : Objects.requireNonNull(section.getConfigurationSection("Schematics")).getKeys(false)) {
-                schematics.add(new SubSchematic((Objects.requireNonNull(section.getConfigurationSection("Schematics." + s)))));
+                schematics.add(new SubSchematic((Objects.requireNonNull(section.getConfigurationSection("Schematics." + s))), false));
             }
         } catch (RuntimeException ex) {
             enabled = false;
@@ -53,10 +48,24 @@ public class SubSchematics {
             plugin.getLogger().warning("The following error occurred:");
             plugin.getLogger().warning(ex.getMessage());
         }
+
+        enabled = true;
+    }
+
+    /**
+     * Construct the SubSchematic feature programmatically.
+     *
+     * @param enabled If this feature should be enabled.
+     */
+    public SubSchematics(boolean enabled) {
+        this.enabled = enabled;
+        this.schematics = new ArrayList<>();
     }
 
     /**
      * If sub schematics are enabled.
+     *
+     * <p>Automatically enabled if the ConfigurationSection exists.</p>
      *
      * @return If sub schematics are enabled.
      */
@@ -90,5 +99,14 @@ public class SubSchematics {
      */
     public void setSchematics(List<SubSchematic> schematics) {
         this.schematics = schematics;
+    }
+
+    /**
+     * Add a SubSchematic to the list.
+     *
+     * @param subSchematic The sub-schematic to add.
+     */
+    public void addSchematic(SubSchematic subSchematic) {
+        this.schematics.add(subSchematic);
     }
 }

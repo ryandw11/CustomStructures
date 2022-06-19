@@ -27,14 +27,22 @@ StructureProperties:
   ignoreWater: false
 
 SubSchematics:
-  Enabled: false
   Schematics:
     demo2:
-      file: 'demo2.schem'
+      File: 'demo2.schem'
+      PlaceAir: false
+      UseRotation: false
+
+AdvancedSubSchematics:
+  CategoryOne:
+    demo2:
+      Weight: 20
+      File: 'demo2.schem'
       PlaceAir: false
       UseRotation: false
 
 StructureLimitations:
+  WorldHeightRestriction: 10
   whitelistSpawnBlocks:
     - GRASS_BLOCK
     - Dirt

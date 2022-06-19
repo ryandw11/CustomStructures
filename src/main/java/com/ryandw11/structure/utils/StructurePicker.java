@@ -141,6 +141,11 @@ public class StructurePicker extends BukkitRunnable {
                 structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
+            // If the structure is going to be cut off by the world height limit, pick a new structure.
+            if(structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
+                    structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction())
+                return;
+
             // If the structure can follows block level limit.
             // This only triggers if it spawns on the top.
             if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {

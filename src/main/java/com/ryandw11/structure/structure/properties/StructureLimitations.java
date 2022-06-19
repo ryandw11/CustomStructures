@@ -11,6 +11,7 @@ import java.util.*;
  */
 public class StructureLimitations {
 
+    private int worldHeightRestriction;
     private int iterationLimit;
     private final List<String> whitelistSpawnBlocks;
     private final List<String> blacklistSpawnBlocks;
@@ -29,6 +30,11 @@ public class StructureLimitations {
             iterationLimit = 2;
         else
             iterationLimit = configuration.getInt("StructureLimitations.iterationLimit");
+
+        if (!configuration.contains("StructureLimitations.WorldHeightRestriction"))
+            worldHeightRestriction = -1;
+        else
+            worldHeightRestriction = Math.max(0, configuration.getInt("StructureLimitations.WorldHeightRestriction"));
 
         if (!configuration.contains("StructureLimitations.whitelistSpawnBlocks"))
             whitelistSpawnBlocks = new ArrayList<>();
@@ -65,6 +71,7 @@ public class StructureLimitations {
      */
     public StructureLimitations(List<String> whitelistSpawnBlocks, List<String> blacklistSpawnBlocks, BlockLevelLimit blockLevelLimit, Map<Material, Material> blockReplacement) {
         this.iterationLimit = 2;
+        this.worldHeightRestriction = -1;
         this.whitelistSpawnBlocks = whitelistSpawnBlocks;
         this.blacklistSpawnBlocks = blacklistSpawnBlocks;
         this.blockLevelLimit = blockLevelLimit;
@@ -171,5 +178,23 @@ public class StructureLimitations {
      */
     public void setReplacementBlocksDelay(double value) {
         replacementBlocksDelay = value;
+    }
+
+    /**
+     * Get the World Height Restriction.
+     *
+     * @return The world height restriction.
+     */
+    public int getWorldHeightRestriction() {
+        return worldHeightRestriction;
+    }
+
+    /**
+     * Set the World Height Restriction property.
+     *
+     * @param structureHeight The structure height.
+     */
+    public void setWorldHeightRestriction(int structureHeight) {
+        this.worldHeightRestriction = Math.max(-1, structureHeight);
     }
 }

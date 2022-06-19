@@ -9,14 +9,12 @@ import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.ignoreblocks.*;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.listener.PlayerJoin;
-import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.mythicalmobs.MMDisabled;
 import com.ryandw11.structure.mythicalmobs.MMEnabled;
 import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
 import com.ryandw11.structure.structure.StructureHandler;
-import com.ryandw11.structure.utils.Pair;
 import com.ryandw11.structure.utils.SpawnYConversion;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.apache.commons.io.FileUtils;
@@ -24,6 +22,7 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -37,7 +36,7 @@ import java.util.*;
  * The main class for the Custom Structures plugin.
  *
  * @author Ryandw11
- * @version 1.8.0
+ * @version 1.8.1
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -63,8 +62,15 @@ public class CustomStructures extends JavaPlugin {
 
     public static boolean enabled;
 
+    /**
+     * The current version of the compiled structure format.
+     */
     public static final int COMPILED_STRUCT_VER = 1;
-    public static final int CONFIG_VERSION = 7;
+
+    /**
+     * The current version of the structure configuration format.
+     */
+    public static final int CONFIG_VERSION = 8;
 
     private static boolean papiEnabled = false;
 
@@ -129,6 +135,12 @@ public class CustomStructures extends JavaPlugin {
 
         // Run this after the loading of all plugins.
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            if (getConfig().getInt("configversion") != CONFIG_VERSION) {
+                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CustomStructures] Cannot enable plugin, your config version is outdated. " +
+                        "Check the above for errors that may have occurred during the auto-update process." + ChatColor.RESET);
+                return;
+            }
+
             this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
             getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
             getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
@@ -308,8 +320,8 @@ public class CustomStructures extends JavaPlugin {
 
     /**
      * Updates the config to the latest version.
-     * (Also currently updates loot tables from 5 to 6)
-     * This will be removed in future versions.
+     *
+     * <p>Currently, only converts 6->7 and 7->8.</p>
      */
     private void updateConfig(int ver) {
         getLogger().info("An older version of the plugin has been detected!");
@@ -324,77 +336,11 @@ public class CustomStructures extends JavaPlugin {
         }
         // Update to new loot table format.
         if (ver < 6) {
-            getLogger().info("Updating loot tables.");
-            File structDir = new File(getDataFolder(), "structures");
-            if (!structDir.exists() && !structDir.isDirectory()) {
-                getLogger().severe("An error occurred when trying to update the structure format: Unable to find structure directory! Does it exist?");
-                return;
-            }
-            int structuresConverted = 0;
-            Map<String, Pair<List<LootTableType>, Double>> alreadyConverted = new HashMap<>();
-            for (File file : Objects.requireNonNull(structDir.listFiles())) {
-                if (!file.getName().contains(".yml"))
-                    continue;
-                FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file);
-                if (!fileConfiguration.contains("LootTables"))
-                    continue;
-                Map<LootTableType, Map<String, Double>> lootTables = new HashMap<>();
-                for (String lootName : fileConfiguration.getConfigurationSection("LootTables").getKeys(false)) {
-                    if (LootTableType.exists(lootName)) break;
-                    File lootFile = new File(getDataFolder(), "lootTables" + File.separator + lootName + ".yml");
-                    if (!lootFile.exists()) {
-                        getLogger().severe("An error has occurred when trying to update the structure format:" +
-                                "\n Cannot find loot table: " + lootName + ".yml");
-                        return;
-                    }
-                    FileConfiguration lootConfig = YamlConfiguration.loadConfiguration(lootFile);
-                    if (!lootConfig.contains("Type")) {
-                        if (alreadyConverted.containsKey(lootName)) {
-                            for (LootTableType type : alreadyConverted.get(lootName).getLeft()) {
-                                if (!lootTables.containsKey(type)) {
-                                    Map<String, Double> lt = new HashMap<>();
-                                    lt.put(lootName, alreadyConverted.get(lootName).getRight());
-                                    lootTables.put(type, lt);
-                                } else
-                                    lootTables.get(type).put(lootName, alreadyConverted.get(lootName).getRight());
-                            }
-                        }
-                        continue;
-                    }
-                    List<LootTableType> types = LootTableType.valueOfList(Objects.requireNonNull(lootConfig.getString("Type")));
-                    for (LootTableType type : types) {
-                        if (!lootTables.containsKey(type)) {
-                            Map<String, Double> lt = new HashMap<>();
-                            lt.put(lootName, fileConfiguration.getDouble("LootTables." + lootName));
-                            lootTables.put(type, lt);
-                        } else
-                            lootTables.get(type).put(lootName, fileConfiguration.getDouble("LootTables." + lootName));
-                    }
-                    alreadyConverted.put(lootName, Pair.of(types, fileConfiguration.getDouble("LootTables." + lootName)));
-                    lootConfig.set("Type", null);
-                    try {
-                        lootConfig.save(lootFile);
-                    } catch (IOException ex) {
-                        getLogger().severe("Error: Unable to save loot table file! Does the plugin have permission to edit that file?");
-                    }
-                }
-                getLogger().info(file.getName() + ": " + lootTables.size() + "");
-                fileConfiguration.set("LootTables", null);
-                for (Map.Entry<LootTableType, Map<String, Double>> entry : lootTables.entrySet()) {
-                    for (Map.Entry<String, Double> loot : entry.getValue().entrySet()) {
-                        fileConfiguration.set(String.format("LootTables.%s.%s", entry.getKey().toString(), loot.getKey()), loot.getValue());
-                    }
-                }
-                try {
-                    fileConfiguration.save(file);
-                } catch (IOException ex) {
-                    getLogger().severe("Error: Unable to save changed structure file! Does the plugin have permission to edit that file?");
-                }
-                structuresConverted++;
-            }
-            getConfig().set("configversion", 6);
-            saveConfig();
-            getLogger().info("Successfully updated " + structuresConverted + " structures!");
+            getLogger().severe("Error: Your config is too old for the plugin to update.");
+            getLogger().severe("Please use custom structures 1.8.0 or older before updating to the latest version.");
+            getLogger().severe("The plugin will now disable itself.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
         if (ver < 7) {
             getLogger().info("Updating all structure config files...");
@@ -513,7 +459,128 @@ public class CustomStructures extends JavaPlugin {
             getConfig().set("configversion", 7);
             saveConfig();
 
-            getLogger().info("Successfully updated all structure files to the latest version.");
+            getLogger().info("Successfully updated all structure files to config version 7.");
+            getLogger().info("Please delete the backup folder that was created in the CustomStructures directory" +
+                    " after you confirm everything was updated correctly and restart the server to update to the latest config version (8).");
+        }
+        // Convert to config version 8. (Only change is upper-casing File for SubSchematics)
+        if (ver < 8) {
+            getLogger().info("Updating all structure config files...");
+
+            File structDir = new File(getDataFolder(), "structures");
+            if (!structDir.exists() && !structDir.isDirectory()) {
+                getLogger().severe("An error occurred when trying to update the structure format: Unable to find structure directory! Does it exist?");
+                return;
+            }
+
+            File backupDirectory = new File(getDataFolder(), "backup");
+            File backupdata = new File(backupDirectory, ".backups");
+            if (!backupDirectory.exists()) {
+                if (!backupDirectory.mkdir()) {
+                    getLogger().severe("Error: Unable to create backup directory!");
+                    return;
+                }
+            }
+
+            if (!backupdata.exists()) {
+                try {
+                    backupdata.createNewFile();
+                } catch (IOException ex) {
+                    getLogger().severe("Error: Unable to create backup file.");
+                    return;
+                }
+            }
+
+            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(backupdata);
+
+            if (fileConfiguration.contains("backupVer")) {
+                int backupVer = fileConfiguration.getInt("backupVer");
+                if (backupVer != 8) {
+                    Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "===============[CUSTOM STRUCTURES UPDATE]===============" + ChatColor.RESET);
+                    getLogger().severe("Unable to update plugin! Backup data is outdated!");
+                    getLogger().severe("Please delete the backup folder in the CustomStructures directory before continuing!");
+                    Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "===============[CUSTOM STRUCTURES UPDATE]===============" + ChatColor.RESET);
+                    return;
+                }
+            } else {
+                fileConfiguration.set("backupVer", 8);
+                try {
+                    fileConfiguration.save(backupdata);
+                } catch (IOException ex) {
+                    getLogger().severe("A critical error has occurred while backing up the plugin data.");
+                    return;
+                }
+            }
+
+            List<String> updatedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
+
+            // This detects if there are any loaded structures, and alerts the user if this is an error.
+            if (!updatedStructures.isEmpty()) {
+                getLogger().info("Previous update attempt detected.");
+                getLogger().info(String.format("%s completed structure updates were found. If this is your first time updating" +
+                                " to this version of CustomStructures, then please delete the backup directory and restart the server.",
+                        updatedStructures.size()));
+                getLogger().info("The server will now wait 5 seconds to give you a chance to stop the server before " +
+                        "the update automatically continues. Press ctrl+c to cancel running the server.");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    getLogger().info("Server shutdown detected. Stopping update.");
+                    return;
+                }
+            }
+
+            createBackupForFile("config.yml", "/backup/config.yml.backup");
+            for (String s : getConfig().getStringList("Structures")) {
+                if (updatedStructures.contains(s)) continue;
+
+                try {
+                    createBackupForFile("/structures/" + s + ".yml", "/backup/" + s + ".yml.backup");
+
+                    FileConfiguration structConfig = YamlConfiguration.loadConfiguration(new File(structDir, s + ".yml"));
+
+                    if (!structConfig.contains("SubSchematics.Schematics")) {
+                        continue;
+                    }
+
+                    for (String struct : structConfig.getConfigurationSection("SubSchematics.Schematics").getKeys(false)) {
+                        ConfigurationSection section = structConfig.getConfigurationSection("SubSchematics.Schematics." + struct);
+                        if (!section.contains("file")) {
+                            getLogger().severe(String.format("An error has occurred when attempting to update structure %s!", s));
+                            getLogger().severe(String.format("Cannot find 'file' option on %s when update the SubSchematics property!", struct));
+                            getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
+                                    " from where it left off.");
+                            return;
+                        }
+                        section.set("File", section.getString("file"));
+                        section.set("file", null);
+                    }
+
+                    try {
+                        structConfig.save(new File(structDir, s + ".yml"));
+                    } catch (IOException ex) {
+                        getLogger().info(String.format("An error has occurred when updating %s!", s));
+                        getLogger().severe("Error: unable to save updated structure file!");
+                        return;
+                    }
+                    getLogger().info(String.format("Successfully updated the structure: %s!", s));
+                    // Add the updated structure to the list.
+                    updatedStructures.add(s);
+                    fileConfiguration.set("UpdatedStructures", updatedStructures);
+                    fileConfiguration.save(backupdata);
+                } catch (Exception ex) {
+                    getLogger().severe(String.format("An error has occurred when updating %s:", s));
+                    ex.printStackTrace();
+                    getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
+                            " from where it left off.");
+                    return;
+                }
+            }
+
+            getConfig().set("configversion", 8);
+            saveConfig();
+
+            getLogger().info("Successfully updated all structure files to the latest version (8).");
             getLogger().info("Please delete the backup folder that was created in the CustomStructures directory" +
                     " after you confirm everything was updated correctly.");
         }

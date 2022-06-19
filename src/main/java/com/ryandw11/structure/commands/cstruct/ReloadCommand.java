@@ -24,6 +24,11 @@ public class ReloadCommand implements SubCommand {
     @Override
     public boolean subCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if (sender.hasPermission("customstructures.reload")) {
+            if(plugin.getStructureHandler() == null) {
+                sender.sendMessage(ChatColor.RED + "Unable to reload CustomStructures. The plugin has not been properly initialized.");
+                sender.sendMessage(ChatColor.RED + "Please check the console for errors during startup.");
+                return false;
+            }
             plugin.reloadConfig();
             sender.sendMessage(ChatColor.GREEN + "The plugin has been reloaded!");
             plugin.getLogger().info("Plugin reloaded!");

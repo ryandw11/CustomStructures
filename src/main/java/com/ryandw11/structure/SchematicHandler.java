@@ -8,6 +8,7 @@ import com.ryandw11.structure.io.BlockTag;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
 import com.ryandw11.structure.structure.Structure;
+import com.ryandw11.structure.structure.properties.AdvancedSubSchematics;
 import com.ryandw11.structure.structure.properties.MaskProperty;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
@@ -215,9 +216,9 @@ public class SchematicHandler {
                     Location maxLoc = getMaximumLocation(clipboard, loc, finalRotY);
                     processAndReplaceSign(location, minLoc, maxLoc);
                 }
-                // This is separate so that if the block doesn't exist anymore than it will not error out.
+                // If the sign still exists, it could be a sub-schematic sign.
                 if (location.getBlock().getState() instanceof Sign) {
-                    replaceSignWithSchematic(location, structure.getSubSchematics(), structure, iteration);
+                    replaceSignWithSchematic(location, structure, iteration);
                 }
             }
 
@@ -602,9 +603,9 @@ public class SchematicHandler {
         // TODO: This is not a good method, should try to pick another loot table if failed.
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
-                this.replaceFurnaceContent(lootTable, random, (FurnaceInventory) containerInventory);
+                this.replaceFurnaceContent(lootTable, (FurnaceInventory) containerInventory);
             } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
-                this.replaceBrewerContent(lootTable, random, (BrewerInventory) containerInventory);
+                this.replaceBrewerContent(lootTable, (BrewerInventory) containerInventory);
             } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
                 this.replaceChestContent(lootTable, random, containerInventory);
             }
@@ -711,11 +712,13 @@ public class SchematicHandler {
      * Replace a sign with a schematic.
      *
      * @param location        The location of the sign.
-     * @param subSchematics   The sub schematic handler for the structure.
      * @param parentStructure The parent structure.
      * @param iteration       The iteration of schematic pasting.
      */
-    private void replaceSignWithSchematic(Location location, SubSchematics subSchematics, Structure parentStructure, int iteration) {
+    private void replaceSignWithSchematic(Location location, Structure parentStructure, int iteration) {
+        SubSchematics subSchematics = parentStructure.getSubSchematics();
+        AdvancedSubSchematics advancedSubSchematics = parentStructure.getAdvancedSubSchematics();
+
         Sign sign = (Sign) location.getBlock().getState();
         String firstLine = sign.getLine(0).trim();
         String secondLine = sign.getLine(1).trim();
@@ -747,7 +750,7 @@ public class SchematicHandler {
             if (secondLine.startsWith("[")) {
                 String v = secondLine.replace("[", "").replace("]", "");
                 String[] out = v.split("-");
-                if (out.length == 1)
+                if (out.length != 2)
                     out = v.split(";");
                 try {
                     int num1 = Integer.parseInt(out[0]);
@@ -775,6 +778,29 @@ public class SchematicHandler {
             location.getBlock().setType(Material.AIR);
 
             SubSchematic subSchem = subSchematics.getSchematics().get(number);
+
+            // Disable rotation if the structure is not using it.
+            if (!subSchem.isUsingRotation())
+                parentStructure.setSubSchemRotation(0);
+            try {
+                schemHandle(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure, iteration + 1);
+            } catch (Exception ex) {
+                plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
+                if (plugin.isDebug()) {
+                    ex.printStackTrace();
+                }
+            }
+        } else if (firstLine.equalsIgnoreCase("[advschem]")) {
+            if (!advancedSubSchematics.containsCategory(secondLine)) {
+                plugin.getLogger().warning("Cannot replace Advanced Sub-Schematic sign.");
+                plugin.getLogger().warning(String.format("The category \"%s\" does not exist!", secondLine));
+                return;
+            }
+
+            // Remove the sign after placing the schematic.
+            location.getBlock().setType(Material.AIR);
+
+            SubSchematic subSchem = advancedSubSchematics.getCategory(secondLine).next();
 
             // Disable rotation if the structure is not using it.
             if (!subSchem.isUsingRotation())
@@ -836,6 +862,13 @@ public class SchematicHandler {
         }
     }
 
+    /**
+     * Check if two items are the same.
+     *
+     * @param randomPosItem The first item.
+     * @param randomItem    The second item.
+     * @return If the two items have the same metadata and type.
+     */
     private boolean isSameItem(ItemStack randomPosItem, ItemStack randomItem) {
         ItemMeta randomPosItemMeta = randomPosItem.getItemMeta();
         ItemMeta randomItemMeta = randomItem.getItemMeta();
@@ -843,7 +876,13 @@ public class SchematicHandler {
         return randomPosItem.getType().equals(randomItem.getType()) && randomPosItemMeta.equals(randomItemMeta);
     }
 
-    private void replaceBrewerContent(LootTable lootTable, Random random, BrewerInventory containerInventory) {
+    /**
+     * Replace the contents of a brewer with the loot table.
+     *
+     * @param lootTable          The loot table to populate the brewer with.
+     * @param containerInventory The inventory of the brewer.
+     */
+    private void replaceBrewerContent(LootTable lootTable, BrewerInventory containerInventory) {
         ItemStack item = lootTable.getRandomWeightedItem();
         ItemStack ingredient = containerInventory.getIngredient();
         ItemStack fuel = containerInventory.getFuel();
@@ -856,7 +895,13 @@ public class SchematicHandler {
 
     }
 
-    private void replaceFurnaceContent(LootTable lootTable, Random random, FurnaceInventory containerInventory) {
+    /**
+     * Replace the content of the furnace with loot table items.
+     *
+     * @param lootTable          The loot table selected for the furnace.
+     * @param containerInventory The inventory of the furnace.
+     */
+    private void replaceFurnaceContent(LootTable lootTable, FurnaceInventory containerInventory) {
         ItemStack item = lootTable.getRandomWeightedItem();
         ItemStack result = containerInventory.getResult();
         ItemStack fuel = containerInventory.getFuel();
