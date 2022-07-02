@@ -122,6 +122,13 @@ public class TestSpawnCommand implements SubCommand {
             quickSendMessage(p, "&aSpawn Y Value: " + bl.getY());
         }
 
+        // If the structure is going to be cut off by the world height limit, pick a new structure.
+        if(structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
+                bl.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction()) {
+            quickSendMessage(p, "&cFailed World Height Restriction!");
+            return;
+        }
+
         // If the structure can follows block level limit.
         // This only triggers if it spawns on the top.
         if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {
