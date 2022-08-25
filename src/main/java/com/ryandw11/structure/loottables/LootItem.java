@@ -8,6 +8,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
@@ -136,7 +137,11 @@ public class LootItem {
             Enchantment enchantment = EnchantmentWrapper.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
             if (enchantment == null)
                 throw new LootTableException("Invalid Enchantment: " + enchantName);
-            item.addUnsafeEnchantment(enchantment, level);
+            if(item.getItemMeta() instanceof EnchantmentStorageMeta enchantmentStorageMeta) {
+                enchantmentStorageMeta.addStoredEnchant(enchantment, level, true);
+            } else {
+                item.addUnsafeEnchantment(enchantment, level);
+            }
         }
     }
 
