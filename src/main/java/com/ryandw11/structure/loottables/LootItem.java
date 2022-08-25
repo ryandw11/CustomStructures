@@ -137,8 +137,9 @@ public class LootItem {
             Enchantment enchantment = EnchantmentWrapper.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
             if (enchantment == null)
                 throw new LootTableException("Invalid Enchantment: " + enchantName);
-            if(item.getItemMeta() instanceof EnchantmentStorageMeta enchantmentStorageMeta) {
+            if (item.getItemMeta() instanceof EnchantmentStorageMeta enchantmentStorageMeta) {
                 enchantmentStorageMeta.addStoredEnchant(enchantment, level, true);
+                item.setItemMeta(enchantmentStorageMeta);
             } else {
                 item.addUnsafeEnchantment(enchantment, level);
             }
