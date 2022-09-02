@@ -10,7 +10,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StructureLocation {
+/**
+ * The configuration section for the Structure Location.
+ */
+public class StructureLocation implements StructureProperty {
 
     private List<String> worlds;
     private StructureYSpawning spawnY;
@@ -20,13 +23,24 @@ public class StructureLocation {
     private int zLimitation;
 
     /**
-     * Create the Structure Location property.
+     * Create the Structure Location configuration section.
      *
      * @param sb            The Structure Builder.
      * @param configuration The File Configuration.
+     * @deprecated Use {@link StructureLocation#StructureLocation(FileConfiguration)} instead.
      */
+    @Deprecated
     public StructureLocation(StructureBuilder sb, FileConfiguration configuration) {
-        ConfigurationSection cs = configuration.getConfigurationSection("StructureLocation");
+        this(configuration);
+    }
+
+    /**
+     * Create the Structure Location configuration section.
+     *
+     * @param fileConfiguration The file configuration to grab the section from.
+     */
+    public StructureLocation(FileConfiguration fileConfiguration) {
+        ConfigurationSection cs = fileConfiguration.getConfigurationSection("StructureLocation");
         if (cs == null)
             throw new StructureConfigurationException("The `StructureLocation` property is mandatory, please add one to the file for the " +
                     "structure to be valid.");
@@ -34,7 +48,7 @@ public class StructureLocation {
             this.worlds = cs.getStringList("Worlds");
         else
             this.worlds = new ArrayList<>();
-        this.spawnY = new StructureYSpawning(configuration);
+        this.spawnY = new StructureYSpawning(fileConfiguration);
         if (cs.contains("Biome"))
             this.biomes = cs.getStringList("Biome");
         else
@@ -208,5 +222,21 @@ public class StructureLocation {
         if (distance < 0)
             throw new IllegalArgumentException("Distance must be greater than 0!");
         this.distanceFromOthers = distance;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveToFile(ConfigurationSection configurationSection) {
+        configurationSection.set("Worlds", worlds);
+        configurationSection.set("SpawnY", spawnY.getValue());
+        configurationSection.set("SpawnYHeightMap", spawnY.getHeightMap().toString());
+        configurationSection.set("Biome", biomes);
+        configurationSection.set("DistanceFromOthers", distanceFromOthers);
+        if (xLimitation > 0)
+            configurationSection.set("spawn_distance.x", xLimitation);
+        if (zLimitation > 0)
+            configurationSection.set("spawn_distance.z", zLimitation);
     }
 }

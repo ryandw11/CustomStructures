@@ -21,8 +21,13 @@ public class CustomStructuresAPI {
      *
      * <p>This is how you obtain the CustomStructureAPI class. Nothing special needs to be done
      * other than use this constructor.</p>
+     *
+     * @throws IllegalStateException If CustomStructures has yet to be initialized.
      */
     public CustomStructuresAPI() {
+        if (CustomStructures.plugin == null)
+            throw new IllegalStateException("CustomStructures has yet to be initialized.");
+
         this.plugin = CustomStructures.plugin;
     }
 
@@ -41,7 +46,7 @@ public class CustomStructuresAPI {
      */
     public void registerCustomAddon(CustomStructureAddon customStructureAddon) {
         if (plugin.getAddonHandler() == null)
-            throw new IllegalStateException("The addon system has not been initialized yet. Please add CustomStructures" +
+            throw new IllegalStateException("The addon system has not been initialized yet. Please add CustomStructures " +
                     "as a dependency in your plugin.yml file.");
         plugin.getAddonHandler().registerAddon(customStructureAddon);
     }

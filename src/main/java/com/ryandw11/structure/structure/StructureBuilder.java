@@ -68,6 +68,13 @@ public class StructureBuilder {
         this(name, schematic, new ArrayList<>());
     }
 
+    /**
+     * Build a structure.
+     *
+     * @param name      The name of the structure.
+     * @param schematic The location of the structure schematic file.
+     * @param sections  The list of structure sections.
+     */
     public StructureBuilder(String name, String schematic, List<StructureSection> sections) {
         this.plugin = CustomStructures.getInstance();
         this.name = name;
@@ -77,6 +84,13 @@ public class StructureBuilder {
         this.structureSections = sections;
     }
 
+    /**
+     * Build a structure.
+     *
+     * @param name      The name of the structure.
+     * @param schematic The location of the structure schematic file.
+     * @param sections  The structure sections to add.
+     */
     public StructureBuilder(String name, String schematic, StructureSection... sections) {
         this.plugin = CustomStructures.getInstance();
         this.name = name;

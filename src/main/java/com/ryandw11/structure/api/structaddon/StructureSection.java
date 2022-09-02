@@ -1,6 +1,7 @@
 package com.ryandw11.structure.api.structaddon;
 
 import com.ryandw11.structure.structure.Structure;
+import com.ryandw11.structure.structure.properties.StructureProperty;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * users:</p>
  * <code>{AddonName}MyCoolSection</code>
  */
-public interface StructureSection {
+public interface StructureSection extends StructureProperty {
     /**
      * This is the name of your custom section.
      *

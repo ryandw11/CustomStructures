@@ -17,11 +17,11 @@ import java.util.Objects;
  * Handles the masks.
  */
 public class MaskProperty {
-    private List<Mask> masks;
+    private final List<Mask> masks;
     private MaskUnion unionType;
 
     /**
-     * Create the MaskPropety from a configuration file.
+     * Create the MaskProperty from a configuration file.
      *
      * @param configuration The configuration file.
      */
@@ -43,6 +43,17 @@ public class MaskProperty {
 
         blockTypeMask(cs);
         negateBlockTypeMask(cs);
+    }
+
+    /**
+     * Construct MaskProperty
+     *
+     * @param masks     The list of masks.
+     * @param unionType The mask union type.
+     */
+    public MaskProperty(List<Mask> masks, MaskUnion unionType) {
+        this.masks = masks;
+        this.unionType = unionType;
     }
 
     /**

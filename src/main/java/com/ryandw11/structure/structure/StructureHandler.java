@@ -6,7 +6,6 @@ import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.io.StructureFileReader;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
@@ -131,6 +130,9 @@ public class StructureHandler {
 
     /**
      * Add a structure to the list of spawned structures.
+     * <p>This feature must be enabled via the config.</p>
+     * <p>Note: This will not spawn in a structure, only add one to the list of spawned structures
+     * (seen by /cstruct nearby). Use {@link Structure#spawn(Location)} to spawn a structure in the world.</p>
      *
      * @param loc    The location.
      * @param struct The structure.
@@ -147,7 +149,7 @@ public class StructureHandler {
     /**
      * Calculate if the structure is far enough away from other structures.
      *
-     * @param struct The structure to calculate that for.
+     * @param struct   The structure to calculate that for.
      * @param location The location that the structure is spawning.
      * @return If the distance is valid according to its config.
      */
@@ -155,7 +157,7 @@ public class StructureHandler {
         double closest = Double.MAX_VALUE;
         synchronized (spawnedStructures) {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
-                if(entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
+                if (entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
 
                 if (entry.getKey().getLeft().distance(location) < closest)
                     closest = entry.getKey().getLeft().distance(location);
