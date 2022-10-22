@@ -68,8 +68,6 @@ public class DefaultBottomFill extends BukkitRunnable implements BottomFillImpl 
             try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
                 Clipboard clipboard = reader.read();
 
-                // Note: The minimum point of a Region is the lowest abs point in the original world
-
                 // The new origin point which the structure is pasted onto
                 int oX = spawnLocation.getBlockX();
                 int oY = spawnLocation.getBlockY();
