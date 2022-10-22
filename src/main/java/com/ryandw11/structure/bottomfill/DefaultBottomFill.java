@@ -43,19 +43,19 @@ public class DefaultBottomFill extends BukkitRunnable implements BottomFillImpl 
     @Override
     public void performFill(Structure structure, Location spawnLocation, Location minLoc, Location maxLoc, AffineTransform transform) {
 
+        Optional<Material> fillMaterial = structure.getBottomSpaceFill().getFillMaterial(spawnLocation.getBlock().getBiome());
+        if (fillMaterial.isPresent()) {
+            this.fillMaterial = fillMaterial.get();
+        } else return;
+
+        this.structure = structure;
+        this.spawnLocation = spawnLocation;
+        this.groundPlane = new LinkedList<>();
+        this.minY = minLoc.getBlockY();
+
         Bukkit.getScheduler().runTaskAsynchronously(CustomStructures.getInstance(), () -> {
 
             // ---- This part of code should be safe to run async ----
-
-            Optional<Material> fillMaterial = structure.getBottomSpaceFill().getFillMaterial(spawnLocation.getBlock().getBiome());
-            if (fillMaterial.isPresent()) {
-                this.fillMaterial = fillMaterial.get();
-            } else return;
-
-            this.structure = structure;
-            this.spawnLocation = spawnLocation;
-            this.minY = minLoc.getBlockY();
-            groundPlane = new LinkedList<>();
 
             // To get the ground plane, we need to read the schematic
             File file = new File(CustomStructures.getInstance().getDataFolder() + "/schematics/" + structure.getSchematic());
@@ -76,9 +76,14 @@ public class DefaultBottomFill extends BukkitRunnable implements BottomFillImpl 
                 int oZ = spawnLocation.getBlockZ();
 
                 int clipboardMinY = clipboard.getMinimumPoint().getBlockY();
+
                 for (int x = clipboard.getMinimumPoint().getBlockX(); x <= clipboard.getMaximumPoint().getBlockX(); x++) {
                     for (int z = clipboard.getMinimumPoint().getBlockZ(); z <= clipboard.getMaximumPoint().getBlockZ(); z++) {
+                        // Loop through bottom plane of the region
+
                         if (clipboard.getBlock(BlockVector3.at(x, clipboardMinY, z)).getBlockType().getMaterial().isMovementBlocker()) {
+                            // Find the certain point of the bottom plane which bottom fill should start at
+
                             BlockVector3 groundPoint = BlockVector3.at(x, clipboardMinY, z);
 
                             groundPoint = groundPoint.subtract(clipboard.getOrigin()); // Translate point back to origin (0,0)
