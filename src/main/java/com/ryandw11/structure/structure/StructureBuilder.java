@@ -130,7 +130,7 @@ public class StructureBuilder {
             isCompiled = new File(CustomStructures.getInstance().getDataFolder() + "/schematics/" +
                     Objects.requireNonNull(config.getString("compiled_schematic"))).exists();
             if (!isCompiled)
-                CustomStructures.getInstance().getLogger().severe("Invalid compiled schematic file for: " + name);
+                CustomStructures.getInstance().getLogger().severe("Invalid compiled schematic file for: " + config.getName());
             else
                 compiledSchematic = config.getString("compiled_schematic");
         }
