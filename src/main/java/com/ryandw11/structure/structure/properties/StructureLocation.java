@@ -19,6 +19,7 @@ public class StructureLocation implements StructureProperty {
     private StructureYSpawning spawnY;
     private List<String> biomes;
     private double distanceFromOthers;
+    private double distanceFromSame;
     private int xLimitation;
     private int zLimitation;
 
@@ -59,6 +60,11 @@ public class StructureLocation implements StructureProperty {
         else
             this.distanceFromOthers = 100;
 
+        if (cs.contains("DistanceFromSame"))
+            this.distanceFromSame = Math.max(0, cs.getDouble("DistanceFromSame"));
+        else
+            this.distanceFromSame = 100;
+
         xLimitation = 0;
         zLimitation = 0;
         if (cs.contains("spawn_distance")) {
@@ -85,6 +91,7 @@ public class StructureLocation implements StructureProperty {
         this.spawnY = spawnSettings;
         this.biomes = biomes;
         this.distanceFromOthers = 100;
+        this.distanceFromSame = 100;
         this.xLimitation = 0;
         this.zLimitation = 0;
     }
@@ -211,6 +218,10 @@ public class StructureLocation implements StructureProperty {
      */
     public double getDistanceFromOthers() {
         return distanceFromOthers;
+    }
+
+    public double getDistanceFromSame() {
+        return distanceFromSame;
     }
 
     /**
