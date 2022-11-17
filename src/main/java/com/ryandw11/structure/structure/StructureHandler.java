@@ -175,12 +175,12 @@ public class StructureHandler {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
 
                 if (entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
+                
+                if (!Objects.equals(entry.getValue().getName(), struct.getName())) continue;
 
-                if (entry.getKey().getLeft().distance(location) < closest)
-
-                    if (Objects.equals(entry.getValue().getName(), struct.getName())) {
+                if (entry.getKey().getLeft().distance(location) < closest){
                         closest = entry.getKey().getLeft().distance(location);
-                    }
+                }
             }
             return struct.getStructureLocation().getDistanceFromSame() < closest;
         }
