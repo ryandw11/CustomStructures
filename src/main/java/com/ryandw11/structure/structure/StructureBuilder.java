@@ -130,7 +130,7 @@ public class StructureBuilder {
             isCompiled = new File(CustomStructures.getInstance().getDataFolder() + "/schematics/" +
                     Objects.requireNonNull(config.getString("compiled_schematic"))).exists();
             if (!isCompiled)
-                CustomStructures.getInstance().getLogger().severe("Invalid compiled schematic file for: " + config.getName());
+                CustomStructures.getInstance().getLogger().severe("Invalid compiled schematic file for: " + name);
             else
                 compiledSchematic = config.getString("compiled_schematic");
         }
@@ -201,7 +201,8 @@ public class StructureBuilder {
                         constructedSection.setupSection(config.getConfigurationSection(constructedSection.getName()));
                     }
                     this.structureSections.add(constructedSection);
-                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                         InvocationTargetException ex) {
                     // Inform the user of errors.
                     plugin.getLogger().severe(String.format("The section %s for the addon %s" +
                                     "is configured incorrectly. If you are the developer please refer to the API documentation.",

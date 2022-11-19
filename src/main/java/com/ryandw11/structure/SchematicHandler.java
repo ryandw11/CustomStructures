@@ -170,8 +170,8 @@ public class SchematicHandler {
             int lowZ = Math.min(minLoc.getBlockZ(), maxLoc.getBlockZ());
             int highX = Math.max(minLoc.getBlockX(), maxLoc.getBlockX());
             int highY = Math.max(minLoc.getBlockY(), maxLoc.getBlockY());
-            int highz = Math.max(minLoc.getBlockZ(), maxLoc.getBlockZ());
-            BottomFillProvider.provide().performFill(structure, loc, new Location(minLoc.getWorld(), lowX, lowY, lowZ), new Location(minLoc.getWorld(), highX, highY, highz));
+            int highZ = Math.max(minLoc.getBlockZ(), maxLoc.getBlockZ());
+            BottomFillProvider.provide().performFill(structure, loc, new Location(minLoc.getWorld(), lowX, lowY, lowZ), new Location(minLoc.getWorld(), highX, highY, highZ), transform);
         }
 
         //Schedule the signs & containers replacement task
