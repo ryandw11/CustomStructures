@@ -198,6 +198,9 @@ public class TestSpawnCommand implements SubCommand {
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(structure, block.getLocation()))
             quickSendMessage(p, "&cFailed Distance Limitation test! Cannot spawn this close to another structure!");
 
+        if (!CustomStructures.getInstance().getStructureHandler().validSameDistance(structure, block.getLocation()))
+            quickSendMessage(p, "&cFailed Distance Limitation test! Cannot spawn this close to the same structure!");
+
         // Check to see if the structure has the chance to spawn
         if (ThreadLocalRandom.current().nextInt(0, structure.getChanceOutOf() + 1) > structure.getChanceNumber())
             quickSendMessage(p, "&eDid not spawn by probability!");

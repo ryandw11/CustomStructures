@@ -6,10 +6,12 @@ import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.io.StructureFileReader;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -164,6 +166,25 @@ public class StructureHandler {
             }
         }
         return struct.getStructureLocation().getDistanceFromOthers() < closest;
+    }
+
+    public boolean validSameDistance(Structure struct, Location location) {
+
+        synchronized (spawnedStructures) {
+            double closest = Double.MAX_VALUE;
+            for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
+
+                if (entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
+                
+                if (!Objects.equals(entry.getValue().getName(), struct.getName())) continue;
+
+                if (entry.getKey().getLeft().distance(location) < closest){
+                        closest = entry.getKey().getLeft().distance(location);
+                }
+            }
+            return struct.getStructureLocation().getDistanceFromSame() < closest;
+        }
+
     }
 
     /**

@@ -263,6 +263,9 @@ public class Structure {
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation()))
             return false;
 
+        if (!CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation()))
+            return false;
+
         // Check to see if the structure has the chance to spawn
         if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
             return false;
