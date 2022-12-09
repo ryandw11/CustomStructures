@@ -95,7 +95,7 @@ public class TestSpawnCommand implements SubCommand {
             return;
         }
 
-        if(structure.getStructureLimitations().hasBlacklistBlock(bl)) {
+        if (structure.getStructureLimitations().hasBlacklistBlock(bl)) {
             quickSendMessage(p, String.format("&cFailed Block Limitation! Cannot spawn on %s! (Blacklist Defined)", bl.getType()));
             return;
         }
@@ -123,7 +123,7 @@ public class TestSpawnCommand implements SubCommand {
         }
 
         // If the structure is going to be cut off by the world height limit, pick a new structure.
-        if(structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
+        if (structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
                 bl.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction()) {
             quickSendMessage(p, "&cFailed World Height Restriction!");
             return;
@@ -203,7 +203,7 @@ public class TestSpawnCommand implements SubCommand {
 
         // Check to see if the structure has the chance to spawn
         if (ThreadLocalRandom.current().nextInt(0, structure.getChanceOutOf() + 1) > structure.getChanceNumber())
-            quickSendMessage(p, "&eDid not spawn by probability!");
+            quickSendMessage(p, String.format("&eDid not spawn by probability! (%d/%d chance)", structure.getChanceNumber(), structure.getChanceOutOf()));
 
         // Check to see if the structure can spawn in the current biome.
         if (!structure.getStructureLocation().hasBiome(block.getBiome()))

@@ -99,9 +99,7 @@ public class DefaultBottomFill extends BukkitRunnable implements BottomFillImpl 
 
             // ---- Then do the block placement on the main thread ----
 
-            Bukkit.getScheduler().runTask(CustomStructures.getInstance(), () -> {
-                runTaskTimer(CustomStructures.getInstance(), 0, 2);
-            });
+            Bukkit.getScheduler().runTask(CustomStructures.getInstance(), () -> runTaskTimer(CustomStructures.getInstance(), 0, 2));
         });
     }
 

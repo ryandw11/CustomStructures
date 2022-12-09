@@ -212,20 +212,16 @@ public class StructureLocation implements StructureProperty {
     }
 
     /**
-     * Get the distance from others value.
+     * Get the minimum distance from other structures.
      *
-     * @return The distance from others value.
+     * @return The minimum distance from other structures.
      */
     public double getDistanceFromOthers() {
         return distanceFromOthers;
     }
 
-    public double getDistanceFromSame() {
-        return distanceFromSame;
-    }
-
     /**
-     * Set the distance from others value.
+     * Set the minimum distance from other structures.
      *
      * @param distance The distance desired (Must be positive).
      */
@@ -233,6 +229,26 @@ public class StructureLocation implements StructureProperty {
         if (distance < 0)
             throw new IllegalArgumentException("Distance must be greater than 0!");
         this.distanceFromOthers = distance;
+    }
+
+    /**
+     * Get the minimum distance from other structures of the same time.
+     *
+     * @return Minimum distance from structures.
+     */
+    public double getDistanceFromSame() {
+        return distanceFromSame;
+    }
+
+    /**
+     * Set the distance requirement for the same structures.
+     *
+     * @param distance Minimum distance from other structures of the same type.
+     */
+    public void setDistanceFromSame(double distance) {
+        if (distance < 0)
+            throw new IllegalArgumentException("Distance must be greater than 0!");
+        this.distanceFromSame = distance;
     }
 
     /**

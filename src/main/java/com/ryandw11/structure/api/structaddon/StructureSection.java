@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * users:</p>
  * <code>{AddonName}MyCoolSection</code>
  */
-public interface StructureSection extends StructureProperty {
+public interface StructureSection /*extends StructureProperty*/ {
     /**
      * This is the name of your custom section.
      *
