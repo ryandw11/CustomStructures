@@ -1,8 +1,7 @@
 package com.ryandw11.structure.commands.cstruct;
 
-import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.commands.SubCommand;
+import com.ryandw11.structure.schematic.SchematicHandler;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,10 +19,7 @@ import org.bukkit.entity.Player;
  */
 public class CreateSchematicCommand implements SubCommand {
 
-    private final CustomStructures plugin;
-
-    public CreateSchematicCommand(CustomStructures plugin) {
-        this.plugin = plugin;
+    public CreateSchematicCommand() {
     }
 
     @Override
@@ -45,8 +41,7 @@ public class CreateSchematicCommand implements SubCommand {
             }
             Player p = (Player) sender;
             String name = args[0].replace(".schem", "");
-            SchematicHandler handeler = new SchematicHandler();
-            if (handeler.createSchematic(name, p, p.getWorld(), false)) {
+            if (SchematicHandler.createSchematic(name, p, p.getWorld(), false)) {
                 p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
                 p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" + ChatColor.GREEN + " in a structure.");
             } else {
@@ -65,8 +60,7 @@ public class CreateSchematicCommand implements SubCommand {
             if (args[1].equalsIgnoreCase("-c") || args[1].equalsIgnoreCase("-compile")) {
                 Player p = (Player) sender;
                 String name = args[0].replace(".schem", "");
-                SchematicHandler handeler = new SchematicHandler();
-                if (handeler.createSchematic(name, p, p.getWorld(), true)) {
+                if (SchematicHandler.createSchematic(name, p, p.getWorld(), true)) {
                     p.sendMessage(ChatColor.GREEN + "Successfully created a schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
                     p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic!");
                     p.sendMessage(ChatColor.GREEN + "You can now use " + ChatColor.GOLD + name + ".schem" +
@@ -78,8 +72,7 @@ public class CreateSchematicCommand implements SubCommand {
             if (args[1].equalsIgnoreCase("-cOnly") || args[1].equalsIgnoreCase("-compileOnly")) {
                 Player p = (Player) sender;
                 String name = args[0].replace(".schem", "").replace(".cschem", "");
-                SchematicHandler handeler = new SchematicHandler();
-                if (handeler.compileOnly(name, p, p.getWorld())) {
+                if (SchematicHandler.compileOnly(name, p, p.getWorld())) {
                     p.sendMessage(ChatColor.GREEN + "Successfully compiled the schematic with the name of " + ChatColor.GOLD + name + ChatColor.GREEN + "!");
                     p.sendMessage(ChatColor.RED + "The option is for advanced users only. Please be sure the selection is valid.");
                 } else {

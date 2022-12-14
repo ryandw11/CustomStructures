@@ -202,8 +202,8 @@ public class TestSpawnCommand implements SubCommand {
             quickSendMessage(p, "&cFailed Distance Limitation test! Cannot spawn this close to the same structure!");
 
         // Check to see if the structure has the chance to spawn
-        if (ThreadLocalRandom.current().nextInt(0, structure.getChanceOutOf() + 1) > structure.getChanceNumber())
-            quickSendMessage(p, String.format("&eDid not spawn by probability! (%d/%d chance)", structure.getChanceNumber(), structure.getChanceOutOf()));
+        if (ThreadLocalRandom.current().nextInt(0, structure.getProbabilityDenominator() + 1) > structure.getProbabilityNumerator())
+            quickSendMessage(p, String.format("&eDid not spawn by probability! (%d/%d chance)", structure.getProbabilityNumerator(), structure.getProbabilityDenominator()));
 
         // Check to see if the structure can spawn in the current biome.
         if (!structure.getStructureLocation().hasBiome(block.getBiome()))

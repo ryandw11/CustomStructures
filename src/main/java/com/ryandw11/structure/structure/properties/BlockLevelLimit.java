@@ -19,9 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
  */
 public class BlockLevelLimit {
     private String mode;
-
     private int x1, z1, x2, z2;
-
     private double error = -1;
 
     /**
@@ -62,21 +60,21 @@ public class BlockLevelLimit {
         ConfigurationSection cs = fileConfiguration.getConfigurationSection("StructureLimitations.BlockLevelLimit");
 
         assert cs != null;
-        this.mode = cs.getString("mode");
-        this.x1 = cs.getInt("cornerOne.x");
-        this.z1 = cs.getInt("cornerOne.z");
-        this.x2 = cs.getInt("cornerTwo.x");
-        this.z2 = cs.getInt("cornerTwo.z");
+        this.mode = cs.getString("Mode");
+        this.x1 = cs.getInt("CornerOne.x");
+        this.z1 = cs.getInt("CornerOne.z");
+        this.x2 = cs.getInt("CornerTwo.x");
+        this.z2 = cs.getInt("CornerTwo.z");
 
-        if (cs.contains("error")) {
-            error = cs.getDouble("error");
+        if (cs.contains("Error")) {
+            error = cs.getDouble("Error");
             if(error < 0 || error > 1)
-                throw new StructureConfigurationException("`BlockLevelLimit.error` must be greater than 0 and less than 1.");
+                throw new StructureConfigurationException("'BlockLevelLimit.Error' must be greater than 0 and less than 1.");
         }
 
         assert mode != null;
-        if(mode.equalsIgnoreCase("flat_error") && !cs.contains("error")){
-            throw new StructureConfigurationException("The BlockLevelLimit mode `flat_error` must contain an error setting!");
+        if(mode.equalsIgnoreCase("flat_error") && !cs.contains("Error")){
+            throw new StructureConfigurationException("The BlockLevelLimit mode 'flat_error' must contain an error setting!");
         }
     }
 
@@ -120,6 +118,14 @@ public class BlockLevelLimit {
      */
     public String getMode() {
         return mode;
+    }
+
+    /**
+     * Set the mode of the block level limit.
+     * @param mode The mode of the block level limit. ('none' or 'flat_error').
+     */
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
     /**

@@ -1,8 +1,8 @@
-schematic: 'demo.schem'
+Schematic: 'demo.schem'
 
-Chance:
-  Number: 1
-  OutOf: 500
+Probability:
+  Numerator: 1
+  Denominator: 500
 
 StructureLocation:
   Worlds:
@@ -13,18 +13,18 @@ StructureLocation:
   Biome: []
   DistanceFromOthers: 200
   # Set a custom spawn distance for the structures.
-  spawn_distance:
+  SpawnDistance:
     x: 10
     z: 10
 
 StructureProperties:
   PlaceAir: true
-  randomRotation: false
-  ignorePlants: true
-  spawnInWater: true
-  spawnInLavaLakes: true
-  spawnInVoid: false
-  ignoreWater: false
+  RandomRotation: false
+  IgnorePlants: true
+  SpawnInWater: true
+  SpawnInLavaLakes: true
+  SpawnInVoid: false
+  IgnoreWater: false
 
 SubSchematics:
   Schematics:
@@ -43,38 +43,46 @@ AdvancedSubSchematics:
 
 StructureLimitations:
   WorldHeightRestriction: 10
-  whitelistSpawnBlocks:
+  WhitelistSpawnBlocks:
     - GRASS_BLOCK
     - Dirt
     - Stone
     - air
-  blacklistSpawnBlocks: []
+  BlacklistSpawnBlocks: []
   # This could cause issue with lag depending on how large the search area is.
   BlockLevelLimit:
     # Can be flat or flat_error.
-    mode: flat
-    cornerOne:
+    Mode: flat
+    CornerOne:
       x: -5
       z: -5
-    cornerTwo:
+    CornerTwo:
       x: 5
       z: 5
 
   # This could cause issues with lag depending on how many blocks you have
   # to replace.
-  replacement_blocks:
+  ReplaceBlocks:
     'STONE': 'AIR'
 
   # Delay the replacement of blocks by x seconds.
-  replacement_blocks_delay: 0
+  ReplaceBlockDelay: 0
 
-Masks:
-  enabled: false
-  union_type: 'AND'
-
+# Mask the blocks that are placed from the schematic.
+SourceMask:
+  Enabled: false
+  UnionType: 'AND'
   BlockTypeMask:
     - WHITE_WOOL
+  NegatedBlockMask:
+    - WHITE_WOOL
 
+# Mask the blocks that the pasted schematic replaces.
+TargetMask:
+  Enabled: false
+  UnionType: 'AND'
+  BlockTypeMask:
+    - WHITE_WOOL
   NegatedBlockMask:
     - WHITE_WOOL
 
@@ -84,8 +92,8 @@ BottomSpaceFill:
   'default': DIRT
 
 
-#List of lootTables for this Schematic, name and weight
-#Weight determines how often it will be chosen out of all the entries in the list.
+# List of lootTables for this Schematic, name, and weight.
+# Weight determines how often it will be chosen out of all the entries in the list.
 LootTables:
   CHEST:
     lootTable: 5

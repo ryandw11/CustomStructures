@@ -1,7 +1,7 @@
 package com.ryandw11.structure.utils;
 
 import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.SchematicHandler;
+import com.ryandw11.structure.schematic.SchematicHandler;
 import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
@@ -84,14 +84,13 @@ public class StructurePicker extends BukkitRunnable {
             if (structureBlock == null) {
                 structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(null), 8);
                 // Now to finally paste the schematic
-                SchematicHandler sh = new SchematicHandler();
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     // It is assumed at this point that the structure has been spawned.
                     // Add it to the list of spawned structures.
                     plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                             structure);
                     try {
-                        sh.schemHandle(structureBlock.getLocation(),
+                        SchematicHandler.placeSchematic(structureBlock.getLocation(),
                                 structure.getSchematic(),
                                 structure.getStructureProperties().canPlaceAir(),
                                 structure);
@@ -202,14 +201,13 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // Now to finally paste the schematic
-            SchematicHandler sh = new SchematicHandler();
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 // It is assumed at this point that the structure has been spawned.
                 // Add it to the list of spawned structures.
                 plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                         structure);
                 try {
-                    sh.schemHandle(structureBlock.getLocation(),
+                    SchematicHandler.placeSchematic(structureBlock.getLocation(),
                             structure.getSchematic(),
                             structure.getStructureProperties().canPlaceAir(),
                             structure);

@@ -26,36 +26,36 @@ public class StructureLimitations {
      * @param configuration The configuration to create from.
      */
     public StructureLimitations(FileConfiguration configuration) {
-        if (!configuration.contains("StructureLimitations.iterationLimit"))
+        if (!configuration.contains("StructureLimitations.IterationLimit"))
             iterationLimit = 2;
         else
-            iterationLimit = configuration.getInt("StructureLimitations.iterationLimit");
+            iterationLimit = configuration.getInt("StructureLimitations.IterationLimit");
 
         if (!configuration.contains("StructureLimitations.WorldHeightRestriction"))
             worldHeightRestriction = -1;
         else
             worldHeightRestriction = Math.max(0, configuration.getInt("StructureLimitations.WorldHeightRestriction"));
 
-        if (!configuration.contains("StructureLimitations.whitelistSpawnBlocks"))
+        if (!configuration.contains("StructureLimitations.WhitelistSpawnBlocks"))
             whitelistSpawnBlocks = new ArrayList<>();
         else
-            whitelistSpawnBlocks = configuration.getStringList("StructureLimitations.whitelistSpawnBlocks");
+            whitelistSpawnBlocks = configuration.getStringList("StructureLimitations.WhitelistSpawnBlocks");
 
-        if (!configuration.contains("StructureLimitations.blacklistSpawnBlocks"))
+        if (!configuration.contains("StructureLimitations.BlacklistSpawnBlocks"))
             blacklistSpawnBlocks = new ArrayList<>();
         else
-            blacklistSpawnBlocks = configuration.getStringList("StructureLimitations.blacklistSpawnBlocks");
+            blacklistSpawnBlocks = configuration.getStringList("StructureLimitations.BlacklistSpawnBlocks");
 
         this.blockLevelLimit = new BlockLevelLimit(configuration);
 
-        replacementBlocksDelay = !configuration.contains("StructureLimitations.replacement_blocks_delay") ? 0
-                : configuration.getDouble("StructureLimitations.replacement_blocks_delay");
+        replacementBlocksDelay = !configuration.contains("StructureLimitations.ReplaceBlockDelay") ? 0
+                : configuration.getDouble("StructureLimitations.ReplaceBlockDelay");
 
         blockReplacement = new HashMap<>();
         if (configuration.contains("StructureLimitations.replacement_blocks")) {
-            for (String s : Objects.requireNonNull(configuration.getConfigurationSection("StructureLimitations.replacement_blocks")).getKeys(false)) {
+            for (String s : Objects.requireNonNull(configuration.getConfigurationSection("StructureLimitations.ReplaceBlocks")).getKeys(false)) {
                 Material firstMaterial = Material.getMaterial(s);
-                Material secondMaterial = Material.getMaterial(Objects.requireNonNull(configuration.getString("StructureLimitations.replacement_blocks." + s)));
+                Material secondMaterial = Material.getMaterial(Objects.requireNonNull(configuration.getString("StructureLimitations.ReplaceBlocks." + s)));
                 blockReplacement.put(firstMaterial, secondMaterial);
             }
         }

@@ -33,12 +33,12 @@ public class StructureProperties {
             return;
         }
         this.placeAir = cs.contains("PlaceAir") && cs.getBoolean("PlaceAir");
-        this.randomRotation = cs.contains("randomRotation") && cs.getBoolean("randomRotation");
-        this.ignorePlants = cs.contains("ignorePlants") && cs.getBoolean("ignorePlants");
-        this.spawnInWater = cs.contains("spawnInWater") && cs.getBoolean("spawnInWater");
-        this.spawnInLavaLakes = cs.contains("spawnInLavaLakes") && cs.getBoolean("spawnInLavaLakes");
-        this.spawnInVoid = cs.contains("spawnInVoid") && cs.getBoolean("spawnInVoid");
-        this.ignoreWater = cs.contains("ignoreWater") && cs.getBoolean("ignoreWater");
+        this.randomRotation = cs.contains("RandomRotation") && cs.getBoolean("RandomRotation");
+        this.ignorePlants = cs.contains("IgnorePlants") && cs.getBoolean("IgnorePlants");
+        this.spawnInWater = cs.contains("SpawnInWater") && cs.getBoolean("SpawnInWater");
+        this.spawnInLavaLakes = cs.contains("SpawnInLavaLakes") && cs.getBoolean("SpawnInLavaLakes");
+        this.spawnInVoid = cs.contains("SpawnInVoid") && cs.getBoolean("SpawnInVoid");
+        this.ignoreWater = cs.contains("IgnoreWater") && cs.getBoolean("IgnoreWater");
     }
 
     /**

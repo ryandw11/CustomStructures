@@ -1,10 +1,10 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.SchematicHandler;
 import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.loottables.LootTable;
 import com.ryandw11.structure.loottables.LootTableType;
+import com.ryandw11.structure.schematic.SchematicHandler;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
@@ -32,14 +32,15 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Structure {
     private final String name;
     private final String schematic;
-    private final int chanceNumber;
-    private final int chanceOutOf;
+    private final int probabilityNumerator;
+    private final int probabilityDenominator;
     private final boolean isCompiled;
     private final String compiledSchematic;
     private final StructureLocation structureLocation;
     private final StructureProperties structureProperties;
     private final StructureLimitations structureLimitations;
-    private final MaskProperty maskProperty;
+    private final MaskProperty sourceMaskProperty;
+    private final MaskProperty targetMaskProperty;
     private final SubSchematics subSchematics;
     private final AdvancedSubSchematics advancedSubSchematics;
     private final BottomSpaceFill bottomSpaceFill;
@@ -57,14 +58,15 @@ public class Structure {
     protected Structure(StructureBuilder builder) {
         this.name = builder.name;
         this.schematic = builder.schematic;
-        this.chanceNumber = builder.chanceNumber;
-        this.chanceOutOf = builder.chanceOutOf;
+        this.probabilityNumerator = builder.probabilityNumerator;
+        this.probabilityDenominator = builder.probabilityDenominator;
         this.isCompiled = builder.isCompiled;
         this.compiledSchematic = builder.compiledSchematic;
         this.structureLocation = builder.structureLocation;
         this.structureProperties = builder.structureProperties;
         this.structureLimitations = builder.structureLimitations;
-        this.maskProperty = builder.maskProperty;
+        this.sourceMaskProperty = builder.sourceMaskProperty;
+        this.targetMaskProperty = builder.targetMaskProperty;
         this.subSchematics = builder.subSchematics;
         this.advancedSubSchematics = builder.advancedSubSchematics;
         this.bottomSpaceFill = builder.bottomSpaceFill;
@@ -97,8 +99,8 @@ public class Structure {
      *
      * @return The chance number.
      */
-    public int getChanceNumber() {
-        return chanceNumber;
+    public int getProbabilityNumerator() {
+        return probabilityNumerator;
     }
 
     /**
@@ -106,8 +108,8 @@ public class Structure {
      *
      * @return The chance out of number.
      */
-    public int getChanceOutOf() {
-        return chanceOutOf;
+    public int getProbabilityDenominator() {
+        return probabilityDenominator;
     }
 
     /**
@@ -158,12 +160,21 @@ public class Structure {
     }
 
     /**
-     * Get the mask properties.
+     * Get the source mask properties.
      *
-     * @return The mask properties.
+     * @return The source mask properties.
      */
-    public MaskProperty getMaskProperties() {
-        return maskProperty;
+    public MaskProperty getSourceMaskProperties() {
+        return sourceMaskProperty;
+    }
+
+    /**
+     * Get the target mask properties.
+     *
+     * @return The target mask properties.
+     */
+    public MaskProperty getTargetMaskProperties() {
+        return targetMaskProperty;
     }
 
     /**
@@ -248,7 +259,7 @@ public class Structure {
         if (block == null && !getStructureProperties().canSpawnInVoid())
             return false;
         else if (block == null) {
-            if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
+            if (ThreadLocalRandom.current().nextInt(0, getProbabilityDenominator() + 1) > getProbabilityNumerator())
                 return false;
 
             return getStructureLocation().hasBiome(chunk.getBlock(0, 20, 0).getBiome());
@@ -267,7 +278,7 @@ public class Structure {
             return false;
 
         // Check to see if the structure has the chance to spawn
-        if (ThreadLocalRandom.current().nextInt(0, getChanceOutOf() + 1) > getChanceNumber())
+        if (ThreadLocalRandom.current().nextInt(0, getProbabilityDenominator() + 1) > getProbabilityNumerator())
             return false;
 
         // Check to see if the structure can spawn in the current biome.
@@ -300,9 +311,8 @@ public class Structure {
      * @param location The location to spawn it at.
      */
     public void spawn(Location location) {
-        SchematicHandler handler = new SchematicHandler();
         try {
-            handler.schemHandle(location, getSchematic(), getStructureProperties().canPlaceAir(), this);
+            SchematicHandler.placeSchematic(location, getSchematic(), getStructureProperties().canPlaceAir(), this);
         } catch (IOException | WorldEditException ex) {
             ex.printStackTrace();
         }

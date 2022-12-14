@@ -10,8 +10,6 @@ import com.ryandw11.structure.structure.properties.StructureProperties;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +69,7 @@ public class CreateCommand implements SubCommand {
                 return true;
             }
             StructureBuilder builder = new StructureBuilder(name, schematic + ".schem");
-            builder.setChance(1, 1000);
+            builder.setProbability(1, 1000);
             if (new File(plugin.getDataFolder() + "/schematics/" + schematic + ".cschem").exists()) {
                 builder.setCompiledSchematic(schematic + ".cschem");
             }

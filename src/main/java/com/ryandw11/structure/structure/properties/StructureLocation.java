@@ -67,13 +67,11 @@ public class StructureLocation implements StructureProperty {
 
         xLimitation = 0;
         zLimitation = 0;
-        if (cs.contains("spawn_distance")) {
-            if (cs.contains("spawn_distance.x")) {
-                xLimitation = cs.getInt("spawn_distance.x");
-            }
-            if (cs.contains("spawn_distance.z")) {
-                zLimitation = cs.getInt("spawn_distance.z");
-            }
+        if (cs.contains("SpawnDistance.x")) {
+            xLimitation = cs.getInt("SpawnDistance.x");
+        }
+        if (cs.contains("SpawnDistance.z")) {
+            zLimitation = cs.getInt("SpawnDistance.z");
         }
     }
 
@@ -262,8 +260,8 @@ public class StructureLocation implements StructureProperty {
         configurationSection.set("Biome", biomes);
         configurationSection.set("DistanceFromOthers", distanceFromOthers);
         if (xLimitation > 0)
-            configurationSection.set("spawn_distance.x", xLimitation);
+            configurationSection.set("SpawnDistance.x", xLimitation);
         if (zLimitation > 0)
-            configurationSection.set("spawn_distance.z", zLimitation);
+            configurationSection.set("SpawnDistance.z", zLimitation);
     }
 }

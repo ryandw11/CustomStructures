@@ -5,6 +5,7 @@ import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.function.mask.AbstractExtentMask;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
 import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.mask.Masks;
 import com.sk89q.worldedit.world.block.BlockType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Handles the masks.
+ * A mask configuration property.
  */
 public class MaskProperty {
     private final List<Mask> masks;
@@ -23,26 +24,28 @@ public class MaskProperty {
     /**
      * Create the MaskProperty from a configuration file.
      *
+     * @param name          The name of the mask configuration section.
      * @param configuration The configuration file.
      */
-    public MaskProperty(FileConfiguration configuration) {
+    public MaskProperty(String name, FileConfiguration configuration) {
         masks = new ArrayList<>();
 
-        if (!configuration.contains("Masks"))
+        if (!configuration.contains(name))
             return;
 
-        ConfigurationSection cs = configuration.getConfigurationSection("Masks");
+        ConfigurationSection cs = configuration.getConfigurationSection(name);
         assert cs != null;
 
-        if (!cs.contains("enabled") || !cs.getBoolean("enabled"))
+        if (!cs.contains("Enabled") || !cs.getBoolean("Enabled"))
             return;
-        if (cs.contains("union_type")) {
-            unionType = MaskUnion.valueOf(Objects.requireNonNull(cs.getString("union_type")).toUpperCase());
-        } else
+        if (cs.contains("UnionType")) {
+            unionType = MaskUnion.valueOf(Objects.requireNonNull(cs.getString("UnionType")).toUpperCase());
+        } else {
             unionType = MaskUnion.AND;
+        }
 
-        blockTypeMask(cs);
-        negateBlockTypeMask(cs);
+        processBlockTypeMask(cs);
+        processNegateBlockTypeMask(cs);
     }
 
     /**
@@ -110,7 +113,7 @@ public class MaskProperty {
         return output;
     }
 
-    private void blockTypeMask(ConfigurationSection cs) {
+    private void processBlockTypeMask(ConfigurationSection cs) {
         if (!cs.contains("BlockTypeMask")) return;
         List<BlockType> blockTypes = new ArrayList<>();
         List<String> blockTypeStrings = cs.getStringList("BlockTypeMask");
@@ -121,7 +124,7 @@ public class MaskProperty {
         addMask(blockTypeMask);
     }
 
-    private void negateBlockTypeMask(ConfigurationSection cs) {
+    private void processNegateBlockTypeMask(ConfigurationSection cs) {
         if (!cs.contains("NegatedBlockMask")) return;
         List<BlockType> blockTypes = new ArrayList<>(BlockType.REGISTRY.values());
         List<String> blockTypeStrings = cs.getStringList("NegatedBlockMask");
