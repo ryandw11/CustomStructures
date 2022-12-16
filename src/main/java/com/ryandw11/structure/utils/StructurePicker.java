@@ -1,10 +1,11 @@
 package com.ryandw11.structure.utils;
 
 import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.schematic.SchematicHandler;
 import com.ryandw11.structure.api.structaddon.StructureSection;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.ignoreblocks.IgnoreBlocks;
+import com.ryandw11.structure.schematic.SchematicHandler;
+import com.ryandw11.structure.structure.PriorityStructureQueue;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.structure.properties.BlockLevelLimit;
@@ -17,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * This class prevents the server from crashing when it attempts to pick a
@@ -31,8 +33,7 @@ public class StructurePicker extends BukkitRunnable {
 
     private final CustomStructures plugin;
 
-    private int currentStructure;
-    private final StructureHandler structureHandler;
+    private final PriorityStructureQueue priorityStructureQueue;
     private final IgnoreBlocks ignoreBlocks;
 
     private final Block bl;
@@ -42,31 +43,33 @@ public class StructurePicker extends BukkitRunnable {
 
     public StructurePicker(@Nullable Block bl, Chunk ch, CustomStructures plugin) {
         this.plugin = plugin;
-        currentStructure = -1;
         this.bl = bl;
         this.ch = ch;
-        this.structureHandler = plugin.getStructureHandler();
         this.ignoreBlocks = plugin.getBlockIgnoreManager();
 
-        if (this.structureHandler == null) {
+        StructureHandler structureHandler = plugin.getStructureHandler();
+        if (structureHandler == null) {
             plugin.getLogger().warning("A structure is trying to spawn without the plugin initialization step being completed.");
             plugin.getLogger().warning("If you are using a fork of Spigot, this likely means that the fork does not adhere to the API standard properly.");
             throw new RuntimeException("Plugin Not Initialized.");
         }
+
+        priorityStructureQueue = new PriorityStructureQueue(structureHandler.getStructures(), Objects.requireNonNull(bl), ch);
     }
 
     @Override
     public void run() {
+        Structure gStructure = null;
         try {
-            currentStructure++;
-            if (currentStructure >= structureHandler.getStructures().size()) {
+            if (!priorityStructureQueue.hasNextStructure()) {
                 this.cancel();
                 return;
             }
 
-            Structure structure = structureHandler.getStructure(currentStructure);
+            gStructure = priorityStructureQueue.getNextStructure();
+            Structure structure = gStructure;
+            assert structure != null;
             StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
-
 
             // Get the highest block according to the settings for the structure.
             structureBlock = structureSpawnSettings.getHighestBlock(bl.getLocation());
@@ -75,10 +78,6 @@ public class StructurePicker extends BukkitRunnable {
             if (structureBlock.getType() == Material.VOID_AIR) {
                 structureBlock = null;
             }
-
-            // Calculate the chance.
-            if (!structure.canSpawn(structureBlock, ch))
-                return;
 
             // If the block is null, Skip the other steps and spawn.
             if (structureBlock == null) {
@@ -141,7 +140,7 @@ public class StructurePicker extends BukkitRunnable {
             }
 
             // If the structure is going to be cut off by the world height limit, pick a new structure.
-            if(structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
+            if (structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
                     structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction())
                 return;
 
@@ -218,17 +217,25 @@ public class StructurePicker extends BukkitRunnable {
 
             this.cancel();// return after pasting
         } catch (StructureConfigurationException ex) {
+
             this.cancel();
-            plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
-                    + structureHandler.getStructure(currentStructure).getName());
+            if (gStructure != null) {
+                plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
+                        + gStructure.getName());
+            } else {
+                plugin.getLogger().severe("A configuration error was encountered when attempting to spawn a structure.");
+            }
             plugin.getLogger().severe(ex.getMessage());
+
         } catch (Exception ex) {
+
             this.cancel();
             plugin.getLogger().severe("An error was encountered during the schematic pasting section.");
             plugin.getLogger().severe("The task was stopped for the safety of your server!");
             plugin.getLogger().severe("For more information enable debug mode.");
             if (plugin.isDebug())
                 ex.printStackTrace();
+
         }
     }
 

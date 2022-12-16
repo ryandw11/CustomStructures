@@ -61,6 +61,7 @@ public class CustomStructures extends JavaPlugin {
     private boolean debugMode;
 
     public static boolean enabled;
+    private boolean initialized = false;
 
     /**
      * The current version of the compiled structure format.
@@ -134,29 +135,7 @@ public class CustomStructures extends JavaPlugin {
         this.addonHandler = new AddonHandler();
 
         // Run this after the loading of all plugins.
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-            if (getConfig().getInt("configversion") != CONFIG_VERSION) {
-                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CustomStructures] Cannot enable plugin, your config version is outdated. " +
-                        "Check the above for errors that may have occurred during the auto-update process." + ChatColor.RESET);
-                return;
-            }
-
-            this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
-            getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
-            getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
-
-            if (metrics != null) {
-                // Add a custom pie chart to track the addons used.
-                metrics.addCustomChart(new AdvancedPie("used_addons", () -> {
-                    Map<String, Integer> valueMap = new HashMap<>();
-                    for (CustomStructureAddon addon : addonHandler.getCustomStructureAddons()) {
-                        valueMap.put(addon.getName(), 1);
-                    }
-                    return valueMap;
-                }));
-            }
-
-        }, 30);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, this::initialize, 30);
 
 
         if (getConfig().getBoolean("bstats")) {
@@ -166,6 +145,37 @@ public class CustomStructures extends JavaPlugin {
         } else {
             getLogger().info("Bstat metrics is disabled for this plugin.");
         }
+    }
+
+    /**
+     * Initializes the plugin by creating the {@link StructureHandler}.
+     *
+     * <p>This is called internally after all plugins are initialized.</p>
+     */
+    public void initialize() {
+        if (initialized) return;
+
+        if (getConfig().getInt("configversion") != CONFIG_VERSION) {
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[CustomStructures] Cannot enable plugin, your config version is outdated. " +
+                    "Check the above for errors that may have occurred during the auto-update process." + ChatColor.RESET);
+            return;
+        }
+
+        this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
+        getLogger().info("The plugin has been fully enabled with " + structureHandler.getStructures().size() + " structures.");
+        getLogger().info(addonHandler.getCustomStructureAddons().size() + " addons were found.");
+
+        if (metrics != null) {
+            // Add a custom pie chart to track the addons used.
+            metrics.addCustomChart(new AdvancedPie("used_addons", () -> {
+                Map<String, Integer> valueMap = new HashMap<>();
+                for (CustomStructureAddon addon : addonHandler.getCustomStructureAddons()) {
+                    valueMap.put(addon.getName(), 1);
+                }
+                return valueMap;
+            }));
+        }
+        initialized = true;
     }
 
     /**

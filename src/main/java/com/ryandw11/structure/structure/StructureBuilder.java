@@ -44,6 +44,7 @@ public class StructureBuilder {
     protected String schematic;
     protected int probabilityNumerator;
     protected int probabilityDenominator;
+    protected int priority;
     protected String compiledSchematic;
     protected boolean isCompiled = false;
     protected StructureLocation structureLocation;
@@ -80,6 +81,7 @@ public class StructureBuilder {
         this.plugin = CustomStructures.getInstance();
         this.name = name;
         this.schematic = schematic;
+        this.priority = 100;
         this.baseRotation = 0;
         lootTables = new HashMap<>();
         this.structureSections = sections;
@@ -96,6 +98,7 @@ public class StructureBuilder {
         this.plugin = CustomStructures.getInstance();
         this.name = name;
         this.schematic = schematic;
+        this.priority = 100;
         this.baseRotation = 0;
         lootTables = new HashMap<>();
         this.structureSections = Arrays.asList(sections);
@@ -125,6 +128,7 @@ public class StructureBuilder {
         schematic = config.getString("Schematic");
         probabilityNumerator = config.getInt("Probability.Numerator");
         probabilityDenominator = config.getInt("Probability.Denominator");
+        priority = config.contains("Priority") ? config.getInt("Priority") : 100;
         baseRotation = 0;
 
         if (config.contains("CompiledSchematic")) {
@@ -255,6 +259,16 @@ public class StructureBuilder {
     public void setProbability(int numerator, int denominator) {
         this.probabilityNumerator = numerator;
         this.probabilityDenominator = denominator;
+    }
+
+    /**
+     * Set the priority of the structure.
+     * <p>The lower the number, the greater the priority.</p>
+     *
+     * @param priority The priority of the structure. (Default 100).
+     */
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     /**

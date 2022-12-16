@@ -6,12 +6,10 @@ import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.io.StructureFileReader;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -168,6 +166,13 @@ public class StructureHandler {
         return struct.getStructureLocation().getDistanceFromOthers() < closest;
     }
 
+    /**
+     * Calculate if the structure is far enough away from other structures of the same type.
+     *
+     * @param struct   The structure to calculate.
+     * @param location The location where the structure would spawn.
+     * @return If the distance is valid according to its config.
+     */
     public boolean validSameDistance(Structure struct, Location location) {
 
         synchronized (spawnedStructures) {
@@ -175,11 +180,11 @@ public class StructureHandler {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
 
                 if (entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
-                
+
                 if (!Objects.equals(entry.getValue().getName(), struct.getName())) continue;
 
-                if (entry.getKey().getLeft().distance(location) < closest){
-                        closest = entry.getKey().getLeft().distance(location);
+                if (entry.getKey().getLeft().distance(location) < closest) {
+                    closest = entry.getKey().getLeft().distance(location);
                 }
             }
             return struct.getStructureLocation().getDistanceFromSame() < closest;

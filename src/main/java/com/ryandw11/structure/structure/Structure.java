@@ -34,6 +34,7 @@ public class Structure {
     private final String schematic;
     private final int probabilityNumerator;
     private final int probabilityDenominator;
+    private final int priority;
     private final boolean isCompiled;
     private final String compiledSchematic;
     private final StructureLocation structureLocation;
@@ -60,6 +61,7 @@ public class Structure {
         this.schematic = builder.schematic;
         this.probabilityNumerator = builder.probabilityNumerator;
         this.probabilityDenominator = builder.probabilityDenominator;
+        this.priority = builder.priority;
         this.isCompiled = builder.isCompiled;
         this.compiledSchematic = builder.compiledSchematic;
         this.structureLocation = builder.structureLocation;
@@ -110,6 +112,16 @@ public class Structure {
      */
     public int getProbabilityDenominator() {
         return probabilityDenominator;
+    }
+
+    /**
+     * Get the priority of the structure.
+     * <p>The lower the number, the greater the priority for the structure to spawn when compared to others.</p>
+     *
+     * @return The priority.
+     */
+    public int getPriority() {
+        return priority;
     }
 
     /**
