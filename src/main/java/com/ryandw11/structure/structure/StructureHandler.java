@@ -3,7 +3,7 @@ package com.ryandw11.structure.structure;
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.api.CustomStructuresAPI;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
-import com.ryandw11.structure.io.StructureFileReader;
+import com.ryandw11.structure.io.StructureDatabaseHandler;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * <p>You can access this handler from {@link CustomStructuresAPI#getStructureHandler()} or {@link CustomStructures#getStructureHandler()}.</p>
  *
- * <p><b>Note:</b> Do not store a long term instance of this class as it can be nulled when the /cstruct reload command is done.</p>
+ * <p><b>Note:</b> Do not store a long term instance of this class as it can be invalidated when the /cstruct reload command is done.</p>
  */
 public class StructureHandler {
 
@@ -28,7 +28,7 @@ public class StructureHandler {
     private final List<Structure> structures;
     private final List<String> names;
     private final CheckStructureList checkStructureList;
-    private StructureFileReader structureFileReader;
+    private StructureDatabaseHandler structureDatabaseHandler;
 
     /**
      * Constructor for the structure handler.
@@ -71,8 +71,8 @@ public class StructureHandler {
         checkStructureList.runTaskTimerAsynchronously(cs, 20, 6000);
 
         if (cs.getConfig().getBoolean("logStructures")) {
-            structureFileReader = new StructureFileReader(cs);
-            structureFileReader.runTaskTimerAsynchronously(cs, 20, 300);
+            structureDatabaseHandler = new StructureDatabaseHandler(cs);
+            structureDatabaseHandler.runTaskTimerAsynchronously(cs, 20, 300);
         }
     }
 
@@ -139,8 +139,8 @@ public class StructureHandler {
      */
     public void putSpawnedStructure(Location loc, Structure struct) {
         synchronized (spawnedStructures) {
-            if (structureFileReader != null) {
-                structureFileReader.addStructure(loc, struct);
+            if (structureDatabaseHandler != null) {
+                structureDatabaseHandler.addStructure(loc, struct);
             }
             this.spawnedStructures.put(Pair.of(loc, System.currentTimeMillis()), struct);
         }
@@ -193,13 +193,13 @@ public class StructureHandler {
     }
 
     /**
-     * Get the structure file reader.
+     * Get the structure database handler.
      * <p>This feature must be enabled via the config.</p>
      *
-     * @return An Optional of the StructureFileReader.
+     * @return An Optional of the StructureDatabaseHandler.
      */
-    public Optional<StructureFileReader> getStructureFileReader() {
-        return Optional.ofNullable(structureFileReader);
+    public Optional<StructureDatabaseHandler> getStructureDatabaseHandler() {
+        return Optional.ofNullable(structureDatabaseHandler);
     }
 
     /**
@@ -207,8 +207,8 @@ public class StructureHandler {
      */
     public void cleanup() {
         checkStructureList.cancel();
-        if (structureFileReader != null)
-            structureFileReader.cancel();
+        if (structureDatabaseHandler != null)
+            structureDatabaseHandler.cancel();
         spawnedStructures.clear();
     }
 }

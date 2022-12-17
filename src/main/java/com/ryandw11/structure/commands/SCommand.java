@@ -66,7 +66,7 @@ public class SCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3/cstructure create {name} {schematic} - &2Create a structure using the default settings."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&3/cstructure addon - &2The list of addons."));
+                        "&3/cstructure addons - &2The list of addons."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3/cstructure setLootTable - &2Easily specify a loot table for a container."));
             } else {
@@ -80,11 +80,11 @@ public class SCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3Commands:"));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3/cstructure reload - &2Reload the plugin."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&3/cstructure test (name) - &2Paste the defined structure."));
+                        "&3/cstructure test {name} - &2Paste the defined structure."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&3/cstructure testspawn (name) - &2Test the spawn conditions of a structure."));
+                        "&3/cstructure testspawn {name} - &2Test the spawn conditions of a structure."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&3/cstructure nearby - &2Find nearby structures."));
+                        "&3/cstructure nearby [name] [limit] - &2Find nearby structures."));
                 sender.sendMessage("");
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&2Use &3/cstructure 2 &2to view the second page of commands!"));

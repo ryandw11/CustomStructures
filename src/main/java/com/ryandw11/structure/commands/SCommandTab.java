@@ -21,7 +21,7 @@ public class SCommandTab implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         List<String> completions = new ArrayList<>();
-        if (args.length == 2 && (args[0].equalsIgnoreCase("test") || args[0].equalsIgnoreCase("testspawn"))) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("test") || args[0].equalsIgnoreCase("testspawn") || args[0].equalsIgnoreCase("nearby"))) {
             completions = new ArrayList<>(plugin.getStructureHandler().getStructureNames());
             completions = getApplicableTabCompleter(args[1], completions);
         } else if(args.length == 2 && (

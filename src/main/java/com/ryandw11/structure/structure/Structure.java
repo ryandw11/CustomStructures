@@ -320,13 +320,21 @@ public class Structure {
     /**
      * Spawn the schematic at the given location.
      *
+     * <p>This will not add the structure to the structure database.
+     * Call {@link StructureHandler#putSpawnedStructure(Location, Structure)} to add it after spawning.</p>
+     *
      * @param location The location to spawn it at.
+     * @return If the structure was spawned successfully.
      */
-    public void spawn(Location location) {
+    public boolean spawn(Location location) {
         try {
             SchematicHandler.placeSchematic(location, getSchematic(), getStructureProperties().canPlaceAir(), this);
+            return true;
         } catch (IOException | WorldEditException ex) {
-            ex.printStackTrace();
+            if (CustomStructures.getInstance().isDebug()) {
+                ex.printStackTrace();
+            }
+            return false;
         }
     }
 }
