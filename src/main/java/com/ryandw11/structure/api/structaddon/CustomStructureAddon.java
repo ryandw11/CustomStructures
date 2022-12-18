@@ -70,6 +70,7 @@ public final class CustomStructureAddon {
 
     /**
      * Register StructureSectionProvider to the addon.
+     *
      * @param provider The provider to register.
      */
     public void registerStructureSectionProvider(StructureSectionProvider provider) {
@@ -78,6 +79,7 @@ public final class CustomStructureAddon {
 
     /**
      * Unregister StructureSectionProvider from the addon.
+     *
      * @param provider The provider to remove.
      */
     public void unregisterStructureSectionProvider(StructureSectionProvider provider) {
@@ -95,9 +97,23 @@ public final class CustomStructureAddon {
 
     /**
      * Get all provider registered on this addon
-     * @return a set of provider
+     *
+     * @return a set of providers.
      */
     public Set<StructureSectionProvider> getProviderSet() {
         return Collections.unmodifiableSet(this.providerSet);
+    }
+
+    /**
+     * Register a structure sign to be used.
+     * <p>This provides the same functionality as
+     * {@link com.ryandw11.structure.schematic.StructureSignHandler#registerStructureSign(String, Class)}.</p>
+     *
+     * @param name          The name of the structure sign.
+     * @param structureSign The class of the structure sign.
+     * @return If the registration was successful. (False if a sign with that name already exists).
+     */
+    public boolean registerStructureSign(String name, Class<? extends StructureSign> structureSign) {
+        return CustomStructures.getInstance().getStructureSignHandler().registerStructureSign(name, structureSign);
     }
 }

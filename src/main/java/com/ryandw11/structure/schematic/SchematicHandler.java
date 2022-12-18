@@ -204,7 +204,7 @@ public class SchematicHandler {
                 if (location.getBlock().getState() instanceof Sign) {
                     Location minLoc = SchematicLocationUtils.getMinimumLocation(clipboard, loc, finalRotY);
                     Location maxLoc = SchematicLocationUtils.getMaximumLocation(clipboard, loc, finalRotY);
-                    SchematicSignReplacer.processAndReplaceSign(location, minLoc, maxLoc);
+                    SchematicSignReplacer.processAndReplaceSign(location, minLoc, maxLoc, structure, finalRotY);
                 }
                 // If the sign still exists, it could be a sub-schematic sign.
                 if (location.getBlock().getState() instanceof Sign) {

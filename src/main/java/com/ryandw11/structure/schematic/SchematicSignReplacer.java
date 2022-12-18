@@ -1,24 +1,18 @@
 package com.ryandw11.structure.schematic;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.api.structaddon.StructureSign;
 import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.AdvancedSubSchematics;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
-import com.ryandw11.structure.utils.CSUtils;
-import com.ryandw11.structure.utils.NumberStylizer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -29,99 +23,72 @@ public class SchematicSignReplacer {
     }
 
     /**
-     * Process a sign and spawn mobs, execute commands etc.
+     * Process a structure sign.
      *
-     * @param location The location of the sign.
+     * @param location          The location of the sign.
+     * @param minLoc            The minimum location of the structure schematic.
+     * @param maxLoc            The maximum location of the structure schematic.
+     * @param structure         The structure that was spawned.
+     * @param structureRotation The rotation of the structure.
      */
-    protected static void processAndReplaceSign(Location location, Location minLoc, Location maxLoc) {
+    protected static void processAndReplaceSign(Location location, Location minLoc, Location maxLoc, Structure structure, double structureRotation) {
         CustomStructures plugin = CustomStructures.getInstance();
 
+        if (!(location.getBlock().getState() instanceof Sign || location.getBlock().getState() instanceof WallSign)) {
+            return;
+        }
+
         Sign sign = (Sign) location.getBlock().getState();
-        String firstLine;
-        String secondLine;
-        String thirdLine;
-        String fourthLine;
+        String firstLine = sign.getLine(0).trim();
+        String secondLine = sign.getLine(1).trim();
+        String thirdLine = sign.getLine(2).trim();
+        String fourthLine = sign.getLine(3).trim();
 
-        if (location.getBlock().getState() instanceof Sign || location.getBlock().getState() instanceof WallSign) {
-            firstLine = sign.getLine(0).trim();
-            secondLine = sign.getLine(1).trim();
-            thirdLine = sign.getLine(2).trim();
-            fourthLine = sign.getLine(3).trim();
-        } else return;
+        if (!firstLine.startsWith("["))
+            return;
 
-        // Process the type of sign.
-        // Normal Mob Sign
-        if (firstLine.equalsIgnoreCase("[mob]")) {
-            int count = 1;
-            if (!thirdLine.isEmpty()) {
-                try {
-                    // Impose a maximum limit of 40 mobs.
-                    count = Math.min(NumberStylizer.getStylizedInt(thirdLine), 40);
-                } catch (NumberFormatException ex) {
-                    // Ignore, keep count as 1.
-                }
-            }
-            try {
-                for (int i = 0; i < count; i++) {
-                    Entity ent = Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.valueOf(secondLine.toUpperCase()));
-                    if (ent instanceof LivingEntity livingEntity) {
-                        livingEntity.setRemoveWhenFarAway(false);
-                    }
-                }
+        String signName = firstLine.replaceAll("\\[", "").replaceAll("]", "");
 
-                location.getBlock().setType(Material.AIR);
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid mob type on structure sign.");
-            }
-        }
+        if (!plugin.getStructureSignHandler().structureSignExists(signName))
+            return;
 
-        // NPC Sign
-        if (firstLine.equalsIgnoreCase("[npc]")) {
-            plugin.getCitizensNpcHook().spawnNpc(plugin.getNpcHandler(), secondLine, location);
-            location.getBlock().setType(Material.AIR);
-        }
+        double signRotation;
+        // Allow this to work with both wall signs and normal signs.
+        if (location.getBlock().getBlockData() instanceof org.bukkit.block.data.type.Sign signData) {
 
-        // Command Sign.
-        if (firstLine.equalsIgnoreCase("[command]") || firstLine.equalsIgnoreCase("[commands]")) {
-            List<String> commands = plugin.getSignCommandsHandler().getCommands(secondLine);
-            if (commands != null) {
-                for (String command : commands) {
-                    command = CSUtils.replacePlaceHolders(command, location, minLoc, maxLoc);
-                    command = CustomStructures.replacePAPIPlaceholders(command);
-                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-                    if (plugin.isDebug()) {
-                        plugin.getLogger().info("Executing console command: '" + command + "'");
-                    }
-                }
+            Vector direction = signData.getRotation().getDirection();
+            signRotation = Math.atan2(direction.getZ(), direction.getX());
+            if (direction.getX() != 0) {
+                signRotation -= (Math.PI / 2);
             } else {
-                plugin.getLogger().warning("Unable to execute command group '" + secondLine + "', no configuration found!");
+                signRotation += (Math.PI / 2);
             }
-            location.getBlock().setType(Material.AIR);
+        } else if (location.getBlock().getBlockData() instanceof WallSign signData) {
+            Vector direction = signData.getFacing().getDirection();
+            signRotation = Math.atan2(direction.getZ(), direction.getX());
+            if (direction.getX() != 0) {
+                signRotation -= (Math.PI / 2);
+            } else {
+                signRotation += (Math.PI / 2);
+            }
+        } else {
+            signRotation = 0;
         }
-        // Mythical Mob Sign
-        if (firstLine.equalsIgnoreCase("[mythicmob]") || firstLine.equalsIgnoreCase("[mythicalmob]")) {
-            int count = 1;
-            if (!fourthLine.isEmpty()) {
-                try {
-                    // Impose a maximum limit of 40 mobs.
-                    count = Math.min(NumberStylizer.getStylizedInt(fourthLine), 40);
-                } catch (NumberFormatException ex) {
-                    // Ignore, keep count as 1.
-                }
+
+        Class<? extends StructureSign> structureSignClass = plugin.getStructureSignHandler().getStructureSign(signName);
+        try {
+            StructureSign structureSign = structureSignClass.getConstructor().newInstance();
+
+            String[] args = {secondLine, thirdLine, fourthLine};
+            structureSign.initialize(args, signRotation, structureRotation, minLoc, maxLoc);
+
+            // Replace the sign with air if desired.
+            if (structureSign.onStructureSpawn(location, structure)) {
+                location.getBlock().setType(Material.AIR);
             }
-            // Allow for the third line to have the level of the mob.
-            if (thirdLine.isEmpty())
-                plugin.getMythicalMobHook().spawnMob(secondLine, location, count);
-            else {
-                double level;
-                try {
-                    level = Double.parseDouble(thirdLine);
-                } catch (NumberFormatException ex) {
-                    level = 1;
-                }
-                plugin.getMythicalMobHook().spawnMob(secondLine, location, level, count);
-            }
-            location.getBlock().setType(Material.AIR);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException exception) {
+            plugin.getLogger().severe(String.format("Unable to process structure sign %s in structure %s!", signName, structure.getName()));
+            plugin.getLogger().severe("Does that structure sign class have a default constructor?");
         }
     }
 

@@ -14,6 +14,7 @@ import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.mythicalmobs.MMDisabled;
 import com.ryandw11.structure.mythicalmobs.MMEnabled;
 import com.ryandw11.structure.mythicalmobs.MythicalMobHook;
+import com.ryandw11.structure.schematic.StructureSignHandler;
 import com.ryandw11.structure.structure.StructureHandler;
 import com.ryandw11.structure.utils.CSUtils;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -55,6 +56,7 @@ public class CustomStructures extends JavaPlugin {
     private CustomItemManager customItemManager;
     private IgnoreBlocks blockIgnoreManager;
     private AddonHandler addonHandler;
+    private StructureSignHandler structureSignHandler;
 
     private Metrics metrics;
 
@@ -133,6 +135,7 @@ public class CustomStructures extends JavaPlugin {
         this.npcHandler = new NpcHandler(getDataFolder(), plugin);
         this.lootTablesHandler = new LootTablesHandler();
         this.addonHandler = new AddonHandler();
+        this.structureSignHandler = new StructureSignHandler();
 
         // Run this after the loading of all plugins.
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, this::initialize, 30);
@@ -689,6 +692,15 @@ public class CustomStructures extends JavaPlugin {
      */
     public AddonHandler getAddonHandler() {
         return addonHandler;
+    }
+
+    /**
+     * Get the handler for registering custom structure signs.
+     *
+     * @return The handler for registering custom structure signs.
+     */
+    public StructureSignHandler getStructureSignHandler() {
+        return structureSignHandler;
     }
 
     /**
