@@ -288,6 +288,9 @@ public class CustomStructures extends JavaPlugin {
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
         this.lootTablesHandler = new LootTablesHandler();
+
+        // Update the addons.
+        this.addonHandler.handlePluginReload();
     }
 
     /**

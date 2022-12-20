@@ -1,9 +1,6 @@
 package com.ryandw11.structure.utils;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A collection where the next value can be obtained at Random.
@@ -102,5 +99,14 @@ public class RandomCollection<E> {
      */
     public Map<Double, E> getMap() {
         return map;
+    }
+
+    /**
+     * Convert the RandomCollection into a list.
+     *
+     * @return A list of values.
+     */
+    public List<E> toList() {
+        return new ArrayList<>(map.values());
     }
 }

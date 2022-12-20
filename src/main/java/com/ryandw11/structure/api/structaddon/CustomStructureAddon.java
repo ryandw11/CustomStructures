@@ -1,6 +1,7 @@
 package com.ryandw11.structure.api.structaddon;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.loottables.LootTable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
@@ -20,6 +21,7 @@ public final class CustomStructureAddon {
     private final List<String> authors;
     private final Set<StructureSectionProvider> providerSet = new HashSet<>();
     private final List<Class<? extends StructureSection>> structureSections;
+    private final List<LootTable> lootTables;
 
     /**
      * Create an addon for custom structures.
@@ -37,6 +39,7 @@ public final class CustomStructureAddon {
             throw new IllegalArgumentException("Addon name cannot be the same as the plugin.");
 
         this.structureSections = new ArrayList<>();
+        this.lootTables = new ArrayList<>();
         this.authors = plugin.getDescription().getAuthors();
     }
 
@@ -115,5 +118,26 @@ public final class CustomStructureAddon {
      */
     public boolean registerStructureSign(String name, Class<? extends StructureSign> structureSign) {
         return CustomStructures.getInstance().getStructureSignHandler().registerStructureSign(name, structureSign);
+    }
+
+    /**
+     * Register a custom LootTable for use.
+     *
+     * @param lootTable The LootTable to be registered.
+     */
+    public void registerLootTable(LootTable lootTable) {
+        CustomStructures.getInstance().getLootTableHandler().addLootTable(lootTable);
+        this.lootTables.add(lootTable);
+    }
+
+    /**
+     * Handles Re-registering items from the addon when the plugin is reloaded.
+     *
+     * <p>Internal Use Only.</p>
+     */
+    public void handlePluginReload() {
+        for (LootTable lootTable : lootTables) {
+            CustomStructures.getInstance().getLootTableHandler().addLootTable(lootTable);
+        }
     }
 }

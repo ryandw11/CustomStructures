@@ -24,7 +24,8 @@ import java.util.Random;
  * Handle loot table replacement in schematics.
  */
 public class LootTableReplacer {
-    private LootTableReplacer() {}
+    private LootTableReplacer() {
+    }
 
     /**
      * Replace the contents of a container with the loot table from a structure.
@@ -79,11 +80,11 @@ public class LootTableReplacer {
         // TODO: This is not a good method, should try to pick another loot table if failed.
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
-                replaceFurnaceContent(lootTable, (FurnaceInventory) containerInventory);
+                lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
             } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
-                replaceBrewerContent(lootTable, (BrewerInventory) containerInventory);
+                lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
             } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
-                replaceChestContent(lootTable, random, containerInventory);
+                lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
             }
         }
 
@@ -96,7 +97,7 @@ public class LootTableReplacer {
      * @param random             The value of random.
      * @param containerInventory The container inventory
      */
-    protected static void replaceChestContent(LootTable lootTable, Random random, Inventory containerInventory) {
+    public static void replaceChestContent(LootTable lootTable, Random random, Inventory containerInventory) {
         ItemStack[] containerContent = containerInventory.getContents();
 
         ItemStack randomItem = lootTable.getRandomWeightedItem();
@@ -141,7 +142,7 @@ public class LootTableReplacer {
      * @param lootTable          The loot table to populate the brewer with.
      * @param containerInventory The inventory of the brewer.
      */
-    protected static void replaceBrewerContent(LootTable lootTable, BrewerInventory containerInventory) {
+    public static void replaceBrewerContent(LootTable lootTable, BrewerInventory containerInventory) {
         ItemStack item = lootTable.getRandomWeightedItem();
         ItemStack ingredient = containerInventory.getIngredient();
         ItemStack fuel = containerInventory.getFuel();
@@ -160,7 +161,7 @@ public class LootTableReplacer {
      * @param lootTable          The loot table selected for the furnace.
      * @param containerInventory The inventory of the furnace.
      */
-    protected static void replaceFurnaceContent(LootTable lootTable, FurnaceInventory containerInventory) {
+    public static void replaceFurnaceContent(LootTable lootTable, FurnaceInventory containerInventory) {
         ItemStack item = lootTable.getRandomWeightedItem();
         ItemStack result = containerInventory.getResult();
         ItemStack fuel = containerInventory.getFuel();

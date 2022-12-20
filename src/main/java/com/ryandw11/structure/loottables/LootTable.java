@@ -1,227 +1,142 @@
 package com.ryandw11.structure.loottables;
 
-import com.ryandw11.structure.CustomStructures;
-import com.ryandw11.structure.exceptions.LootTableException;
+import com.ryandw11.structure.schematic.LootTableReplacer;
 import com.ryandw11.structure.utils.RandomCollection;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.Location;
+import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
- * Represents a LootTable file.
+ * Represents a LootTable.
+ *
+ * <p>You can extend this class to implement custom LootTables.</p>
+ *
+ * <p>This class comes with a {@link RandomCollection} of {@link LootItem} by default. You can opt to not use this
+ * collection with your implementation by overriding {@link #getRandomWeightedItem()} and {@link #getItems()}.</p>
  */
-public class LootTable {
-
-    private List<LootTableType> types;
-    private int rolls;
-    private RandomCollection<LootItem> randomCollection;
-    private final String name;
-
-    public FileConfiguration lootTablesFC;
-
+public abstract class LootTable {
     /**
-     * Create a loot table with a certain name.
-     *
-     * <p>This will try to load the loot table file with the specified name.</p>
-     *
-     * @param name The name.
+     * The default RandomCollection provided.
      */
-    public LootTable(String name) {
-        this.LoadFile(name);
-        this.name = name;
-
-        if (!lootTablesFC.contains("Rolls"))
-            throw new LootTableException("Invalid loot table format! Cannot find global 'Rolls' setting.");
-
-        this.types = new ArrayList<>();
-        this.rolls = this.lootTablesFC.getInt("Rolls");
-
-
-        this.loadItems();
-    }
+    protected RandomCollection<LootItem> randomCollection;
 
     /**
-     * Load the items of the Loot Table.
+     * The list of LootTable types.
+     * <p>Avoid changing the default behavior of LootTableTypes.</p>
      */
-    private void loadItems() {
-        this.randomCollection = new RandomCollection<>();
-        if (!lootTablesFC.contains("Items"))
-            throw new LootTableException("Invalid LootTable format! The 'Items' section is required!");
-
-        for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
-            // This will throw an exception if the item is not valid.
-            validateItem(itemID);
-
-            // If the item is a CUSTOM one.
-            if (Objects.requireNonNull(lootTablesFC.getString("Items." + itemID + ".Type")).equalsIgnoreCase("CUSTOM")) {
-                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-                ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
-                if (item == null) {
-                    CustomStructures.getInstance().getLogger().warning("Cannot find a custom item with the id of " + itemID +
-                            " in the " + name + " loot table!");
-                    continue;
-                }
-                this.randomCollection.add(weight, new LootItem(item, amount, weight));
-            } else { // If not a custom item.
-                String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-                String type = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Type"));
-                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-                Map<String, String> enchants = new HashMap<>();
-
-                ConfigurationSection enchantMents = this.lootTablesFC
-                        .getConfigurationSection("Items." + itemID + ".Enchantments");
-
-                if (enchantMents != null) {
-                    for (String enchantName : enchantMents.getKeys(false)) {
-                        String level = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Enchantments." + enchantName));
-                        enchants.put(enchantName, level);
-                    }
-                }
-
-                List<String> lore = this.lootTablesFC.getStringList("Items." + itemID + ".Lore");
-
-                this.randomCollection.add(weight, new LootItem(customName, type, amount, weight, lore, enchants));
-            }
-        }
-
-    }
+    protected List<LootTableType> types;
 
     /**
-     * Validate that a certain item contains all of the required information.
-     *
-     * @param itemID The item id.
+     * The default constructor for the LootTable which initializes the RandomCollection and list of LootTableTypes.
      */
-    private void validateItem(String itemID) {
-        ConfigurationSection item = lootTablesFC.getConfigurationSection("Items." + itemID);
-        if (item == null) throw new LootTableException("Invalid file format for loot table!");
-        if (!item.contains("Amount")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
-                "'Amount' setting for item: " + itemID);
-        if (!item.contains("Weight")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
-                "'Weight' setting for item: " + itemID);
-        if (!item.contains("Type")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
-                "'Type' setting for item: " + itemID);
-        if (!item.isInt("Weight"))
-            throw new LootTableException("Invalid file format for loot table! 'Weight' is not an " +
-                    "integer for item: " + itemID);
+    public LootTable() {
+        types = new ArrayList<>();
+        randomCollection = new RandomCollection<>();
     }
 
     /**
-     * Load the file.
+     * Get the name of the LootTable.
      *
-     * @param name The file name.
+     * @return The name of the LootTable.
      */
-    private void LoadFile(String name) {
-        File lootTablesfile = new File(CustomStructures.plugin.getDataFolder() + "/lootTables/" + name + ".yml");
-        if (!lootTablesfile.exists())
-            throw new LootTableException("Cannot find the following loot table file: " + name);
-        this.lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
-
-        try {
-            lootTablesFC.load(lootTablesfile);
-        } catch (IOException | InvalidConfigurationException e) {
-            throw new LootTableException("Invalid LootTable Configuration! Please view the guide on the wiki for more information.");
-        }
-    }
+    public abstract String getName();
 
     /**
-     * Get the types of the loot table.
+     * Get the number of rolls for the loot table. (The number of items to be chosen).
      *
-     * @return The types
+     * @return The number of rolls for the loot table.
      */
-    public List<LootTableType> getTypes() {
-        return types;
-    }
+    public abstract int getRolls();
 
     /**
-     * Set the types of the loot table.
+     * Set the number of rolls for the loot table.
      *
-     * @param types The types to set the loot table to.
+     * <p>An implementation of this method is not strictly necessary.</p>
+     *
+     * @param rolls The number of rolls for the loot tables.
      */
-    public void setTypes(List<LootTableType> types) {
-        this.types = types;
-    }
+    public abstract void setRolls(int rolls);
 
     /**
-     * Add a type to the loot table.
      *
-     * @param type The type to add.
+     * @param inventory
+     * @param random
      */
-    public void addType(LootTableType type) {
-        this.types.add(type);
+    public void fillContainerInventory(Inventory inventory, Random random, Location location) {
+        LootTableReplacer.replaceChestContent(this, random, inventory);
+    }
+
+    public void fillFurnaceInventory(FurnaceInventory furnaceInventory, Random random, Location location) {
+        LootTableReplacer.replaceFurnaceContent(this, furnaceInventory);
+    }
+
+    public void fillBrewerInventory(BrewerInventory brewerInventory, Random random, Location location) {
+        LootTableReplacer.replaceBrewerContent(this, brewerInventory);
     }
 
     /**
-     * Get the name of the loot table.
+     * Get a random item from the loot table.
      *
-     * @return The name of the loot table.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Get the number of items chosen.
+     * <p>Override this method if you don't use the default RandomCollection.</p>
      *
-     * @return The number of items chosen.
-     */
-    public int getRolls() {
-        return rolls;
-    }
-
-    public void setRolls(int rolls) {
-        this.rolls = rolls;
-    }
-
-    /**
-     * Get a random item from the table.
-     *
-     * @return A random item.
+     * @return A random item from the loot table.
      */
     public ItemStack getRandomWeightedItem() {
         return this.randomCollection.next().getItemStack();
     }
 
     /**
-     * Get the items within the loot table.
+     * Get the list of items from the loot table.
      *
-     * @return A list of items.
+     * <p>Override this method if you don't use the default RandomCollection.</p>
+     *
+     * @return This list of possible items in the LootTable.
      */
     public List<LootItem> getItems() {
-        List<LootItem> result = new ArrayList<>();
-        for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
-            this.validateItem(itemID);
-
-            String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-            String type = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Type"));
-            String amount = this.lootTablesFC.getString("Items." + itemID + ".Amount");
-            int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-            Map<String, String> enchants = new HashMap<>();
-
-            ConfigurationSection enchantments = this.lootTablesFC
-                    .getConfigurationSection("Items." + itemID + ".Enchantments");
-
-            if (enchantments != null) {
-                for (String enchantName : enchantments.getKeys(false)) {
-                    String level = this.lootTablesFC.getString("Items." + itemID + ".Enchantments." + enchantName);
-                    enchants.put(enchantName, level);
-                }
-            }
-
-            List<String> lore = this.lootTablesFC.getStringList("Items." + itemID + ".Lore");
-
-            result.add(new LootItem(customName, type, amount, weight, lore, enchants));
-        }
-
-        return result;
+        return randomCollection.toList();
     }
 
+    /**
+     * Add an item to the LootTable's random collection.
+     *
+     * @param weight   The weight of the item to add.
+     * @param lootItem The LootItem to add.
+     */
+    protected final void addLootItem(double weight, @NotNull LootItem lootItem) {
+        this.randomCollection.add(weight, lootItem);
+    }
+
+    /**
+     * Get the list of LootTable types.
+     *
+     * @return The list of LootTable types.
+     */
+    public final List<LootTableType> getTypes() {
+        return types;
+    }
+
+    /**
+     * Set the list of LootTable types.
+     *
+     * @param types The list of types to be set.
+     */
+    public final void setTypes(List<LootTableType> types) {
+        this.types = types;
+    }
+
+    /**
+     * Add a LootTable type.
+     *
+     * @param type The LootTable type to be added.
+     */
+    public final void addType(LootTableType type) {
+        this.types.add(type);
+    }
 }

@@ -29,6 +29,7 @@ public class SCommand implements CommandExecutor {
         this.commandHandler.registerCommand("testspawn", new TestSpawnCommand(plugin));
         this.commandHandler.registerCommand(new AddonsCommand(plugin), "addon", "addons");
         this.commandHandler.registerCommand(new SetLoottableCommand(plugin), "setloottable", "setloot", "setlt");
+        this.commandHandler.registerCommand(new TestLootTableCommand(plugin), "testloottable", "testloot", "testlt");
     }
 
     @Override
@@ -69,6 +70,8 @@ public class SCommand implements CommandExecutor {
                         "&3/cstructure addons - &2The list of addons."));
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3/cstructure setLootTable - &2Easily specify a loot table for a container."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        "&3/cstructure testLootTable - &2Test a loot table on a container."));
             } else {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         "&3=============[&2CustomStructures&3]============="));

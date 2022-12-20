@@ -24,15 +24,19 @@ public class SCommandTab implements TabCompleter {
         if (args.length == 2 && (args[0].equalsIgnoreCase("test") || args[0].equalsIgnoreCase("testspawn") || args[0].equalsIgnoreCase("nearby"))) {
             completions = new ArrayList<>(plugin.getStructureHandler().getStructureNames());
             completions = getApplicableTabCompleter(args[1], completions);
-        } else if(args.length == 2 && (
+        } else if (args.length == 2 && (
                 args[0].equalsIgnoreCase("setLootTable") ||
                         args[0].equalsIgnoreCase("setLoot") ||
-                        args[0].equalsIgnoreCase("setlt")))  {
+                        args[0].equalsIgnoreCase("setlt") ||
+                        args[0].equalsIgnoreCase("testLootTable") ||
+                        args[0].equalsIgnoreCase("testlt") ||
+                        args[0].equalsIgnoreCase("testLoot")
+        )) {
             completions = plugin.getLootTableHandler().getLootTablesNames();
             completions = getApplicableTabCompleter(args[1], completions);
         } else if (args.length <= 1) {
             completions = new ArrayList<>(Arrays.asList("reload", "test", "list", "addItem", "checkKey", "getItem",
-                    "createSchem", "create", "nearby", "testspawn", "addons", "setLootTable"));
+                    "createSchem", "create", "nearby", "testspawn", "addons", "setLootTable", "testLootTable"));
             completions = getApplicableTabCompleter(args.length == 1 ? args[0] : "", completions);
         }
         Collections.sort(completions);

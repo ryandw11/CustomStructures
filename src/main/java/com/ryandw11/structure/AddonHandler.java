@@ -39,4 +39,15 @@ public final class AddonHandler {
         addons.add(addon);
     }
 
+    /**
+     * Handles re-registering items from addons when the plugin is reloaded.
+     *
+     * <p>Internal Use Only.</p>
+     */
+    public void handlePluginReload() {
+        for (CustomStructureAddon addon : addons) {
+            addon.handlePluginReload();
+        }
+    }
+
 }
