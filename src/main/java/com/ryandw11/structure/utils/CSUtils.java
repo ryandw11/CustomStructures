@@ -64,8 +64,33 @@ public class CSUtils {
         if (!configurationSection.contains(originalName)) return;
 
         for (String key : configurationSection.getKeys(false)) {
-           configurationSection.set(newName + "." + key, configurationSection.getString(originalName + "." + key));
+            configurationSection.set(newName + "." + key, configurationSection.getString(originalName + "." + key));
         }
         configurationSection.set(originalName, null);
+    }
+
+    /**
+     * Check if an integer is in a range.
+     *
+     * @param pair  The range.
+     * @param value The integer.
+     * @return If the integer is in the range.
+     */
+    public static boolean isPairInRange(Pair<Integer, Integer> pair, int value) {
+        if (pair.getLeft() > value) return false;
+        return pair.getRight() > value;
+    }
+
+    /**
+     * Check if an integer is in a local range.
+     *
+     * @param pair     The local range.
+     * @param localPin The pin that will be added to the local range.
+     * @param value    The integer.
+     * @return If the integer is within the local range.
+     */
+    public static boolean isPairInLocalRange(Pair<Integer, Integer> pair, int localPin, int value) {
+        if (pair.getLeft() + localPin > value) return false;
+        return pair.getRight() + localPin > value;
     }
 }

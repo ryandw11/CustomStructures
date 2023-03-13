@@ -2,6 +2,7 @@ package com.ryandw11.structure.structure.properties.schematics;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This class holds a single SubSchematic (both simple and advanced).
@@ -12,6 +13,7 @@ public class SubSchematic {
     private String file;
     private boolean placeAir = false;
     private boolean useRotation = false;
+    private VerticalRepositioning verticalRepositioning;
 
     /**
      * Create a sub schematic from a configuration section.
@@ -30,22 +32,28 @@ public class SubSchematic {
             placeAir = section.getBoolean("PlaceAir");
         if (section.contains("UseRotation"))
             useRotation = section.getBoolean("UseRotation");
+        if (section.contains("VerticalRepositioning")) {
+            this.verticalRepositioning = new VerticalRepositioning(section.getName(),
+                    section.getConfigurationSection("VerticalRepositioning"));
+        }
     }
 
     /**
      * Create a sub schematic.
      *
-     * @param file        The file.
-     *                    <p>Note: The plugin does not check to make sure this file is valid!</p>
-     * @param placeAir    If the structure should place air.
-     * @param useRotation If you want the structure to use the rotation of the sign.
-     * @param weight      The weight of the sub-schematic.
+     * @param file                  The file.
+     *                              <p>Note: The plugin does not check to make sure this file is valid!</p>
+     * @param placeAir              If the structure should place air.
+     * @param useRotation           If you want the structure to use the rotation of the sign.
+     * @param weight                The weight of the sub-schematic.
+     * @param verticalRepositioning The verticalRepositioning settings of the subschematic.
      */
-    public SubSchematic(String file, boolean placeAir, boolean useRotation, int weight) {
+    public SubSchematic(String file, boolean placeAir, boolean useRotation, int weight, @Nullable VerticalRepositioning verticalRepositioning) {
         this.file = file;
         this.placeAir = placeAir;
         this.useRotation = useRotation;
         this.weight = weight;
+        this.verticalRepositioning = verticalRepositioning;
     }
 
     /**
@@ -110,5 +118,15 @@ public class SubSchematic {
      */
     public double getWeight() {
         return weight;
+    }
+
+    /**
+     * Gets the vertical repositioning settings. (Null if there is no vertical repositioning).
+     *
+     * @return The vertical repositioning settings.
+     */
+    @Nullable
+    public VerticalRepositioning getVerticalRepositioning() {
+        return verticalRepositioning;
     }
 }

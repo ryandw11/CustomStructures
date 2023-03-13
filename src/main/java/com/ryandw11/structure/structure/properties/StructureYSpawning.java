@@ -1,6 +1,7 @@
 package com.ryandw11.structure.structure.properties;
 
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
+import com.ryandw11.structure.utils.NumberStylizer;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -129,110 +130,6 @@ public class StructureYSpawning {
      * @return The height according to the rules of SpawnY.
      */
     public int getHeight(@Nullable Location location) {
-
-        // Ensure that the spawnY is configured correctly for the void.
-        if (location == null) {
-            if (top) throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
-                    "absolute spawn y value. Top is not absolute.");
-            if (value.startsWith("+"))
-                throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
-                        "absolute spawn y value. Relative value is not absolute.");
-            if (value.startsWith("-"))
-                throw new StructureConfigurationException("A structure that can spawn in the void must have an " +
-                        "absolute spawn y value. Relative value is not absolute.");
-        }
-
-        // Get the highest block at the specified location.
-        int currentHeight = -1;
-        if (location != null) {
-            currentHeight = Objects.requireNonNull(location.getWorld()).getHighestBlockYAt(location, heightMap);
-        }
-
-        if (top) return currentHeight;
-        // If it is a range
-        if (value.contains(";")) {
-            //If +[num;num]
-            if (value.startsWith("+")) {
-                String v = value.replace("[", "").replace("]", "").replace("+", "");
-                String[] out = v.split(";");
-                try {
-                    int num1 = Integer.parseInt(out[0]);
-                    int num2 = Integer.parseInt(out[1]);
-
-                    if (num1 > num2)
-                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
-
-                    int randomValue = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
-                    return currentHeight + randomValue;
-
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                    return currentHeight;
-                }
-            }
-            // if -[num;num]
-            else if (value.startsWith("-")) {
-                String v = value.replace("[", "").replace("]", "").replace("-", "");
-                String[] out = v.split(";");
-                try {
-                    int num1 = Integer.parseInt(out[0]);
-                    int num2 = Integer.parseInt(out[1]);
-
-                    if (num1 > num2)
-                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
-
-                    int randomValue = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
-                    return currentHeight - randomValue;
-
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                    return currentHeight;
-                }
-            }
-            // if just [num;num]
-            else {
-                String v = value.replace("[", "").replace("]", "");
-                String[] out = v.split(";");
-                try {
-                    int num1 = Integer.parseInt(out[0]);
-                    int num2 = Integer.parseInt(out[1]);
-
-                    if (num1 > num2)
-                        throw new StructureConfigurationException("SpawnY Value 1 must be greater than value 2 in '[value1;value2]'.");
-
-                    return ThreadLocalRandom.current().nextInt(num1, num2 + 1);
-
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                    return currentHeight;
-                }
-            }
-        }
-        // if +[num]
-        else if (value.startsWith("+[")) {
-            String v = value.replace("+", "").replace("[", "").replace("]", "");
-            try {
-                int num = Integer.parseInt(v);
-                return currentHeight + num;
-            } catch (NumberFormatException ex) {
-                return currentHeight;
-            }
-        }
-        // if -[num]
-        else if (value.startsWith("-[")) {
-            String v = value.replace("-", "").replace("[", "").replace("]", "");
-
-            try {
-                int num = Integer.parseInt(v);
-                return currentHeight - num;
-            } catch (NumberFormatException ex) {
-                return currentHeight;
-            }
-        }
-        // if just num
-        else {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException ex) {
-                return currentHeight;
-            }
-        }
+        return NumberStylizer.getStylizedSpawnY(value, location);
     }
 }

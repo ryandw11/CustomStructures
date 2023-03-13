@@ -40,6 +40,17 @@ AdvancedSubSchematics:
       File: 'demo2.schem'
       PlaceAir: false
       UseRotation: false
+    demo3:
+      Weight: 40
+      File: 'demo3.schem'
+      PlaceAir: false
+      UseRotation: false
+      VerticalRepositioning:
+        Range: '[-10;20]'
+        SpawnY: 'top'
+        SpawnYHeightMap: 'WORLD_SURFACE'
+        # CURRENT, PREVENT_SPAWN, 'Stylized SpawnY Int'
+        NoPointSolution: ''
 
 StructureLimitations:
   WorldHeightRestriction: 10

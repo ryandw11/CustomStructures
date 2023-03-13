@@ -6,6 +6,9 @@ import com.ryandw11.structure.structure.Structure;
 import com.ryandw11.structure.structure.properties.AdvancedSubSchematics;
 import com.ryandw11.structure.structure.properties.SubSchematics;
 import com.ryandw11.structure.structure.properties.schematics.SubSchematic;
+import com.ryandw11.structure.structure.properties.schematics.VerticalRepositioning;
+import com.ryandw11.structure.utils.CSUtils;
+import com.ryandw11.structure.utils.NumberStylizer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -13,7 +16,6 @@ import org.bukkit.block.data.type.WallSign;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Handle the replacement of signs in schematics.
@@ -131,20 +133,14 @@ public class SchematicSignReplacer {
             parentStructure.setSubSchemRotation(rotation);
         }
 
+        // Normal Sub-Schematic
         if (firstLine.equalsIgnoreCase("[schematic]") || firstLine.equalsIgnoreCase("[schem]")) {
-            int number = -1;
+            int number;
             if (secondLine.startsWith("[")) {
-                String v = secondLine.replace("[", "").replace("]", "");
-                String[] out = v.split("-");
-                if (out.length != 2)
-                    out = v.split(";");
                 try {
-                    int num1 = Integer.parseInt(out[0]);
-                    int num2 = Integer.parseInt(out[1]);
-                    number = ThreadLocalRandom.current().nextInt(num1, num2 + 1);
-
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                    plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse random numbers.");
+                    number = NumberStylizer.retrieveRangedInput(secondLine);
+                } catch (NumberFormatException ex) {
+                    plugin.getLogger().warning("Invalid schematic sign on structure. Cannot parse ranged number.");
                     return;
                 }
             } else {
@@ -155,6 +151,7 @@ public class SchematicSignReplacer {
                     return;
                 }
             }
+
             if (number < -1 || number >= subSchematics.getSchematics().size()) {
                 plugin.getLogger().warning("Invalid schematic sign on structure. Schematic number is not within the valid bounds.");
                 return;
@@ -169,6 +166,24 @@ public class SchematicSignReplacer {
             if (!subSchem.isUsingRotation())
                 parentStructure.setSubSchemRotation(0);
             try {
+                if (subSchem.getVerticalRepositioning() != null) {
+                    VerticalRepositioning vertRep = subSchem.getVerticalRepositioning();
+                    Location heightBlock = location.getWorld().getHighestBlockAt(location, vertRep.getSpawnYHeightMap()).getLocation();
+
+                    int newSpawnY = vertRep.getSpawnY(heightBlock);
+                    if (CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
+                        location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
+                    } else {
+                        if (vertRep.getNoPointSolution().equalsIgnoreCase("CURRENT")) {
+                            // Do Nothing, keep the current location.
+                        } else if (vertRep.getNoPointSolution().equalsIgnoreCase("PREVENT_SPAWN")) {
+                            return;
+                        } else {
+                            newSpawnY = NumberStylizer.getStylizedSpawnY(vertRep.getNoPointSolution(), location);
+                            location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
+                        }
+                    }
+                }
                 SchematicHandler.placeSchematic(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure, iteration + 1);
             } catch (Exception ex) {
                 plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
@@ -176,7 +191,9 @@ public class SchematicSignReplacer {
                     ex.printStackTrace();
                 }
             }
-        } else if (firstLine.equalsIgnoreCase("[advschem]")) {
+        }
+        // Advanced sub-schematic.
+        else if (firstLine.equalsIgnoreCase("[advschem]")) {
             if (!advancedSubSchematics.containsCategory(secondLine)) {
                 plugin.getLogger().warning("Cannot replace Advanced Sub-Schematic sign.");
                 plugin.getLogger().warning(String.format("The category \"%s\" does not exist!", secondLine));
@@ -192,6 +209,26 @@ public class SchematicSignReplacer {
             if (!subSchem.isUsingRotation())
                 parentStructure.setSubSchemRotation(0);
             try {
+                if (subSchem.getVerticalRepositioning() != null) {
+                    VerticalRepositioning vertRep = subSchem.getVerticalRepositioning();
+
+                    Location heightBlock = location.getWorld().getHighestBlockAt(location, vertRep.getSpawnYHeightMap()).getLocation();
+                    int newSpawnY = vertRep.getSpawnY(heightBlock);
+
+                    if (CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
+                        location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
+                    } else {
+                        if (vertRep.getNoPointSolution().equalsIgnoreCase("CURRENT")) {
+                            // Do Nothing, keep the current location.
+                        } else if (vertRep.getNoPointSolution().equalsIgnoreCase("PREVENT_SPAWN")) {
+                            return;
+                        } else {
+                            newSpawnY = NumberStylizer.getStylizedSpawnY(vertRep.getNoPointSolution(), location);
+                            location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
+                        }
+                    }
+                }
+
                 SchematicHandler.placeSchematic(location, subSchem.getFile(), subSchem.isPlacingAir(), parentStructure, iteration + 1);
             } catch (Exception ex) {
                 plugin.getLogger().warning("An error has occurred when attempting to paste a sub schematic.");
