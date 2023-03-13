@@ -78,16 +78,13 @@ public class LootTableReplacer {
         if (event.isCanceled()) return;
 
         // TODO: This is not a good method, should try to pick another loot table if failed.
-        for (int i = 0; i < lootTable.getRolls(); i++) {
-            if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
-                lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
-            } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
-                lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
-            } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
-                lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
-            }
+        if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
+            lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
+        } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
+            lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
+        } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
+            lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
         }
-
     }
 
     /**
@@ -98,39 +95,41 @@ public class LootTableReplacer {
      * @param containerInventory The container inventory
      */
     public static void replaceChestContent(LootTable lootTable, Random random, Inventory containerInventory) {
-        ItemStack[] containerContent = containerInventory.getContents();
+        for(int roll = 0; roll < lootTable.getRolls(); roll++){
+            ItemStack[] containerContent = containerInventory.getContents();
 
-        ItemStack randomItem = lootTable.getRandomWeightedItem();
+            ItemStack randomItem = lootTable.getRandomWeightedItem();
 
-        for (int j = 0; j < randomItem.getAmount(); j++) {
-            boolean done = false;
-            int attemps = 0;
-            while (!done) {
-                int randomPos = random.nextInt(containerContent.length);
-                ItemStack randomPosItem = containerInventory.getItem(randomPos);
-                if (randomPosItem != null) {
+            for (int j = 0; j < randomItem.getAmount(); j++) {
+                boolean done = false;
+                int attemps = 0;
+                while (!done) {
+                    int randomPos = random.nextInt(containerContent.length);
+                    ItemStack randomPosItem = containerInventory.getItem(randomPos);
+                    if (randomPosItem != null) {
 
-                    if (isSameItem(randomPosItem, randomItem)) {
-                        if (randomPosItem.getAmount() < randomItem.getMaxStackSize()) {
-                            ItemStack randomItemCopy = randomItem.clone();
-                            int newAmount = randomPosItem.getAmount() + 1;
-                            randomItemCopy.setAmount(newAmount);
-                            containerContent[randomPos] = randomItemCopy;
-                            containerInventory.setContents(containerContent);
-                            done = true;
+                        if (isSameItem(randomPosItem, randomItem)) {
+                            if (randomPosItem.getAmount() < randomItem.getMaxStackSize()) {
+                                ItemStack randomItemCopy = randomItem.clone();
+                                int newAmount = randomPosItem.getAmount() + 1;
+                                randomItemCopy.setAmount(newAmount);
+                                containerContent[randomPos] = randomItemCopy;
+                                containerInventory.setContents(containerContent);
+                                done = true;
+                            }
                         }
-                    }
-                } else {
-                    ItemStack randomItemCopy = randomItem.clone();
-                    randomItemCopy.setAmount(1);
-                    containerContent[randomPos] = randomItemCopy;
-                    containerInventory.setContents(containerContent);
-                    done = true;
+                    } else {
+                        ItemStack randomItemCopy = randomItem.clone();
+                        randomItemCopy.setAmount(1);
+                        containerContent[randomPos] = randomItemCopy;
+                        containerInventory.setContents(containerContent);
+                        done = true;
 
-                }
-                attemps++;
-                if (attemps >= containerContent.length) {
-                    done = true;
+                    }
+                    attemps++;
+                    if (attemps >= containerContent.length) {
+                        done = true;
+                    }
                 }
             }
         }
@@ -143,16 +142,17 @@ public class LootTableReplacer {
      * @param containerInventory The inventory of the brewer.
      */
     public static void replaceBrewerContent(LootTable lootTable, BrewerInventory containerInventory) {
-        ItemStack item = lootTable.getRandomWeightedItem();
-        ItemStack ingredient = containerInventory.getIngredient();
-        ItemStack fuel = containerInventory.getFuel();
+        for(int roll = 0; roll < lootTable.getRolls(); roll++) {
+            ItemStack item = lootTable.getRandomWeightedItem();
+            ItemStack ingredient = containerInventory.getIngredient();
+            ItemStack fuel = containerInventory.getFuel();
 
-        if ((ingredient == null) || ingredient.equals(item)) {
-            containerInventory.setIngredient(item);
-        } else if ((fuel == null) || fuel.equals(item)) {
-            containerInventory.setFuel(item);
+            if ((ingredient == null) || ingredient.equals(item)) {
+                containerInventory.setIngredient(item);
+            } else if ((fuel == null) || fuel.equals(item)) {
+                containerInventory.setFuel(item);
+            }
         }
-
     }
 
     /**
@@ -162,17 +162,19 @@ public class LootTableReplacer {
      * @param containerInventory The inventory of the furnace.
      */
     public static void replaceFurnaceContent(LootTable lootTable, FurnaceInventory containerInventory) {
-        ItemStack item = lootTable.getRandomWeightedItem();
-        ItemStack result = containerInventory.getResult();
-        ItemStack fuel = containerInventory.getFuel();
-        ItemStack smelting = containerInventory.getSmelting();
+        for(int roll = 0; roll < lootTable.getRolls(); roll++) {
+            ItemStack item = lootTable.getRandomWeightedItem();
+            ItemStack result = containerInventory.getResult();
+            ItemStack fuel = containerInventory.getFuel();
+            ItemStack smelting = containerInventory.getSmelting();
 
-        if ((result == null) || result.equals(item)) {
-            containerInventory.setResult(item);
-        } else if ((fuel == null) || fuel.equals(item)) {
-            containerInventory.setFuel(item);
-        } else if ((smelting == null) || smelting.equals(item)) {
-            containerInventory.setSmelting(item);
+            if ((result == null) || result.equals(item)) {
+                containerInventory.setResult(item);
+            } else if ((fuel == null) || fuel.equals(item)) {
+                containerInventory.setFuel(item);
+            } else if ((smelting == null) || smelting.equals(item)) {
+                containerInventory.setSmelting(item);
+            }
         }
     }
 

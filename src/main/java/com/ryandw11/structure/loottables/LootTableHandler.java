@@ -11,12 +11,14 @@ import java.util.*;
  *
  * <p>Get this handler via {@link CustomStructuresAPI#getLootTableHandler()}.</p>
  */
-public class LootTablesHandler {
+public class LootTableHandler {
 
     private final Map<String, LootTable> lootTables;
+    private final Map<String, Class<? extends ConfigLootItem>> lootItems;
 
-    public LootTablesHandler() {
+    public LootTableHandler() {
         this.lootTables = new HashMap<>();
+        this.lootItems = new HashMap<>();
     }
 
     /**
@@ -34,6 +36,24 @@ public class LootTablesHandler {
             return false;
 
         this.lootTables.put(lootTable.getName(), lootTable);
+        return true;
+    }
+
+    /**
+     * Add a loot item to the LootTableHandler.
+     *
+     * <p>Addons should be using {@link com.ryandw11.structure.api.structaddon.CustomStructureAddon#registerLootItem(String, Class)}
+     * to add custom LootItems since the LootTableHandler is reset every time the plugin is reloaded.</p>
+     *
+     * @param typeName      The type name for the LootItem. (All names are set to be upper-case).
+     * @param lootItemClass The loot item class.
+     * @return If the loot item was added successfully.
+     */
+    public boolean addLootItem(String typeName, Class<? extends ConfigLootItem> lootItemClass) {
+        if (lootItems.containsKey(typeName.toUpperCase()))
+            return false;
+
+        this.lootItems.put(typeName.toUpperCase(), lootItemClass);
         return true;
     }
 
@@ -81,5 +101,24 @@ public class LootTablesHandler {
      */
     public List<String> getLootTablesNames() {
         return new ArrayList<>(this.lootTables.keySet());
+    }
+
+    /**
+     * Get a loot item's class by its type name. (Built-In loot items won't be returned).
+     *
+     * @param typeName The type name. (All type names are uppercase).
+     * @return The loot item's class.
+     */
+    public Class<? extends ConfigLootItem> getLootItemClassByName(String typeName) {
+        return this.lootItems.get(typeName);
+    }
+
+    /**
+     * Get loot items.
+     *
+     * @return The unmodifiable map of loot items.
+     */
+    public Map<String, Class<? extends ConfigLootItem>> getLootItems() {
+        return Collections.unmodifiableMap(lootItems);
     }
 }

@@ -1,6 +1,7 @@
 package com.ryandw11.structure.api.structaddon;
 
 import com.ryandw11.structure.CustomStructures;
+import com.ryandw11.structure.loottables.ConfigLootItem;
 import com.ryandw11.structure.loottables.LootTable;
 import org.bukkit.plugin.Plugin;
 
@@ -22,6 +23,7 @@ public final class CustomStructureAddon {
     private final Set<StructureSectionProvider> providerSet = new HashSet<>();
     private final List<Class<? extends StructureSection>> structureSections;
     private final List<LootTable> lootTables;
+    private final Map<String, Class<? extends ConfigLootItem>> lootItems;
 
     /**
      * Create an addon for custom structures.
@@ -40,6 +42,7 @@ public final class CustomStructureAddon {
 
         this.structureSections = new ArrayList<>();
         this.lootTables = new ArrayList<>();
+        this.lootItems = new HashMap<>();
         this.authors = plugin.getDescription().getAuthors();
     }
 
@@ -131,6 +134,17 @@ public final class CustomStructureAddon {
     }
 
     /**
+     * Register a custom LootItem for use.
+     *
+     * @param typeName      The type name for the custom LootItem.
+     * @param lootItemClass The class for the custom LootItem.
+     */
+    public void registerLootItem(String typeName, Class<? extends ConfigLootItem> lootItemClass) {
+        CustomStructures.getInstance().getLootTableHandler().addLootItem(typeName, lootItemClass);
+        this.lootItems.put(typeName, lootItemClass);
+    }
+
+    /**
      * Handles Re-registering items from the addon when the plugin is reloaded.
      *
      * <p>Internal Use Only.</p>
@@ -138,6 +152,10 @@ public final class CustomStructureAddon {
     public void handlePluginReload() {
         for (LootTable lootTable : lootTables) {
             CustomStructures.getInstance().getLootTableHandler().addLootTable(lootTable);
+        }
+
+        for (Map.Entry<String, Class<? extends ConfigLootItem>> itemEntry : lootItems.entrySet()) {
+            CustomStructures.getInstance().getLootTableHandler().addLootItem(itemEntry.getKey(), itemEntry.getValue());
         }
     }
 }

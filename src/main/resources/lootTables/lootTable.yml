@@ -7,8 +7,10 @@ Items:
   item0:
     #Item custom Name, you can use color codes (https://minecraft.tools/en/color-code.php)
     Name: '&1Test'
+    # The type of LootItem.
+    Type: 'STANDARD'
     #Material Type https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
-    Type: 'IRON_SWORD'
+    Material: 'IRON_SWORD'
     #Number of items per stack
     Amount: 1
     #Determines how often this entry will be chosen out of all the entries in the list.
@@ -22,11 +24,13 @@ Items:
       - '&cExample Lore 1'
   item1:
     Name: '&2Test2'
-    Type: 'IRON_HELMET'
+    Type: 'STANDARD'
+    Material: 'IRON_HELMET'
     Amount: 1
     Weight: 5
   item2:
     Name: '&3Test3'
-    Type: 'ROTTEN_FLESH'
+    Type: 'STANDARD'
+    Material: 'ROTTEN_FLESH'
     Amount: 5
     Weight: 20

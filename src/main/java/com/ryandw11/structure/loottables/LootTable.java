@@ -65,18 +65,40 @@ public abstract class LootTable {
     public abstract void setRolls(int rolls);
 
     /**
+     * Fills a container's inventory with items.
      *
-     * @param inventory
-     * @param random
+     * <p>Override this method to replace the default functionality.</p>
+     *
+     * @param inventory The inventory to fill.
+     * @param random    The randomizer.
+     * @param location  The location of the container.
      */
     public void fillContainerInventory(Inventory inventory, Random random, Location location) {
         LootTableReplacer.replaceChestContent(this, random, inventory);
     }
 
+    /**
+     * Fills a furnace inventory with items.
+     *
+     * <p>Override this method to replace the default functionality.</p>
+     *
+     * @param furnaceInventory The furnace inventory to fill.
+     * @param random           The randomizer.
+     * @param location         The location of the furnace.
+     */
     public void fillFurnaceInventory(FurnaceInventory furnaceInventory, Random random, Location location) {
         LootTableReplacer.replaceFurnaceContent(this, furnaceInventory);
     }
 
+    /**
+     * Fills a brewer with items.
+     *
+     * <p>Override this method to replace the default functionality.</p>
+     *
+     * @param brewerInventory The brewer invetory to fill.
+     * @param random          The randomizer.
+     * @param location        The location of the furnace.
+     */
     public void fillBrewerInventory(BrewerInventory brewerInventory, Random random, Location location) {
         LootTableReplacer.replaceBrewerContent(this, brewerInventory);
     }

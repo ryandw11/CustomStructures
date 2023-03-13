@@ -2,7 +2,7 @@ package com.ryandw11.structure.api;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
-import com.ryandw11.structure.loottables.LootTablesHandler;
+import com.ryandw11.structure.loottables.LootTableHandler;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.structure.StructureHandler;
 
@@ -76,7 +76,7 @@ public class CustomStructuresAPI {
      *
      * @return The loot table handler.
      */
-    public LootTablesHandler getLootTableHandler() {
+    public LootTableHandler getLootTableHandler() {
         return plugin.getLootTableHandler();
     }
 

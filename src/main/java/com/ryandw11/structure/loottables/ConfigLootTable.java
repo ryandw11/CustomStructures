@@ -2,16 +2,20 @@ package com.ryandw11.structure.loottables;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.exceptions.LootTableException;
-import com.ryandw11.structure.utils.RandomCollection;
+import com.ryandw11.structure.loottables.customitems.CustomLootItem;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a LootTable file.
@@ -77,43 +81,73 @@ public class ConfigLootTable extends LootTable {
             throw new LootTableException("Invalid LootTable format! The 'Items' section is required!");
 
         for (String itemID : this.lootTablesFC.getConfigurationSection("Items").getKeys(false)) {
-            // This will throw an exception if the item is not valid.
-            validateItem(itemID);
+            ConfigurationSection itemSection = lootTablesFC.getConfigurationSection("Items." + itemID);
+            assert itemSection != null;
 
-            // If the item is a CUSTOM one.
-            if (Objects.requireNonNull(lootTablesFC.getString("Items." + itemID + ".Type")).equalsIgnoreCase("CUSTOM")) {
-                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-                ItemStack item = CustomStructures.getInstance().getCustomItemManager().getItem(this.lootTablesFC.getString("Items." + itemID + ".Key"));
-                if (item == null) {
-                    CustomStructures.getInstance().getLogger().warning("Cannot find a custom item with the id of " + itemID +
-                            " in the " + name + " loot table!");
+            // Grab the item type.
+            String type = itemSection.getString("Type");
+            if (type == null) {
+                type = "Standard";
+            }
+            type = type.toUpperCase();
+
+            int weight = itemSection.getInt("Weight", 1);
+            String amount = itemSection.getString("Amount", "1");
+
+            if (type.equalsIgnoreCase("STANDARD")) {
+                handleStandardItem(itemID, itemSection);
+            } else if (type.equalsIgnoreCase("CUSTOM")) {
+                try {
+                    CustomLootItem customLootItem = new CustomLootItem(this, itemID, weight, amount);
+                    customLootItem.constructItem(itemSection);
+
+                    this.randomCollection.add(weight, customLootItem);
+                } catch (LootTableException ex) {
                     continue;
                 }
-                this.randomCollection.add(weight, new LootItem(item, amount, weight));
-            } else { // If not a custom item.
-                String customName = this.lootTablesFC.getString("Items." + itemID + ".Name");
-                String type = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Type"));
-                String amount = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Amount"));
-                int weight = this.lootTablesFC.getInt("Items." + itemID + ".Weight");
-                Map<String, String> enchants = new HashMap<>();
-
-                ConfigurationSection enchantMents = this.lootTablesFC
-                        .getConfigurationSection("Items." + itemID + ".Enchantments");
-
-                if (enchantMents != null) {
-                    for (String enchantName : enchantMents.getKeys(false)) {
-                        String level = Objects.requireNonNull(this.lootTablesFC.getString("Items." + itemID + ".Enchantments." + enchantName));
-                        enchants.put(enchantName, level);
-                    }
+            } else {
+                Class<? extends ConfigLootItem> itemClass = CustomStructures.getInstance().getLootTableHandler().getLootItemClassByName(type);
+                if (itemClass == null) {
+                    throw new LootTableException(String.format("Unable to find custom loot item type %s!", type));
                 }
+                try {
+                    Constructor<? extends ConfigLootItem> item = itemClass.getConstructor(LootTable.class, String.class, Integer.TYPE, String.class);
+                    ConfigLootItem itemInst = item.newInstance(this, itemID, weight, amount);
 
-                List<String> lore = this.lootTablesFC.getStringList("Items." + itemID + ".Lore");
-
-                this.randomCollection.add(weight, new LootItem(customName, type, amount, weight, lore, enchants));
+                    itemInst.constructItem(itemSection);
+                    this.randomCollection.add(weight, itemInst);
+                } catch (NoSuchMethodException ex) {
+                    throw new LootTableException(String.format("Unable to construct custom loot item type %s! Does the required constructor exist?", type));
+                } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
+                    throw new LootTableException(String.format("Unable to construct custom loot item type %s! Does the constructor have the correct access level?", type));
+                }
             }
         }
 
+    }
+
+    private void handleStandardItem(String itemID, ConfigurationSection section) {
+        // This will throw an exception if the item is not valid.
+        validateItem(itemID, section);
+
+        String customName = section.getString("Name");
+        String material = Objects.requireNonNull(section.getString("Material"));
+        String amount = Objects.requireNonNull(section.getString("Amount"));
+        int weight = section.getInt("Weight");
+        Map<String, String> enchants = new HashMap<>();
+
+        ConfigurationSection enchantMents = section.getConfigurationSection("Enchantments");
+
+        if (enchantMents != null) {
+            for (String enchantName : enchantMents.getKeys(false)) {
+                String level = Objects.requireNonNull(section.getString("Enchantments." + enchantName));
+                enchants.put(enchantName, level);
+            }
+        }
+
+        List<String> lore = section.getStringList("Lore");
+
+        this.randomCollection.add(weight, new StandardLootItem(customName, material, amount, weight, lore, enchants));
     }
 
     /**
@@ -121,8 +155,7 @@ public class ConfigLootTable extends LootTable {
      *
      * @param itemID The item id.
      */
-    private void validateItem(String itemID) {
-        ConfigurationSection item = lootTablesFC.getConfigurationSection("Items." + itemID);
+    private void validateItem(String itemID, ConfigurationSection item) {
         if (item == null) throw new LootTableException("Invalid file format for loot table!");
         if (!item.contains("Amount")) throw new LootTableException("Invalid file format for loot table! Cannot find " +
                 "'Amount' setting for item: " + itemID);

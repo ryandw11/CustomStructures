@@ -9,7 +9,7 @@ import com.ryandw11.structure.commands.SCommandTab;
 import com.ryandw11.structure.ignoreblocks.*;
 import com.ryandw11.structure.listener.ChunkLoad;
 import com.ryandw11.structure.listener.PlayerJoin;
-import com.ryandw11.structure.loottables.LootTablesHandler;
+import com.ryandw11.structure.loottables.LootTableHandler;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.mythicalmobs.MMDisabled;
 import com.ryandw11.structure.mythicalmobs.MMEnabled;
@@ -52,7 +52,7 @@ public class CustomStructures extends JavaPlugin {
     private SignCommandsHandler signCommandsHandler;
     private NpcHandler npcHandler;
     private StructureHandler structureHandler;
-    private LootTablesHandler lootTablesHandler;
+    private LootTableHandler lootTableHandler;
     private CustomItemManager customItemManager;
     private IgnoreBlocks blockIgnoreManager;
     private AddonHandler addonHandler;
@@ -114,7 +114,7 @@ public class CustomStructures extends JavaPlugin {
         debugMode = getConfig().getBoolean("debug");
 
         if (getConfig().getInt("configversion") < CONFIG_VERSION) {
-            this.lootTablesHandler = new LootTablesHandler();
+            this.lootTableHandler = new LootTableHandler();
             updateConfig(getConfig().getInt("configversion"));
         }
 
@@ -133,7 +133,7 @@ public class CustomStructures extends JavaPlugin {
         this.customItemManager = new CustomItemManager(this, new File(getDataFolder() + File.separator + "items" + File.separator + "customitems.yml"), new File(getDataFolder() + File.separator + "items"));
         this.signCommandsHandler = new SignCommandsHandler(getDataFolder(), this);
         this.npcHandler = new NpcHandler(getDataFolder(), plugin);
-        this.lootTablesHandler = new LootTablesHandler();
+        this.lootTableHandler = new LootTableHandler();
         this.addonHandler = new AddonHandler();
         this.structureSignHandler = new StructureSignHandler();
 
@@ -272,8 +272,8 @@ public class CustomStructures extends JavaPlugin {
      *
      * @return The loot table handler.
      */
-    public LootTablesHandler getLootTableHandler() {
-        return lootTablesHandler;
+    public LootTableHandler getLootTableHandler() {
+        return lootTableHandler;
     }
 
     /**
@@ -287,7 +287,7 @@ public class CustomStructures extends JavaPlugin {
         this.npcHandler = new NpcHandler(getDataFolder(), plugin);
         this.structureHandler.cleanup();
         this.structureHandler = new StructureHandler(getConfig().getStringList("Structures"), this);
-        this.lootTablesHandler = new LootTablesHandler();
+        this.lootTableHandler = new LootTableHandler();
 
         // Update the addons.
         this.addonHandler.handlePluginReload();
@@ -478,7 +478,7 @@ public class CustomStructures extends JavaPlugin {
             getLogger().info("Please delete the backup folder that was created in the CustomStructures directory" +
                     " after you confirm everything was updated correctly.");
         }
-        // Convert to config version 9. (Masks to SourceMask, Standardize Config)
+        // Convert to config version 9. (Masks to SourceMask, Standardize Config, Updated Loot Tables)
         if (ver < 9) {
             getLogger().info("Updating all structure config files...");
 
@@ -527,66 +527,68 @@ public class CustomStructures extends JavaPlugin {
                 }
             }
 
-            List<String> updatedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
+            // Check if the updates were finished.
+            if (!fileConfiguration.getBoolean("finishedStructureUpdates", false)) {
+                List<String> updatedStructures = new ArrayList<>(fileConfiguration.getStringList("UpdatedStructures"));
 
-            // This detects if there are any loaded structures, and alerts the user if this is an error.
-            if (!updatedStructures.isEmpty()) {
-                getLogger().info("Previous update attempt detected.");
-                getLogger().info(String.format("%s completed structure updates were found. If this is your first time updating" +
-                                " to this version of CustomStructures, then please delete the backup directory and restart the server.",
-                        updatedStructures.size()));
-                getLogger().info("The server will now wait 5 seconds to give you a chance to stop the server before " +
-                        "the update automatically continues. Press ctrl+c to cancel running the server.");
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    getLogger().info("Server shutdown detected. Stopping update.");
-                    return;
+                // This detects if there are any loaded structures, and alerts the user if this is an error.
+                if (!updatedStructures.isEmpty()) {
+                    getLogger().info("Previous update attempt detected.");
+                    getLogger().info(String.format("%s completed structure updates were found. If this is your first time updating" +
+                                    " to this version of CustomStructures, then please delete the backup directory and restart the server.",
+                            updatedStructures.size()));
+                    getLogger().info("The server will now wait 5 seconds to give you a chance to stop the server before " +
+                            "the update automatically continues. Press ctrl+c to cancel running the server.");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        getLogger().info("Server shutdown detected. Stopping update.");
+                        return;
+                    }
                 }
-            }
 
-            createBackupForFile("config.yml", "/backup/config.yml.backup");
-            for (String s : getConfig().getStringList("Structures")) {
-                if (updatedStructures.contains(s)) continue;
+                createBackupForFile("config.yml", "/backup/config.yml.backup");
+                for (String s : getConfig().getStringList("Structures")) {
+                    if (updatedStructures.contains(s)) continue;
 
-                try {
-                    createBackupForFile("/structures/" + s + ".yml", "/backup/" + s + ".yml.backup");
+                    try {
+                        createBackupForFile("/structures/" + s + ".yml", "/backup/" + s + ".yml.backup");
 
-                    FileConfiguration structConfig = YamlConfiguration.loadConfiguration(new File(structDir, s + ".yml"));
+                        FileConfiguration structConfig = YamlConfiguration.loadConfiguration(new File(structDir, s + ".yml"));
 
-                    CSUtils.renameConfigString(structConfig, "schematic", "Schematic");
-                    CSUtils.renameConfigString(structConfig, "compiled_schematic", "CompiledSchematic");
+                        CSUtils.renameConfigString(structConfig, "schematic", "Schematic");
+                        CSUtils.renameConfigString(structConfig, "compiled_schematic", "CompiledSchematic");
 
-                    CSUtils.renameConfigInteger(structConfig, "Chance.Number", "Probability.Numerator");
-                    CSUtils.renameConfigInteger(structConfig, "Chance.OutOf", "Probability.Denominator");
-                    structConfig.set("Chance", null);
+                        CSUtils.renameConfigInteger(structConfig, "Chance.Number", "Probability.Numerator");
+                        CSUtils.renameConfigInteger(structConfig, "Chance.OutOf", "Probability.Denominator");
+                        structConfig.set("Chance", null);
 
-                    CSUtils.renameConfigInteger(structConfig, "StructureLocation.spawn_distance.x", "StructureLocation.SpawnDistance.x");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLocation.spawn_distance.z", "StructureLocation.SpawnDistance.z");
-                    structConfig.set("StructureLocation.spawn_distance", null);
+                        CSUtils.renameConfigInteger(structConfig, "StructureLocation.spawn_distance.x", "StructureLocation.SpawnDistance.x");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLocation.spawn_distance.z", "StructureLocation.SpawnDistance.z");
+                        structConfig.set("StructureLocation.spawn_distance", null);
 
-                    // Structure Properties
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.randomRotation", "StructureProperties.RandomRotation");
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.ignorePlants", "StructureProperties.IgnorePlants");
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInWater", "StructureProperties.SpawnInWater");
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInLavaLakes", "StructureProperties.SpawnInLavaLakes");
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInVoid", "StructureProperties.SpawnInVoid");
-                    CSUtils.renameConfigBoolean(structConfig, "StructureProperties.ignoreWater", "StructureProperties.IgnoreWater");
+                        // Structure Properties
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.randomRotation", "StructureProperties.RandomRotation");
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.ignorePlants", "StructureProperties.IgnorePlants");
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInWater", "StructureProperties.SpawnInWater");
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInLavaLakes", "StructureProperties.SpawnInLavaLakes");
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.spawnInVoid", "StructureProperties.SpawnInVoid");
+                        CSUtils.renameConfigBoolean(structConfig, "StructureProperties.ignoreWater", "StructureProperties.IgnoreWater");
 
-                    // Structure Limitations
-                    CSUtils.renameConfigStringList(structConfig, "StructureLimitations.whitelistSpawnBlocks", "StructureLimitations.WhitelistSpawnBlocks");
-                    CSUtils.renameConfigStringList(structConfig, "StructureLimitations.blacklistSpawnBlocks", "StructureLimitations.BlacklistSpawnBlocks");
-                    CSUtils.renameConfigString(structConfig, "StructureLimitations.BlockLevelLimit.mode", "StructureLimitations.BlockLevelLimit.Mode");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerOne.x", "StructureLimitations.BlockLevelLimit.CornerOne.x");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerOne.z", "StructureLimitations.BlockLevelLimit.CornerOne.z");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerTwo.x", "StructureLimitations.BlockLevelLimit.CornerTwo.x");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerTwo.z", "StructureLimitations.BlockLevelLimit.CornerTwo.z");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.error", "StructureLimitations.BlockLevelLimit.Error");
-                    structConfig.set("StructureLimitations.BlockLevelLimit.cornerOne", null);
-                    structConfig.set("StructureLimitations.BlockLevelLimit.cornerTwo", null);
-                    CSUtils.renameStringConfigurationSection(structConfig, "StructureLimitations.replacement_blocks", "StructureLimitations.ReplaceBlocks");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.replacement_blocks_delay", "StructureLimitations.ReplaceBlockDelay");
-                    CSUtils.renameConfigInteger(structConfig, "StructureLimitations.iterationLimit", "StructureLimitations.IterationLimit");
+                        // Structure Limitations
+                        CSUtils.renameConfigStringList(structConfig, "StructureLimitations.whitelistSpawnBlocks", "StructureLimitations.WhitelistSpawnBlocks");
+                        CSUtils.renameConfigStringList(structConfig, "StructureLimitations.blacklistSpawnBlocks", "StructureLimitations.BlacklistSpawnBlocks");
+                        CSUtils.renameConfigString(structConfig, "StructureLimitations.BlockLevelLimit.mode", "StructureLimitations.BlockLevelLimit.Mode");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerOne.x", "StructureLimitations.BlockLevelLimit.CornerOne.x");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerOne.z", "StructureLimitations.BlockLevelLimit.CornerOne.z");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerTwo.x", "StructureLimitations.BlockLevelLimit.CornerTwo.x");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.cornerTwo.z", "StructureLimitations.BlockLevelLimit.CornerTwo.z");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.BlockLevelLimit.error", "StructureLimitations.BlockLevelLimit.Error");
+                        structConfig.set("StructureLimitations.BlockLevelLimit.cornerOne", null);
+                        structConfig.set("StructureLimitations.BlockLevelLimit.cornerTwo", null);
+                        CSUtils.renameStringConfigurationSection(structConfig, "StructureLimitations.replacement_blocks", "StructureLimitations.ReplaceBlocks");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.replacement_blocks_delay", "StructureLimitations.ReplaceBlockDelay");
+                        CSUtils.renameConfigInteger(structConfig, "StructureLimitations.iterationLimit", "StructureLimitations.IterationLimit");
 
                     /*
 
@@ -594,32 +596,90 @@ public class CustomStructures extends JavaPlugin {
 
                      */
 
-                    if (structConfig.contains("Masks")) {
-                        structConfig.set("SourceMask.Enabled", structConfig.getBoolean("Masks.enabled"));
-                        structConfig.set("SourceMask.UnionType", structConfig.getString("Masks.union_type"));
-                        structConfig.set("SourceMask.BlockTypeMask", structConfig.getStringList("Masks.BlockTypeMask"));
-                        structConfig.set("SourceMask.NegatedBlockMask", structConfig.getStringList("Masks.NegatedBlockMask"));
-                        structConfig.set("Masks", null);
-                    }
+                        if (structConfig.contains("Masks")) {
+                            structConfig.set("SourceMask.Enabled", structConfig.getBoolean("Masks.enabled"));
+                            structConfig.set("SourceMask.UnionType", structConfig.getString("Masks.union_type"));
+                            structConfig.set("SourceMask.BlockTypeMask", structConfig.getStringList("Masks.BlockTypeMask"));
+                            structConfig.set("SourceMask.NegatedBlockMask", structConfig.getStringList("Masks.NegatedBlockMask"));
+                            structConfig.set("Masks", null);
+                        }
 
-                    try {
-                        structConfig.save(new File(structDir, s + ".yml"));
-                    } catch (IOException ex) {
-                        getLogger().info(String.format("An error has occurred when updating %s!", s));
-                        getLogger().severe("Error: unable to save updated structure file!");
+                        try {
+                            structConfig.save(new File(structDir, s + ".yml"));
+                        } catch (IOException ex) {
+                            getLogger().info(String.format("An error has occurred when updating %s!", s));
+                            getLogger().severe("Error: unable to save updated structure file!");
+                            return;
+                        }
+                        getLogger().info(String.format("Successfully updated the structure: %s!", s));
+                        // Add the updated structure to the list.
+                        updatedStructures.add(s);
+                        fileConfiguration.set("UpdatedStructures", updatedStructures);
+                        fileConfiguration.save(backupData);
+                    } catch (Exception ex) {
+                        getLogger().severe(String.format("An error has occurred when updating %s.", s));
+                        ex.printStackTrace();
+                        getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
+                                " from where it left off.");
                         return;
                     }
-                    getLogger().info(String.format("Successfully updated the structure: %s!", s));
-                    // Add the updated structure to the list.
-                    updatedStructures.add(s);
-                    fileConfiguration.set("UpdatedStructures", updatedStructures);
+                }
+
+                fileConfiguration.set("finishedStructureUpdates", true);
+                try {
                     fileConfiguration.save(backupData);
-                } catch (Exception ex) {
-                    getLogger().severe(String.format("An error has occurred when updating %s:", s));
+                } catch (IOException ex) {
+                    getLogger().severe("An error has occurred when trying to save the backup file!");
                     ex.printStackTrace();
                     getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
                             " from where it left off.");
-                    return;
+                }
+            }
+
+            // Update Loot Tables.
+
+            File lootTableFolder = new File(getDataFolder(), "lootTables");
+            File[] lootTableFiles = lootTableFolder.listFiles();
+
+            if (lootTableFiles != null) {
+                List<String> updatedLootTables = new ArrayList<>(fileConfiguration.getStringList("UpdatedLootTables"));
+                for (File file : lootTableFiles) {
+                    if (!file.getName().endsWith(".yml")) {
+                        continue;
+                    }
+
+                    String lootTableName = file.getName().replace(".yml", "");
+
+                    try {
+                        if (updatedLootTables.contains(lootTableName))
+                            continue;
+
+                        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+                        for (String key : configuration.getConfigurationSection("Items").getKeys(false)) {
+                            ConfigurationSection section = configuration.getConfigurationSection("Items." + key);
+                            String type = section.getString("Type", "AIR");
+                            if (type.equalsIgnoreCase("CUSTOM")) {
+                                section.set("Type", "CUSTOM");
+                            } else {
+                                section.set("Material", type);
+                                section.set("Type", "STANDARD");
+                            }
+                        }
+
+                        configuration.save(file);
+
+                        getLogger().info(String.format("Successfully updated the loot table: %s!", lootTableName));
+
+                        updatedLootTables.add(lootTableName);
+                        fileConfiguration.set("UpdatedLootTables", updatedLootTables);
+                        fileConfiguration.save(backupData);
+                    } catch (Exception ex) {
+                        getLogger().severe(String.format("An error has occurred when updating the loot table %s.", lootTableName));
+                        ex.printStackTrace();
+                        getLogger().severe("After fixing the error, restart the server for the plugin to continue updating" +
+                                " from where it left off.");
+                        return;
+                    }
                 }
             }
 
