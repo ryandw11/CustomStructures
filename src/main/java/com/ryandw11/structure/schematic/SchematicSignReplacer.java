@@ -171,7 +171,8 @@ public class SchematicSignReplacer {
                     Location heightBlock = location.getWorld().getHighestBlockAt(location, vertRep.getSpawnYHeightMap()).getLocation();
 
                     int newSpawnY = vertRep.getSpawnY(heightBlock);
-                    if (CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
+                    // Check if there 1) is a range and 2) the New SpawnY is in the range.
+                    if (vertRep.getRange() == null || CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
                         location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
                     } else {
                         if (vertRep.getNoPointSolution().equalsIgnoreCase("CURRENT")) {
@@ -215,7 +216,8 @@ public class SchematicSignReplacer {
                     Location heightBlock = location.getWorld().getHighestBlockAt(location, vertRep.getSpawnYHeightMap()).getLocation();
                     int newSpawnY = vertRep.getSpawnY(heightBlock);
 
-                    if (CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
+                    // Check if there 1) is a range and 2) the New SpawnY is in the range.
+                    if (vertRep.getRange() == null || CSUtils.isPairInLocalRange(vertRep.getRange(), location.getBlockY(), newSpawnY)) {
                         location = new Location(location.getWorld(), location.getBlockX(), newSpawnY, location.getBlockZ());
                     } else {
                         if (vertRep.getNoPointSolution().equalsIgnoreCase("CURRENT")) {

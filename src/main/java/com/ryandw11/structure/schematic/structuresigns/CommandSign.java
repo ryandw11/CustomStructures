@@ -29,7 +29,7 @@ public class CommandSign extends StructureSign {
         List<String> commands = plugin.getSignCommandsHandler().getCommands(getStringArgument(0));
         if (commands != null) {
             for (String command : commands) {
-                command = CSUtils.replacePlaceHolders(command, location, getStructureMinimumLocation(), getStructureMaximumLocation());
+                command = CSUtils.replacePlaceHolders(command, location, getStructureMinimumLocation(), getStructureMaximumLocation(), structure);
                 command = CustomStructures.replacePAPIPlaceholders(command);
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                 if (plugin.isDebug()) {

@@ -590,6 +590,21 @@ public class CustomStructures extends JavaPlugin {
                         CSUtils.renameConfigInteger(structConfig, "StructureLimitations.replacement_blocks_delay", "StructureLimitations.ReplaceBlockDelay");
                         CSUtils.renameConfigInteger(structConfig, "StructureLimitations.iterationLimit", "StructureLimitations.IterationLimit");
 
+                        // Update SubSchematics
+                        if(structConfig.contains("SubSchematics")) {
+                            if(!structConfig.getBoolean("SubSchematics.Enabled", true) || structConfig.getConfigurationSection("SubSchematics.Schematics") == null) {
+                                structConfig.set("SubSchematics", null);
+                            }
+                            else {
+                                structConfig.set("SubSchematics.Enabled", null);
+                                for(String key : structConfig.getConfigurationSection("SubSchematics.Schematics").getKeys(false)) {
+                                    ConfigurationSection section = structConfig.getConfigurationSection("SubSchematics.Schematics."+ key);
+                                    structConfig.set("SubSchematics." + key, section);
+                                }
+                                structConfig.set("SubSchematics.Schematics", null);
+                            }
+                        }
+
                     /*
 
                      Update Masks

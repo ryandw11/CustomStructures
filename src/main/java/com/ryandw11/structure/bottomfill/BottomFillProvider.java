@@ -13,8 +13,19 @@ public final class BottomFillProvider {
      * Add a BottomFill implementation to the provider.
      *
      * @param bottomFill The bottom fill implementation.
+     * @deprecated Use {@link #addImplementation(BottomFillImpl)} instead.
      */
+    @Deprecated
     public static void addProvider(BottomFillImpl bottomFill) {
+        providers.add(bottomFill);
+    }
+
+    /**
+     * Add a BottomFill implementation to the provider.
+     *
+     * @param bottomFill The bottom fill implementation.
+     */
+    public static void addImplementation(BottomFillImpl bottomFill) {
         providers.add(bottomFill);
     }
 
@@ -27,6 +38,20 @@ public final class BottomFillProvider {
     public static BottomFillImpl provide() {
         if (!providers.isEmpty())
             return providers.get(0);
+
+        return new DefaultBottomFill();
+    }
+
+    /**
+     * Get a bottom fill implementation
+     *
+     * @param impl The implementation number.
+     * @return The implementation if it exists.
+     */
+    public static BottomFillImpl provide(int impl) {
+        if (impl < providers.size()) {
+            return providers.get(impl);
+        }
 
         return new DefaultBottomFill();
     }

@@ -8,7 +8,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * A custom loot item.
+ * The built-in type of CUSTOM items.
+ *
+ * <p>To implement a custom item type, use {@link ConfigLootItem}.</p>
  */
 public class CustomLootItem extends ConfigLootItem {
     private ItemStack itemStack;

@@ -4,8 +4,8 @@
 # The following placeholders can be used in a command:
 #
 # <X>, <Y> and <Z> - The x, y and z coordinate of the sign itself.
-# <structX1>,<structY1>,<structZ1> - The x, y and z coordinates of the lower corner of the placed structure.
-# <structX2>,<structY2>,<structZ2> - The x, y and z coordinates of the opposite, higher corner of the placed structure.
+# <minX>,<minY>,<minZ> - The x, y and z coordinates of the lower corner of the placed structure.
+# <maxX>,<maxY>,<maxZ> - The x, y and z coordinates of the opposite, higher corner of the placed structure.
 
 # Name the command a command by using a section in YAML.
 # It would look like this on a sign in the structure:
@@ -13,5 +13,5 @@
 # SaySomething
 SaySomething:
   - "say Sign coordinate: <x>,<y>,<z>"
-  - "say Structure coordinate one: <structX1>,<structY1>,<structZ1>"
-  - "say Structure coordinate two: <structX2>,<structY2>,<structZ2>"
+  - "say Structure coordinate one: <minX>,<minY>,<minZ>"
+  - "say Structure coordinate two: <maxX>,<maxY>,<maxZ>"

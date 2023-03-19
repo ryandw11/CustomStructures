@@ -62,9 +62,13 @@ public class VerticalRepositioning {
     /**
      * Get the range.
      *
-     * @return The valid spawning range.
+     * @return The valid spawning range. (Null if none).
      */
+    @Nullable
     public Pair<Integer, Integer> getRange() {
+        if(range.isEmpty()) {
+            return null;
+        }
         return NumberStylizer.parseRangedInput(range);
     }
 

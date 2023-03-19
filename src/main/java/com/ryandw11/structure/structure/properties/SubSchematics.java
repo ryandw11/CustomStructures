@@ -34,13 +34,9 @@ public class SubSchematics {
         ConfigurationSection section = configuration.getConfigurationSection("SubSchematics");
         assert section != null;
 
-        if (!section.contains("Schematics")) {
-            enabled = false;
-            return;
-        }
         try {
-            for (String s : Objects.requireNonNull(section.getConfigurationSection("Schematics")).getKeys(false)) {
-                schematics.add(new SubSchematic((Objects.requireNonNull(section.getConfigurationSection("Schematics." + s))), false));
+            for (String s : section.getKeys(false)) {
+                schematics.add(new SubSchematic((Objects.requireNonNull(section.getConfigurationSection(s))), false));
             }
         } catch (RuntimeException ex) {
             enabled = false;
