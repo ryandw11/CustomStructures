@@ -10,10 +10,13 @@ com.ryandw11.structure.commands.cstruct
 com.ryandw11.structure.exceptions
 com.ryandw11.structure.ignoreblocks
 com.ryandw11.structure.io
+com.ryandw11.structure.io.sql
 com.ryandw11.structure.listener
 com.ryandw11.structure.loottables
 com.ryandw11.structure.loottables.customitems
 com.ryandw11.structure.mythicalmobs
+com.ryandw11.structure.schematic
+com.ryandw11.structure.schematic.structuresigns
 com.ryandw11.structure.structure
 com.ryandw11.structure.structure.properties
 com.ryandw11.structure.structure.properties.schematics

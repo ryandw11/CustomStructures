@@ -36,15 +36,23 @@ import java.util.*;
 /**
  * The main class for the Custom Structures plugin.
  *
+ * <p>Use {@link #getInstance()} to get the instance of the main class.</p>
+ *
  * @author Ryandw11
  * @version 1.9.0
  */
 
 public class CustomStructures extends JavaPlugin {
 
+    /**
+     * The instance of the CustomStructures plugin.
+     *
+     * <p>Use {@link #getInstance()} instead.</p>
+     */
     public static CustomStructures plugin;
-    public File lootTableFile = new File(getDataFolder() + "/lootTables/lootTable.yml");
-    public FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTableFile);
+
+    private final File lootTableFile = new File(getDataFolder() + "/lootTables/lootTable.yml");
+    private final FileConfiguration lootTablesFC = YamlConfiguration.loadConfiguration(lootTableFile);
 
     private MythicalMobHook mythicalMobHook;
     private CitizensNpcHook citizensNpcHook;
@@ -62,7 +70,11 @@ public class CustomStructures extends JavaPlugin {
 
     private boolean debugMode;
 
+    /**
+     * Whether the plugin is enabled.
+     */
     public static boolean enabled;
+
     private boolean initialized = false;
 
     /**
@@ -591,14 +603,13 @@ public class CustomStructures extends JavaPlugin {
                         CSUtils.renameConfigInteger(structConfig, "StructureLimitations.iterationLimit", "StructureLimitations.IterationLimit");
 
                         // Update SubSchematics
-                        if(structConfig.contains("SubSchematics")) {
-                            if(!structConfig.getBoolean("SubSchematics.Enabled", true) || structConfig.getConfigurationSection("SubSchematics.Schematics") == null) {
+                        if (structConfig.contains("SubSchematics")) {
+                            if (!structConfig.getBoolean("SubSchematics.Enabled", true) || structConfig.getConfigurationSection("SubSchematics.Schematics") == null) {
                                 structConfig.set("SubSchematics", null);
-                            }
-                            else {
+                            } else {
                                 structConfig.set("SubSchematics.Enabled", null);
-                                for(String key : structConfig.getConfigurationSection("SubSchematics.Schematics").getKeys(false)) {
-                                    ConfigurationSection section = structConfig.getConfigurationSection("SubSchematics.Schematics."+ key);
+                                for (String key : structConfig.getConfigurationSection("SubSchematics.Schematics").getKeys(false)) {
+                                    ConfigurationSection section = structConfig.getConfigurationSection("SubSchematics.Schematics." + key);
                                     structConfig.set("SubSchematics." + key, section);
                                 }
                                 structConfig.set("SubSchematics.Schematics", null);

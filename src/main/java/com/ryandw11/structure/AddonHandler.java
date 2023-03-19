@@ -15,6 +15,9 @@ import java.util.List;
 public final class AddonHandler {
     private final List<CustomStructureAddon> addons;
 
+    /**
+     * <p>Internal use only. Access the existing instance of this class from {@link CustomStructures#getAddonHandler()}.</p>
+     */
     protected AddonHandler() {
         this.addons = new ArrayList<>();
     }

@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * Handles configuration of NPCs.
  */
+// TODO: Rewrite this class to match the rest of the plugin's code design.
 public class NpcHandler {
 
     private final Map<String, NpcInfo> npcInfoMap = new HashMap<>();
@@ -95,14 +96,50 @@ public class NpcHandler {
      * NPC config information holder
      */
     public static class NpcInfo {
+        /**
+         * The name of the NPC.
+         */
         public String name = "";
+
+        /**
+         * The URL of the NPC.
+         */
         public String skinUrl = "";
+
+        /**
+         * If the NPC moves around.
+         */
         public boolean movesAround = false;
+
+        /**
+         * If the NPC looks at the player.
+         */
         public boolean looksAtPlayer = false;
+
+        /**
+         * If the NPC is protected.
+         */
         public boolean isProtected = false;
+
+        /**
+         * The entity type of the NPC.
+         * <p>Villager by default.</p>
+         */
         public String entityType = "VILLAGER";
+
+        /**
+         * The list of commands to execute on creation.
+         */
         public List<String> commandsOnCreate = new ArrayList<>();
+
+        /**
+         * The list of commands to execute on click.
+         */
         public List<String> commandsOnClick = new ArrayList<>();
+
+        /**
+         * If the commands should be executed sequentially.
+         */
         public boolean commandsSequential = false;
     }
 }
