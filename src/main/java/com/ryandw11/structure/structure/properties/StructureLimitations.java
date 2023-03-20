@@ -52,7 +52,7 @@ public class StructureLimitations {
                 : configuration.getDouble("StructureLimitations.ReplaceBlockDelay");
 
         blockReplacement = new HashMap<>();
-        if (configuration.contains("StructureLimitations.replacement_blocks")) {
+        if (configuration.contains("StructureLimitations.ReplaceBlocks")) {
             for (String s : Objects.requireNonNull(configuration.getConfigurationSection("StructureLimitations.ReplaceBlocks")).getKeys(false)) {
                 Material firstMaterial = Material.getMaterial(s);
                 Material secondMaterial = Material.getMaterial(Objects.requireNonNull(configuration.getString("StructureLimitations.ReplaceBlocks." + s)));
