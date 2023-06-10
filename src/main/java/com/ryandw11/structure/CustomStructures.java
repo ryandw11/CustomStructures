@@ -39,7 +39,7 @@ import java.util.*;
  * <p>Use {@link #getInstance()} to get the instance of the main class.</p>
  *
  * @author Ryandw11
- * @version 1.9.0
+ * @version 1.9.1
  */
 
 public class CustomStructures extends JavaPlugin {
@@ -250,12 +250,13 @@ public class CustomStructures extends JavaPlugin {
 
         // Initialize blockIgnoreManager with the proper class for the version.
         switch (version) {
+            case "v1_19_R1", "v1_19_R2", "v1_19_R3", "v1_19_R4" -> blockIgnoreManager = new IgnoreBlocks_1_19();
             case "v1_18_R2", "v1_18_R1", "v1_17_R1" -> blockIgnoreManager = new IgnoreBlocks_1_17();
             case "v1_16_R3", "v1_16_R2", "v1_16_R1" -> blockIgnoreManager = new IgnoreBlocks_1_16();
             case "v1_15_R1" -> blockIgnoreManager = new IgnoreBlocks_1_15();
             case "v1_14_R1" -> blockIgnoreManager = new IgnoreBlocks_1_14();
             case "v1_13_R1" -> blockIgnoreManager = new IgnoreBlocks_1_13();
-            default -> blockIgnoreManager = new IgnoreBlocks_1_19();
+            default -> blockIgnoreManager = new IgnoreBlocks_1_20();
         }
     }
 
