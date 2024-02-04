@@ -41,6 +41,9 @@ public class LootTableReplacer {
         Block block = location.getBlock();
         LootTableType blockType = LootTableType.valueOf(block.getType());
 
+        // Number of times the run the loot table fill method. (Max of 20)
+        int numberOfFills = 1;
+
         boolean explictLoottableDefined = false;
         LootTable lootTable = null;
 
@@ -55,6 +58,7 @@ public class LootTableReplacer {
                         .replace("%${", "")
                         .replace("}$%", "");
                 lootTable = CustomStructures.getInstance().getLootTableHandler().getLootTableByName(name);
+                numberOfFills = Math.min(20, paper.getAmount());
                 containerInventory.clear();
                 explictLoottableDefined = true;
             }
@@ -78,12 +82,14 @@ public class LootTableReplacer {
         if (event.isCanceled()) return;
 
         // TODO: This is not a good method, should try to pick another loot table if failed.
-        if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
-            lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
-        } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
-            lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
-        } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
-            lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
+        for(int i = 0; i < numberOfFills; i++) {
+            if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
+                lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
+            } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
+                lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
+            } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
+                lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
+            }
         }
     }
 
