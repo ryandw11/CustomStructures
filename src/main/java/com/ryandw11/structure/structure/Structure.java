@@ -263,10 +263,10 @@ public class Structure {
      */
     public boolean canSpawn(@Nullable Block block, @NotNull Chunk chunk) {
         // Check to see if the structure can spawn in the current world.
-        if (!getStructureLocation().getWorlds().isEmpty()) {
-            if (!getStructureLocation().getWorlds().contains(chunk.getWorld().getName()))
-                return false;
+        if (!getStructureLocation().canSpawnInWorld(chunk.getWorld())) {
+            return false;
         }
+
         // If the block is null, that means it is in the void, check if it can spawn in the void.
         if (block == null && !getStructureProperties().canSpawnInVoid())
             return false;

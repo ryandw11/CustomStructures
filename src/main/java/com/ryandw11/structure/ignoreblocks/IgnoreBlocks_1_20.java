@@ -6,9 +6,8 @@ import java.util.List;
 
 /**
  * Ignore blocks for 1.20
- * <p>
- * TODO Maybe use built in list defined by data packs? Or have the option
  */
+// TODO: Maybe use built in list defined by data packs? Or have the option
 public class IgnoreBlocks_1_20 implements IgnoreBlocks {
 
     private final List<Material> ignoreBlocks = List.of(

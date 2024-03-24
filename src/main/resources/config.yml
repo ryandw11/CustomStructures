@@ -16,5 +16,10 @@ bstats: true
 # Enabling this option allows developers to use the API to get the location of structures.
 logStructures: false
 
+# A global list of worlds that structures are allow to spawn in.
+GlobalWorldWhitelist: []
+# A global list of worlds that structures are not allowed to spawn in.
+GlobalWorldBlacklist: []
+
 Structures:
     - demo

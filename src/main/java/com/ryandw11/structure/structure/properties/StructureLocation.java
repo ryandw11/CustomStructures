@@ -3,9 +3,11 @@ package com.ryandw11.structure.structure.properties;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.structure.StructureBuilder;
 import org.bukkit.HeightMap;
+import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 public class StructureLocation implements StructureProperty {
 
     private List<String> worlds;
+    private List<String> worldBlacklist;
     private StructureYSpawning spawnY;
     private List<String> biomes;
     private double distanceFromOthers;
@@ -49,6 +52,12 @@ public class StructureLocation implements StructureProperty {
             this.worlds = cs.getStringList("Worlds");
         else
             this.worlds = new ArrayList<>();
+
+        if (cs.contains("WorldBlacklist"))
+            this.worldBlacklist = cs.getStringList("WorldBlacklist");
+        else
+            this.worldBlacklist = new ArrayList<>();
+
         this.spawnY = new StructureYSpawning(fileConfiguration);
         if (cs.contains("Biome"))
             this.biomes = cs.getStringList("Biome");
@@ -86,6 +95,7 @@ public class StructureLocation implements StructureProperty {
      */
     public StructureLocation(List<String> worlds, StructureYSpawning spawnSettings, List<String> biomes) {
         this.worlds = worlds;
+        this.worldBlacklist = new ArrayList<>();
         this.spawnY = spawnSettings;
         this.biomes = biomes;
         this.distanceFromOthers = 100;
@@ -108,6 +118,34 @@ public class StructureLocation implements StructureProperty {
      */
     public List<String> getWorlds() {
         return worlds;
+    }
+
+    /**
+     * Get the list of blacklisted worlds.
+     *
+     * @return The list of blacklisted worlds.
+     */
+    public List<String> getWorldBlacklist() {
+        return worldBlacklist;
+    }
+
+    /**
+     * Check if a structure can spawn in the provided world.
+     *
+     * @param world The world to check.
+     * @return If the structure can spawn in that world.
+     */
+    public boolean canSpawnInWorld(@NotNull World world) {
+        if (!worlds.isEmpty()) {
+            if (!worlds.contains(world.getName()))
+                return false;
+        }
+
+        if (worldBlacklist.contains(world.getName())) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -255,6 +293,7 @@ public class StructureLocation implements StructureProperty {
     @Override
     public void saveToFile(ConfigurationSection configurationSection) {
         configurationSection.set("Worlds", worlds);
+        configurationSection.set("WorldBlacklist", worldBlacklist);
         configurationSection.set("SpawnY", spawnY.getValue());
         configurationSection.set("SpawnYHeightMap", spawnY.getHeightMap().toString());
         configurationSection.set("Biome", biomes);

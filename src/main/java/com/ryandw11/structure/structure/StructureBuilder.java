@@ -469,6 +469,7 @@ public class StructureBuilder {
         config.set("Probability.Denominator", probabilityDenominator);
 
         config.set("StructureLocation.Worlds", structureLocation.getWorlds());
+        config.set("StructureLocation.WorldBlacklist", structureLocation.getWorldBlacklist());
         config.set("StructureLocation.SpawnY", structureLocation.getSpawnSettings().getValue());
         config.set("StructureLocation.SpawnYHeightMap", structureLocation.getSpawnSettings().getHeightMap().toString());
         config.set("StructureLocation.Biome", structureLocation.getBiomes());

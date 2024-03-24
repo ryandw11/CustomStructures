@@ -23,6 +23,7 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -809,5 +810,25 @@ public class CustomStructures extends JavaPlugin {
      */
     public CitizensNpcHook getCitizensNpcHook() {
         return citizensNpcHook;
+    }
+
+    /**
+     * Check if a structure can spawn in a world based upon the global white and black lists.
+     *
+     * <p>This does not check a structure's local properties. Use {@link com.ryandw11.structure.structure.properties.StructureLocation#canSpawnInWorld(World)}
+     * instead. (That method also calls this method).</p>
+     *
+     * @param world The world to check.
+     * @return If a structure can spawn in a world based upon the global white and black lists.
+     */
+    public boolean canStructureSpawnInWorld(World world) {
+        List<String> whitelist = getConfig().getStringList("GlobalWorldWhitelist");
+        List<String> blacklist = getConfig().getStringList("GlobalWorldBlacklist");
+
+        if (!whitelist.isEmpty() && !whitelist.contains(world.getName()))
+            return false;
+        if (blacklist.contains(world.getName()))
+            return false;
+        return true;
     }
 }

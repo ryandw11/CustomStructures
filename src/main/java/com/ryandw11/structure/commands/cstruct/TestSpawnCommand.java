@@ -184,9 +184,8 @@ public class TestSpawnCommand implements SubCommand {
     }
 
     void canSpawn(Player p, Structure structure, Block block, Chunk chunk) {
-        if (!structure.getStructureLocation().getWorlds().isEmpty()) {
-            if (!structure.getStructureLocation().getWorlds().contains(chunk.getWorld().getName()))
-                quickSendMessage(p, "&cFailed world test! Cannot spawn in current world!");
+        if (!structure.getStructureLocation().canSpawnInWorld(chunk.getWorld())) {
+            quickSendMessage(p, "&cFailed world test! Cannot spawn in current world!");
         }
 
         // Check to see if the structure is far enough away from spawn.
