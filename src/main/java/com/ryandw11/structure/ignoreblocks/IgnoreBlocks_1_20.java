@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import java.util.List;
 
 /**
- * Ignore blocks for 1.20
+ * Ignore blocks for 1.20, 1.21
  */
 // TODO: Maybe use built in list defined by data packs? Or have the option
 public class IgnoreBlocks_1_20 implements IgnoreBlocks {

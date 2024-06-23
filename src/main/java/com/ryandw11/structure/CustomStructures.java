@@ -240,25 +240,24 @@ public class CustomStructures extends JavaPlugin {
      * Set up block ignore depending on the Minecraft version.
      */
     private void setupBlockIgnore() {
-        String version;
-        try {
-            version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            getLogger().severe("Unable to detect Minecraft version! The plugin will now be disabled.");
-            getPluginLoader().disablePlugin(this);
+        // Matches: #.##(.#)
+        String[] verNumbers = Bukkit.getBukkitVersion().split("\\.");
+        if (verNumbers.length != 1) {
+            // Initialize blockIgnoreManager with the proper class for the version.
+            switch (verNumbers[1]) {
+                case "19" -> blockIgnoreManager = new IgnoreBlocks_1_19();
+                case "17", "18" -> blockIgnoreManager = new IgnoreBlocks_1_17();
+                case "16" -> blockIgnoreManager = new IgnoreBlocks_1_16();
+                case "15" -> blockIgnoreManager = new IgnoreBlocks_1_15();
+                case "14" -> blockIgnoreManager = new IgnoreBlocks_1_14();
+                case "13" -> blockIgnoreManager = new IgnoreBlocks_1_13();
+                default -> blockIgnoreManager = new IgnoreBlocks_1_20();
+            }
             return;
+        } else {
+            getLogger().info("Unable to detect Minecraft version! Defaulting to latest version.");
         }
-
-        // Initialize blockIgnoreManager with the proper class for the version.
-        switch (version) {
-            case "v1_19_R1", "v1_19_R2", "v1_19_R3", "v1_19_R4" -> blockIgnoreManager = new IgnoreBlocks_1_19();
-            case "v1_18_R2", "v1_18_R1", "v1_17_R1" -> blockIgnoreManager = new IgnoreBlocks_1_17();
-            case "v1_16_R3", "v1_16_R2", "v1_16_R1" -> blockIgnoreManager = new IgnoreBlocks_1_16();
-            case "v1_15_R1" -> blockIgnoreManager = new IgnoreBlocks_1_15();
-            case "v1_14_R1" -> blockIgnoreManager = new IgnoreBlocks_1_14();
-            case "v1_13_R1" -> blockIgnoreManager = new IgnoreBlocks_1_13();
-            default -> blockIgnoreManager = new IgnoreBlocks_1_20();
-        }
+        blockIgnoreManager = new IgnoreBlocks_1_20();
     }
 
     /**
