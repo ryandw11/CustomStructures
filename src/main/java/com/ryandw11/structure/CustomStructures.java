@@ -240,9 +240,9 @@ public class CustomStructures extends JavaPlugin {
      * Set up block ignore depending on the Minecraft version.
      */
     private void setupBlockIgnore() {
-        // Matches: #.##(.#)
-        String[] verNumbers = Bukkit.getBukkitVersion().split("\\.");
-        if (verNumbers.length != 1) {
+        String[] version = Bukkit.getBukkitVersion().split("-");
+        if (version.length > 0 && version[0].split("\\.").length != 1) {
+            String[] verNumbers = version[0].split("\\.");
             // Initialize blockIgnoreManager with the proper class for the version.
             switch (verNumbers[1]) {
                 case "19" -> blockIgnoreManager = new IgnoreBlocks_1_19();
