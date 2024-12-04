@@ -14,6 +14,8 @@ StructureLocation:
   DistanceFromOthers: 200
   # Set a custom spawn distance for the structures.
   SpawnDistance:
+    # If true, spawn inside the region, otherwise spawn outside the region
+    inner: true
     x: 10
     z: 10
 
