@@ -3,11 +3,13 @@ package com.ryandw11.structure.structure.properties;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.structure.StructureBuilder;
 import org.bukkit.HeightMap;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ public class StructureLocation implements StructureProperty {
     private boolean inner;
     private int xLimitation;
     private int zLimitation;
+    private SpawnRegion spawnRegion;
 
     /**
      * Create the Structure Location configuration section.
@@ -86,6 +89,18 @@ public class StructureLocation implements StructureProperty {
         }
         if (cs.contains("SpawnDistance.z")) {
             zLimitation = cs.getInt("SpawnDistance.z");
+        }
+        if (cs.contains("SpawnRegion")) {
+            Location cornerOne = new Location(null,
+                    cs.getDouble("SpawnRegion.CornerOne.x", 0),
+                    cs.getDouble("SpawnRegion.CornerOne.y", 0),
+                    cs.getDouble("SpawnRegion.CornerOne.z", 0));
+            Location cornerTwo = new Location(null,
+                    cs.getDouble("SpawnRegion.CornerTwo.x", 0),
+                    cs.getDouble("SpawnRegion.CornerTwo.y", 0),
+                    cs.getDouble("SpawnRegion.CornerTwo.z", 0));
+            SpawnRegion spRegion = new SpawnRegion(cornerOne, cornerTwo);
+            spawnRegion = spRegion.standardize();
         }
     }
 
@@ -216,10 +231,22 @@ public class StructureLocation implements StructureProperty {
         return false;
     }
 
+    /**
+     * If the spawn distance limitation is "inner".
+     *
+     * @return If the spawn distance limitation is in "inner" mode.
+     * @apiNote "Inner" means that the structure will only spawn inside the box defined by the spawn distance.
+     */
     public boolean isInner() {
         return inner;
     }
 
+    /**
+     * Set the spawn distance limitation in "inner" mode.
+     *
+     * @param inner If the spawn distance limitation should be in "inner" mode.
+     * @apiNote "Inner" means that the structure will only spawn inside the box defined by the spawn distance.
+     */
     public void setInner(boolean inner) {
         this.inner = inner;
     }
@@ -301,6 +328,26 @@ public class StructureLocation implements StructureProperty {
     }
 
     /**
+     * Get the spawn region.
+     *
+     * @return The spawn region.
+     */
+    @Nullable
+    public SpawnRegion getSpawnRegion() {
+        return spawnRegion;
+    }
+
+    /**
+     * Set the spawn region limitation.
+     * <p>The spawn region determine the region in which a structure can spawn.</p>
+     *
+     * @param spawnRegion The spawn region limitation.
+     */
+    public void setSpawnRegion(@Nullable SpawnRegion spawnRegion) {
+        this.spawnRegion = spawnRegion;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -315,5 +362,56 @@ public class StructureLocation implements StructureProperty {
             configurationSection.set("SpawnDistance.x", xLimitation);
         if (zLimitation > 0)
             configurationSection.set("SpawnDistance.z", zLimitation);
+        if (spawnRegion != null) {
+            configurationSection.set("SpawnRegion.CornerOne.x", spawnRegion.minCorner.getX());
+            configurationSection.set("SpawnRegion.CornerOne.y", spawnRegion.minCorner.getY());
+            configurationSection.set("SpawnRegion.CornerOne.z", spawnRegion.minCorner.getZ());
+            configurationSection.set("SpawnRegion.CornerTwo.x", spawnRegion.maxCorner.getX());
+            configurationSection.set("SpawnRegion.CornerTwo.y", spawnRegion.maxCorner.getY());
+            configurationSection.set("SpawnRegion.CornerTwo.z", spawnRegion.maxCorner.getZ());
+        }
+    }
+
+    /**
+     * A record that represents a SpawnRegion.
+     *
+     * @param minCorner The minimum corner.
+     * @param maxCorner The maximum corner.
+     */
+    public record SpawnRegion(Location minCorner, Location maxCorner) {
+        /**
+         * Creates a new spawn region that ensure minCorner and maxCorner are truly
+         * the min and max corners.
+         *
+         * @return A new standardized SpawnRegion record.
+         */
+        public SpawnRegion standardize() {
+            Location newMinCorner = new Location(null,
+                    Math.min(minCorner.getX(), maxCorner.getX()),
+                    Math.min(minCorner.getY(), maxCorner.getY()),
+                    Math.min(minCorner.getZ(), maxCorner.getZ()));
+            Location newMaxCorner = new Location(null,
+                    Math.max(minCorner.getX(), maxCorner.getX()),
+                    Math.max(minCorner.getY(), maxCorner.getY()),
+                    Math.max(minCorner.getZ(), maxCorner.getZ()));
+
+            return new SpawnRegion(newMinCorner, newMaxCorner);
+        }
+
+        /**
+         * Check if location loc is in the region.
+         * <p>Note: loc should be standardized for this check to work.</p>
+         *
+         * @param loc The location to check.
+         * @return If loc is in the region.
+         */
+        public boolean isInRegion(Location loc) {
+            return loc.getX() > minCorner.getX() &&
+                    loc.getY() > minCorner.getY() &&
+                    loc.getZ() > minCorner.getZ() &&
+                    loc.getX() < maxCorner.getX() &&
+                    loc.getY() < maxCorner.getY() &&
+                    loc.getZ() < maxCorner.getZ();
+        }
     }
 }

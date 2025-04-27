@@ -286,6 +286,12 @@ public class Structure {
                     || Math.abs(block.getZ()) < getStructureLocation().getZLimitation()) return false;
         }
 
+        if (getStructureLocation().getSpawnRegion() != null &&
+                !getStructureLocation().getSpawnRegion().isInRegion(block.getLocation())) {
+            // Check if the structure is not in the spawn region
+            return false;
+        }
+
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation()))
             return false;
 

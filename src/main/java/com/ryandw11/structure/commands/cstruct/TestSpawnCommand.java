@@ -189,10 +189,24 @@ public class TestSpawnCommand implements SubCommand {
         }
 
         // Check to see if the structure is far enough away from spawn.
-        if (Math.abs(block.getX()) < structure.getStructureLocation().getXLimitation())
-            quickSendMessage(p, "&cFailed X Limitation test! Cannot spawn this close to (0, 0)!");
-        if (Math.abs(block.getZ()) < structure.getStructureLocation().getZLimitation())
-            quickSendMessage(p, "&cFailed Z Limitation test! Cannot spawn this close to (0, 0)!");
+        if (structure.getStructureLocation().isInner()) {
+            if (Math.abs(block.getX()) > structure.getStructureLocation().getXLimitation())
+                quickSendMessage(p, "&cFailed X Limitation test (inner mode)! Cannot spawn this far from (0, 0)!");
+            if (Math.abs(block.getZ()) > structure.getStructureLocation().getZLimitation())
+                quickSendMessage(p, "&cFailed Z Limitation test (inner mode)! Cannot spawn this far from (0, 0)!");
+        } else {
+            if (Math.abs(block.getX()) < structure.getStructureLocation().getXLimitation())
+                quickSendMessage(p, "&cFailed X Limitation test! Cannot spawn this close to (0, 0)!");
+            if (Math.abs(block.getZ()) < structure.getStructureLocation().getZLimitation())
+                quickSendMessage(p, "&cFailed Z Limitation test! Cannot spawn this close to (0, 0)!");
+        }
+
+        if (structure.getStructureLocation().getSpawnRegion() != null &&
+                !structure.getStructureLocation().getSpawnRegion().isInRegion(block.getLocation())) {
+            // Check if the structure is not in the spawn region
+            quickSendMessage(p, "&cFailed Spawn Region test! The spawn location is not within the SpawnRegion!");
+        }
+
 
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(structure, block.getLocation()))
             quickSendMessage(p, "&cFailed Distance Limitation test! Cannot spawn this close to another structure!");

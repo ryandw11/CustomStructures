@@ -15,9 +15,21 @@ StructureLocation:
   # Set a custom spawn distance for the structures.
   SpawnDistance:
     # If true, spawn inside the region, otherwise spawn outside the region
-    inner: true
+    inner: false
     x: 10
     z: 10
+  # Set a region where this structure can only spawn.
+  SpawnRegion:
+    # The first corner, this must be the smallest corner.
+    CornerOne:
+      x: -1000
+      y: -20
+      z: -1000
+    # THe second corner, this must be the largest corner.
+    CornerTwo:
+      x: 1000
+      y: 100
+      z: 1000
 
 StructureProperties:
   PlaceAir: true
