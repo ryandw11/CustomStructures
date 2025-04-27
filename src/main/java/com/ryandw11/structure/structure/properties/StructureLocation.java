@@ -23,6 +23,7 @@ public class StructureLocation implements StructureProperty {
     private List<String> biomes;
     private double distanceFromOthers;
     private double distanceFromSame;
+    private boolean inner;
     private int xLimitation;
     private int zLimitation;
 
@@ -76,6 +77,10 @@ public class StructureLocation implements StructureProperty {
 
         xLimitation = 0;
         zLimitation = 0;
+        inner = false;
+        if (cs.contains("SpawnDistance.inner")) {
+            inner = cs.getBoolean("SpawnDistance.inner");
+        }
         if (cs.contains("SpawnDistance.x")) {
             xLimitation = cs.getInt("SpawnDistance.x");
         }
@@ -209,6 +214,14 @@ public class StructureLocation implements StructureProperty {
                 return true;
         }
         return false;
+    }
+
+    public boolean isInner() {
+        return inner;
+    }
+
+    public void setInner(boolean inner) {
+        this.inner = inner;
     }
 
     /**

@@ -278,10 +278,13 @@ public class Structure {
         }
 
         // Check to see if the structure is far enough away from spawn.
-        if (Math.abs(block.getX()) < getStructureLocation().getXLimitation())
-            return false;
-        if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
-            return false;
+        if (getStructureLocation().isInner()) {
+            if (Math.abs(block.getX()) > getStructureLocation().getXLimitation()
+                    || Math.abs(block.getZ()) > getStructureLocation().getZLimitation()) return false;
+        } else {
+            if (Math.abs(block.getX()) < getStructureLocation().getXLimitation()
+                    || Math.abs(block.getZ()) < getStructureLocation().getZLimitation()) return false;
+        }
 
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation()))
             return false;
